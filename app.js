@@ -11,7 +11,7 @@ const supabaseClient = supabase.createClient(
 );
 
 // ===============================
-// AUTH CHECK
+// AUTH
 // ===============================
 
 async function checkUser() {
@@ -19,7 +19,6 @@ async function checkUser() {
 
   if (!session) {
     const email = prompt("Enter your email to login:");
-
     if (!email) return;
 
     await supabaseClient.auth.signInWithOtp({
