@@ -47,6 +47,8 @@ async function generateRecipe() {
     }
 
     const data = await response.json();
+console.log("FULL RESPONSE:", data);
+
 
     if (data.error) {
       resultDiv.innerText = "Error: " + data.error;
