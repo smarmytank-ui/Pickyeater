@@ -1,17 +1,5 @@
-// ===============================
-// CONFIG
-// ===============================
-
-const SUPABASE_URL = "https://ouxrweqfmupebjzsvnxl.supabase.co";
+const FUNCTION_URL = "https://ouxrweqfmupebjzsvnxl.supabase.co/functions/v1/hyper-api";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91eHJ3ZXFmbXVwZWJqenN2bnhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMzM4NzEsImV4cCI6MjA4NjYwOTg3MX0.nRGM2Uxx0lFN9s4--4QjSQK8UOylM7H00bP9Sduw1ek";
-
-// THIS WAS MISSING
-const FUNCTION_URL = `${SUPABASE_URL}/functions/v1/hyper-api`;
-
-
-// ===============================
-// GENERATE RECIPE
-// ===============================
 
 async function generateRecipe() {
   const textarea = document.querySelector("textarea");
@@ -33,7 +21,10 @@ async function generateRecipe() {
         "Content-Type": "application/json",
         "apikey": SUPABASE_ANON_KEY
       },
-      body: JSON.stringify({ ingredients })
+      body: JSON.stringify({
+        ingredients,
+        userEmail: "test@pickyeater.com"
+      })
     });
 
     const data = await response.json();
