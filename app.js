@@ -11,7 +11,7 @@ const supabaseClient = supabase.createClient(
 );
 
 // ===============================
-// AUTH CHECK
+// AUTH
 // ===============================
 
 async function checkUser() {
@@ -50,6 +50,13 @@ async function generateRecipe() {
 
   resultDiv.innerHTML = "<p>Generating recipe...</p>";
 
+  const { data: { session } } = await supabaseClient.auth.getSession();
+
+  if (!session) {
+    resultDiv.innerHTML = "<p>Please login first.</p>";
+    return;
+  }
+
   try {
     const response = await fetch(
       "https://ouxrweqfmupebjzsvnxl.supabase.co/functions/v1/smooth-handler",
@@ -57,8 +64,7 @@ async function generateRecipe() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "apikey": SUPABASE_ANON_KEY,
-          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+          "Authorization": `Bearer ${session.access_token}`
         },
         body: JSON.stringify({ ingredients })
       }
@@ -67,16 +73,27 @@ async function generateRecipe() {
     const data = await response.json();
 
     if (!response.ok) {
-      resultDiv.innerHTML = `<p>Error: ${data.error || "Unauthorized"}</p>`;
+      resultDiv.innerHTML = `<p>Error: ${data.error}</p>`;
       return;
     }
 
-    resultDiv.innerHTML = `
+    let recipeHTML = `
       <h3>Your Recipe</h3>
-      <pre style="white-space: pre-wrap; text-align:left; max-width:600px; margin:auto;">
-${data.recipe}
-      </pre>
+      <div id="recipeContent" style="white-space: pre-wrap; text-align:left; max-width:600px; margin:auto;">
+        ${data.recipe}
+      </div>
     `;
+
+    if (data.limitReached) {
+      recipeHTML += `
+        <div style="margin-top:20px; padding:15px; background:#ffeaea; border-radius:8px;">
+          <strong>Free limit reached.</strong><br>
+          Upgrade to unlock unlimited full recipes.
+        </div>
+      `;
+    }
+
+    resultDiv.innerHTML = recipeHTML;
 
   } catch (error) {
     resultDiv.innerHTML = "<p>Something went wrong.</p>";
