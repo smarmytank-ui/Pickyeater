@@ -1,0 +1,35 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f9f9f9;
+  text-align: center;
+}
+
+.container {
+  padding: 60px 20px;
+}
+
+h1 {
+  font-size: 42px;
+  margin-bottom: 10px;
+}
+
+p {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 40px;
+}
+
+.primary-btn {
+  display: inline-block;
+  padding: 15px 30px;
+  background: #111;
+  color: white;
+  text-decoration: none;
+  font-size: 18px;
+  border-radius: 8px;
+}
+
+.primary-btn:hover {
+  background: #333;
+}
