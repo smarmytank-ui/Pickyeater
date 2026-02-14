@@ -41,28 +41,31 @@ async function generateRecipe() {
       })
     });
 
+    const rawText = await response.text();
+    console.log("RAW RESPONSE:", rawText);
+
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText);
-    }
-
-    const data = await response.json();
-console.log("FULL RESPONSE:", data);
-
-
-    if (data.error) {
-      resultDiv.innerText = "Error: " + data.error;
+      resultDiv.innerText = "Server error: " + rawText;
       return;
     }
 
-    // THIS FIXES YOUR FORMAT ISSUE
-    resultDiv.innerHTML = `
-      <div style="max-width:700px; margin:0 auto; text-align:left;">
-        <pre style="white-space:pre-wrap; font-family:inherit;">
-${data.recipe}
-        </pre>
-      </div>
-    `;
+    let data;
+
+    try {
+      data = JSON.parse(rawText);
+    } catch (parseError) {
+      resultDiv.innerText = "Invalid JSON returned from server.";
+      return;
+    }
+
+    console.log("PARSED DATA:", data);
+
+    if (!data.recipe) {
+      resultDiv.innerText = "No recipe returned.";
+      return;
+    }
+
+    resultDiv.innerHTML = data.recipe;
 
   } catch (error) {
     resultDiv.innerText = "Error: " + error.message;
