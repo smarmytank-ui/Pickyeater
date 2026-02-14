@@ -2,9 +2,10 @@
 // CONFIG
 // ===============================
 
-const FUNCTION_URL = "https://ouxrweqfmupebjzsvnxl.supabase.co/functions/v1/hyper-api";
+const SUPABASE_URL = "https://ouxrweqfmupebjzsvnxl.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91eHJ3ZXFmbXVwZWJqenN2bnhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMzM4NzEsImV4cCI6MjA4NjYwOTg3MX0.nRGM2Uxx0lFN9s4--4QjSQK8UOylM7H00bP9Sduw1ek";
-const FUNCTION_URL = "https://ouxrweqfmupebjzsvnxl.supabase.co/functions/v1/hyper-api";
+
+const FUNCTION_URL = `${SUPABASE_URL}/functions/v1/hyper-api`;
 
 
 // ===============================
@@ -13,11 +14,10 @@ const FUNCTION_URL = "https://ouxrweqfmupebjzsvnxl.supabase.co/functions/v1/hype
 
 async function generateRecipe() {
 
-  const textarea = document.querySelector("textarea");
+  const textarea = document.getElementById("ingredients");
   const resultDiv = document.getElementById("result");
 
   const ingredients = textarea.value.trim();
-  const userEmail = "demo@pickyeater.com"; // Replace later with real auth
 
   if (!ingredients) {
     resultDiv.innerText = "Please enter ingredients.";
@@ -36,13 +36,14 @@ async function generateRecipe() {
         "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
       },
       body: JSON.stringify({
-        ingredients,
-        userEmail
+        ingredients: ingredients,
+        userEmail: "test@pickyeater.com"
       })
     });
 
     if (!response.ok) {
-      throw new Error("Request failed");
+      const errorText = await response.text();
+      throw new Error(errorText);
     }
 
     const data = await response.json();
