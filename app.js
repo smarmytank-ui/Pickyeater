@@ -18,7 +18,6 @@ async function generateRecipe() {
   const resultDiv = document.getElementById("result");
 
   const ingredients = textarea.value.trim();
-  const userEmail = "test@pickyeater.com"; // temporary until auth
 
   if (!ingredients) {
     resultDiv.innerText = "Please enter ingredients.";
@@ -37,8 +36,8 @@ async function generateRecipe() {
         "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
       },
       body: JSON.stringify({
-        ingredients,
-        userEmail
+        ingredients: ingredients,
+        userEmail: "test@pickyeater.com"
       })
     });
 
@@ -50,31 +49,17 @@ async function generateRecipe() {
     const data = await response.json();
 
     if (data.error) {
-      resultDiv.innerText = data.error;
+      resultDiv.innerText = "Error: " + data.error;
       return;
     }
 
-    // ===============================
-    // Structured Rendering
-    // ===============================
-
+    // THIS FIXES YOUR FORMAT ISSUE
     resultDiv.innerHTML = `
-      <h2>${data.title}</h2>
-
-      <h3>Ingredients</h3>
-      <ul>
-        ${data.ingredients.map(i => `<li>${i}</li>`).join("")}
-      </ul>
-
-      <h3>Instructions</h3>
-      <ol>
-        ${data.instructions.map(i => `<li>${i}</li>`).join("")}
-      </ol>
-
-      <p><strong>Calories:</strong> ${data.calories}</p>
-      <p><strong>Protein:</strong> ${data.protein}g</p>
-      <p><strong>Carbs:</strong> ${data.carbs}g</p>
-      <p><strong>Fat:</strong> ${data.fat}g</p>
+      <div style="max-width:700px; margin:0 auto; text-align:left;">
+        <pre style="white-space:pre-wrap; font-family:inherit;">
+${data.recipe}
+        </pre>
+      </div>
     `;
 
   } catch (error) {
