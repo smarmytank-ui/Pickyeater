@@ -28,7 +28,7 @@ async function generateRecipe() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "apikey": SUPABASE_ANON_KEY
+        "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91eHJ3ZXFmbXVwZWJqenN2bnhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMzM4NzEsImV4cCI6MjA4NjYwOTg3MX0.nRGM2Uxx0lFN9s4--4QjSQK8UOylM7H00bP9Sduw1ek";
       },
       body: JSON.stringify({ ingredients })
     });
