@@ -1,7 +1,3 @@
-// ===============================
-// SUPABASE CONFIG
-// ===============================
-
 const SUPABASE_URL = "https://ouxrweqfmupebjzsvnxl.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91eHJ3ZXFmbXVwZWJqenN2bnhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwMzM4NzEsImV4cCI6MjA4NjYwOTg3MX0.nRGM2Uxx0lFN9s4--4QjSQK8UOylM7H00bP9Sduw1ek";
 
@@ -11,29 +7,25 @@ const supabaseClient = supabase.createClient(
   SUPABASE_ANON_KEY
 );
 
-// ===============================
-// AUTH
-// ===============================
-
 async function ensureLoggedIn() {
   const { data: { session } } = await supabaseClient.auth.getSession();
 
   if (!session) {
-    const email = prompt("Enter your email to login:");
-    if (!email) return false;
+    const email = prompt("Enter your email:");
+    if (!email) return null;
 
     await supabaseClient.auth.signInWithOtp({
-      email: email,
+      email,
       options: {
         emailRedirectTo: window.location.href
       }
     });
 
     alert("Check your email for login link.");
-    return false;
+    return null;
   }
 
-  return session;
+  return session.user.email;
 }
 
 async function generateRecipe() {
@@ -46,55 +38,51 @@ async function generateRecipe() {
     return;
   }
 
-  const session = await ensureLoggedIn();
+  const userEmail = await ensureLoggedIn();
 
-  if (!session) {
+  if (!userEmail) {
     resultDiv.innerHTML = "<p>Please complete login.</p>";
     return;
   }
 
   resultDiv.innerHTML = "<p>Generating recipe...</p>";
 
-  try {
-    const response = await fetch(
-      "https://ouxrweqfmupebjzsvnxl.supabase.co/functions/v1/smooth-handler",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({ ingredients })
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      resultDiv.innerHTML = `<p>Error: ${data.error}</p>`;
-      return;
+  const response = await fetch(
+    "PASTE_YOUR_FUNCTION_URL_HERE",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        ingredients,
+        userEmail
+      })
     }
+  );
 
-    let recipeHTML = `
-      <h3>Your Recipe</h3>
-      <div id="recipeContent" style="white-space: pre-wrap; text-align:left; max-width:600px; margin:auto;">
-        ${data.recipe}
+  const data = await response.json();
+
+  if (!response.ok) {
+    resultDiv.innerHTML = `<p>Error: ${data.error}</p>`;
+    return;
+  }
+
+  let recipeHTML = `
+    <h3>Your Recipe</h3>
+    <div style="white-space: pre-wrap; text-align:left; max-width:600px; margin:auto;">
+      ${data.recipe}
+    </div>
+  `;
+
+  if (data.limitReached) {
+    recipeHTML += `
+      <div style="margin-top:20px; padding:15px; background:#ffeaea; border-radius:8px;">
+        <strong>Free limit reached.</strong><br>
+        Upgrade to unlock unlimited recipes.
       </div>
     `;
-
-    if (data.limitReached) {
-      recipeHTML += `
-        <div style="margin-top:20px; padding:15px; background:#ffeaea; border-radius:8px;">
-          <strong>Free limit reached.</strong><br>
-          Upgrade to unlock unlimited recipes.
-        </div>
-      `;
-    }
-
-    resultDiv.innerHTML = recipeHTML;
-
-  } catch (error) {
-    resultDiv.innerHTML = "<p>Something went wrong.</p>";
-    console.error(error);
   }
+
+  resultDiv.innerHTML = recipeHTML;
 }
