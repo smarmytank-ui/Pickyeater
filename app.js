@@ -48,7 +48,8 @@ async function generateRecipe() {
   resultDiv.innerHTML = "<p>Generating recipe...</p>";
 
   const response = await fetch(
-    "https://ouxrweqfmupebjzsvnxl.supabase.co/functions/v1/smooth-handler",
+    "const FUNCTION_URL = "https://ouxrweqfmupebjzsvnxl.supabase.co/functions/v1/hyper-api";
+",
     {
       method: "POST",
       headers: {
