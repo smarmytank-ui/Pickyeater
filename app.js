@@ -10,7 +10,7 @@ async function generateRecipe() {
   resultDiv.innerHTML = "<p>Generating recipe...</p>";
 
   try {
-    const response = await fetch("PASTE_YOUR_FUNCTION_URL_HERE", {
+    const response = await fetch(https://ouxrweqfmupebjzsvnxl.supabase.co/functions/v1/smooth-handler, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
