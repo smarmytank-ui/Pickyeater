@@ -1,5 +1,5 @@
 // ===============================
-// SUPABASE SETUP
+// SUPABASE CONFIG
 // ===============================
 
 const SUPABASE_URL = "https://ouxrweqfmupebjzsvnxl.supabase.co";
@@ -11,7 +11,7 @@ const supabaseClient = supabase.createClient(
 );
 
 // ===============================
-// AUTH
+// AUTH CHECK
 // ===============================
 
 async function checkUser() {
@@ -56,7 +56,9 @@ async function generateRecipe() {
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
         },
         body: JSON.stringify({ ingredients })
       }
@@ -64,8 +66,8 @@ async function generateRecipe() {
 
     const data = await response.json();
 
-    if (data.error) {
-      resultDiv.innerHTML = `<p>Error: ${data.error}</p>`;
+    if (!response.ok) {
+      resultDiv.innerHTML = `<p>Error: ${data.error || "Unauthorized"}</p>`;
       return;
     }
 
