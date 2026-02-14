@@ -57,7 +57,7 @@ async function generateRecipe() {
 
   try {
     const response = await fetch(
-      "PASTE_YOUR_FUNCTION_URL_HERE",
+      "https://ouxrweqfmupebjzsvnxl.supabase.co/functions/v1/smooth-handler",
       {
         method: "POST",
         headers: {
