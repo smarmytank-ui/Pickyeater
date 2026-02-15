@@ -1,4 +1,4 @@
-const FUNCTION_URL = "https://ouxrweqfmupebjzsvnxl.supabase.co/functions/v1/hyper-api";
+const API_URL = "https://ouxrweqfmupebjzsvnxl.supabase.co/functions/v1/hyper-api";
 
 async function generateRecipe() {
   const ingredientsInput = document.getElementById("ingredients");
