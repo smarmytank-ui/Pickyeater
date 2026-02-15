@@ -1,86 +1,75 @@
-// app.js — Recipe Generator with Simple Score Display
-
-const API_URL = "https://ouxrweqfmupebjzsvnxl.supabase.co/functions/v1/hyper-api";
+const API_URL = "PASTE_YOUR_SUPABASE_FUNCTION_URL_HERE";
 
 async function generateRecipe() {
   const ingredientsInput = document.getElementById("ingredients");
   const resultEl = document.getElementById("result");
 
   const ingredients = ingredientsInput.value.trim();
-
   if (!ingredients) {
     alert("Please enter some ingredients.");
     return;
   }
 
-  // Reset UI
   resultEl.innerHTML = "<p>Generating recipe...</p>";
 
   try {
-    const response = await fetch(API_URL, {
+    const res = await fetch(API_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ingredients,
-        userEmail: "test@pickyeater.app", // placeholder for now
-      }),
+        userEmail: "test@pickyeater.app"
+      })
     });
 
-    const data = await response.json();
-    console.log("RAW RESPONSE:", data);
-
-    // Defensive checks
-    if (!data.recipe) {
-      throw new Error("No recipe returned");
-    }
+    const data = await res.json();
 
     const recipe = data.recipe;
     const score = data.score;
+    const improvement = data.improvement;
 
-    // Build HTML output
-    let html = "";
+    let html = `<h2>${recipe.title}</h2>`;
 
-    // Title
-    html += `<h2>${recipe.title}</h2>`;
+    if (score) {
+      html += `<p><strong>Picky Eater Score: ${score.overall} / 100</strong></p>`;
+    }
 
-    // Score (simple, no explanation)
-    if (score && typeof score.overall === "number") {
+    if (improvement) {
       html += `
-        <p style="font-weight:600; margin-top:8px;">
-          Picky Eater Score: ${score.overall} / 100
-        </p>
+        <button onclick="showImprovement()">Make it Better</button>
+        <div id="improvement" style="display:none; margin-top:10px;">
+          <strong>Try this:</strong><br />
+          Swap <em>${improvement.from}</em> →
+          <em>${improvement.to}</em><br />
+          <small>(+${improvement.estimated_gain} score)</small>
+        </div>
       `;
     }
 
-    // Ingredients
     html += "<h3>Ingredients</h3><ul>";
-    recipe.ingredients.forEach((item) => {
-      html += `<li>${item}</li>`;
-    });
+    recipe.ingredients.forEach(i => html += `<li>${i}</li>`);
     html += "</ul>";
 
-    // Instructions
     html += "<h3>Instructions</h3><ol>";
-    recipe.instructions.forEach((step) => {
-      html += `<li>${step}</li>`;
-    });
+    recipe.instructions.forEach(s => html += `<li>${s}</li>`);
     html += "</ol>";
 
-    // Nutrition
     html += `
       <h3>Nutrition</h3>
       <p>Calories: ${recipe.calories}</p>
-      <p>Protein: ${recipe.macros?.protein_g ?? "—"} g</p>
-      <p>Carbs: ${recipe.macros?.carbs_g ?? "—"} g</p>
-      <p>Fat: ${recipe.macros?.fat_g ?? "—"} g</p>
+      <p>Protein: ${recipe.macros.protein_g} g</p>
+      <p>Carbs: ${recipe.macros.carbs_g} g</p>
+      <p>Fat: ${recipe.macros.fat_g} g</p>
     `;
 
     resultEl.innerHTML = html;
-  } catch (error) {
-    console.error(error);
-    resultEl.innerHTML =
-      "<p>Something went wrong. Please try again.</p>";
+
+  } catch (err) {
+    resultEl.innerHTML = "<p>Something went wrong.</p>";
   }
+}
+
+function showImprovement() {
+  const el = document.getElementById("improvement");
+  if (el) el.style.display = "block";
 }
