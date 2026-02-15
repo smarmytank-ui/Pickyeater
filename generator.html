@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PickyEater Generator</title>
+  <title>Recipe Generator</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -12,23 +11,21 @@
   <div class="container">
     <h1>Recipe Generator</h1>
 
-    <textarea id="ingredients" placeholder="Enter ingredients..." rows="6"></textarea>
+    <textarea 
+      id="ingredients"
+      placeholder="Enter your ingredients..."
+      rows="6"
+      style="width: 80%; max-width: 500px;"
+    ></textarea>
 
-    <button class="primary-btn" onclick="generateRecipe()">Generate</button>
+    <br /><br />
 
-    <div id="result"></div>
-  </div>
+    <button onclick="generateRecipe()">Generate</button>
 
-  <!-- Swap Panel -->
-  <div id="swapPanel" class="swap-panel hidden">
-    <div class="swap-header">
-      <h3 id="swapTitle">Swap Ingredient</h3>
-      <button onclick="closeSwap()">X</button>
-    </div>
-    <div id="swapOptions"></div>
-    <button class="primary-btn" onclick="applySwaps()">Apply Swaps</button>
+    <div id="result" style="margin-top:40px;"></div>
   </div>
 
   <script src="app.js"></script>
+
 </body>
 </html>
