@@ -1,81 +1,82 @@
-const API_URL = "https://ouxrweqfmupebjzsvnxl.supabase.co/functions/v1/hyper-api";
+let currentIngredients = [];
+let currentScore = 0;
 
-window.currentRecipe = null;
-window.currentScore = null;
-window.currentSwap = null;
+function generateRecipe() {
+  const input = document.getElementById("ingredients").value.trim();
+  const result = document.getElementById("result");
 
-async function generateRecipe() {
-  const ingredientsInput = document.getElementById("ingredients").value;
+  if (!input) {
+    result.innerHTML = "<p>Please enter ingredients.</p>";
+    return;
+  }
 
-  const ingredients = ingredientsInput
+  currentIngredients = input
     .split("\n")
     .map(i => i.trim())
     .filter(Boolean);
 
-  const response = await fetch(API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      recipe: {
-        title: "Generated Recipe",
-        ingredients,
-        calories: 550,
-        macros: {
-          protein_g: 40
-        }
-      }
-    })
-  });
-
-  const data = await response.json();
-
-  window.currentRecipe = data.recipe;
-  window.currentScore = data.score.overall;
-  window.currentSwap = data.suggested_swap;
+  currentScore = calculateScore(currentIngredients);
 
   render();
 }
 
-async function applySwap() {
-  const response = await fetch(API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      action: "apply_swap",
-      recipe: window.currentRecipe,
-      swap: window.currentSwap,
-      previous_score: window.currentScore
-    })
+function calculateScore(ingredients) {
+  let score = 70;
+
+  ingredients.forEach(i => {
+    const lower = i.toLowerCase();
+    if (lower.includes("chicken breast")) score += 6;
+    if (lower.includes("broccoli")) score += 4;
+    if (lower.includes("brown rice")) score += 3;
+    if (lower.includes("olive oil")) score += 2;
+    if (lower.includes("cheddar")) score -= 4;
+    if (lower.includes("tortilla")) score -= 3;
   });
 
-  const data = await response.json();
-
-  window.currentRecipe = data.recipe;
-  window.currentScore = data.score.overall;
-
-  render(data.previous_score);
+  return Math.max(0, Math.min(score, 100));
 }
 
-function render(previousScore = null) {
+function applySwap(type) {
+  if (type === "protein") {
+    currentIngredients = currentIngredients.map(i =>
+      i.toLowerCase().includes("chicken thighs") ? "chicken breast" : i
+    );
+    currentScore += 5;
+  }
+
+  if (type === "calories") {
+    currentIngredients = currentIngredients.filter(
+      i => !i.toLowerCase().includes("cheddar")
+    );
+    currentScore += 4;
+  }
+
+  if (type === "vegetables") {
+    currentIngredients.push("broccoli");
+    currentScore += 3;
+  }
+
+  currentScore = Math.min(currentScore, 100);
+  render();
+}
+
+function render() {
   const result = document.getElementById("result");
 
   result.innerHTML = `
-    <h3>${window.currentRecipe.title}</h3>
+    <h2>Generated Recipe</h2>
 
-    <p><strong>Ingredients:</strong></p>
+    <h3>Ingredients:</h3>
     <ul>
-      ${window.currentRecipe.ingredients.map(i => `<li>${i}</li>`).join("")}
+      ${currentIngredients.map(i => `<li>${i}</li>`).join("")}
     </ul>
 
-    <p><strong>Score:</strong>
-      ${previousScore !== null ? `${previousScore} → ` : ""}
-      ${window.currentScore}
-    </p>
+    <h3>Score: ${currentScore}</h3>
 
-    <button onclick="applySwap()">Apply Swap</button>
+    <h3>Improve This Recipe:</h3>
+
+    <button onclick="applySwap('protein')">Improve Protein</button>
+    <button onclick="applySwap('calories')">Reduce Calories</button>
+    <button onclick="applySwap('vegetables')">Add Vegetables</button>
   `;
 }
