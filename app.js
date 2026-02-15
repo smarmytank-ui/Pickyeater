@@ -49,7 +49,6 @@ async function generateRecipe() {
       return;
     }
 
-    // If backend returns structured object
     if (data.title) {
       resultDiv.innerHTML = `
         <h2>${data.title}</h2>
@@ -62,11 +61,9 @@ async function generateRecipe() {
         <p><strong>Carbs:</strong> ${data.carbs}g</p>
         <p><strong>Fat:</strong> ${data.fat}g</p>
       `;
-      return;
+    } else {
+      resultDiv.innerText = data.recipe || "No recipe returned.";
     }
-
-    // Fallback if plain text recipe
-    resultDiv.innerText = data.recipe || "No recipe returned.";
 
   } catch (error) {
     resultDiv.innerText = "Error: " + error.message;
