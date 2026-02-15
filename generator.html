@@ -2,26 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Recipe Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <link rel="stylesheet" href="styles.css" />
-  <link rel="icon" href="favicon.ico" />
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+  <!-- FAVICON -->
+  <link rel="icon" href="./favicon.ico/favicon.ico" />
+  <link rel="apple-touch-icon" href="./favicon.ico/apple-touch-icon.png" />
 </head>
+
 <body>
+  <div class="container">
+    <h1>Recipe Generator</h1>
 
-<div class="container">
-  <h1>Recipe Generator</h1>
+    <textarea
+      id="ingredients"
+      placeholder="Enter ingredients, one per line"
+      rows="8"
+    ></textarea>
 
-  <textarea id="ingredients" rows="6" placeholder="Enter ingredients..."></textarea>
+    <button onclick="generateRecipe()">Generate</button>
 
-  <br /><br />
+    <div id="result"></div>
+  </div>
 
-  <button onclick="generateRecipe()">Generate</button>
-
-  <div id="result"></div>
-</div>
-
-<script src="app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
