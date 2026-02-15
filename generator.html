@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Recipe Generator</title>
-<link rel="icon" href="favicon.ico">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <main class="container wide">
 <section class="card">
 <h1>Recipe Generator</h1>
+<label>Ingredients (one per line)</label>
 <textarea id="ingredients" rows="7">chicken breast
 white rice
 olive oil
@@ -18,21 +18,24 @@ broccoli
 garlic
 salt
 black pepper</textarea>
-
 <div class="controls">
+<div>
+<label>Servings</label>
 <input id="servings" type="number" value="2" min="1">
-<select id="goal">
-<option value="balanced">Balanced</option>
-<option value="low_cal">Reduce Calories</option>
-<option value="high_protein">High Protein</option>
-</select>
+</div>
 <button onclick="generateRecipe()">Generate</button>
 </div>
 </section>
 
 <section id="recipe" class="card hidden">
+<header class="recipe-header">
 <h2 id="title"></h2>
-<p id="meta"></p>
+<div class="meta">
+<span id="meta-servings"></span>
+<span id="meta-calories"></span>
+<span id="meta-protein"></span>
+</div>
+</header>
 
 <div class="grid">
 <div>
@@ -45,14 +48,10 @@ black pepper</textarea>
 </div>
 </div>
 
-<h3>Nutrition</h3>
-<table id="nutrition"></table>
-
-<div class="swap">
-<button onclick="applySwap('low_cal')">Reduce Calories</button>
-<button onclick="applySwap('high_protein')">Increase Protein</button>
-<button onclick="applySwap('add_veg')">Add Vegetables</button>
-</div>
+<section class="nutrition">
+<h3>Nutrition (per serving)</h3>
+<table><tbody id="nutrition"></tbody></table>
+</section>
 </section>
 </main>
 <script src="app.js"></script>

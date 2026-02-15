@@ -1,11 +1,19 @@
-body{margin:0;font-family:system-ui;background:#fafafa}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui;background:#fafafa;color:#111}
 .container{max-width:1100px;margin:auto;padding:24px}
+.container.wide{max-width:1200px}
 .hero{text-align:center;padding:80px}
 .primary{background:#111;color:#fff;padding:14px 20px;border-radius:8px;text-decoration:none}
-.card{background:#fff;border-radius:12px;padding:24px;margin-bottom:24px;box-shadow:0 10px 30px rgba(0,0,0,.06)}
-textarea{width:100%;padding:12px}
-.controls{display:flex;gap:12px;margin-top:12px}
-button{background:#111;color:#fff;border:none;padding:10px 14px;border-radius:6px}
+.card{background:#fff;border-radius:14px;padding:28px;margin-bottom:28px;box-shadow:0 12px 32px rgba(0,0,0,.06)}
+textarea{width:100%;padding:12px;border-radius:8px;border:1px solid #ddd}
+.controls{display:flex;gap:16px;align-items:flex-end;margin-top:14px}
+.controls input{padding:10px;border-radius:6px;border:1px solid #ccc;width:80px}
+.controls button{background:#111;color:#fff;border:none;border-radius:8px;padding:12px 18px;font-weight:600}
 .hidden{display:none}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.recipe-header h2{margin:0}
+.meta{display:flex;gap:14px;margin-top:8px;font-size:14px;color:#444}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:28px}
 @media(max-width:800px){.grid{grid-template-columns:1fr}}
+ul,ol{padding-left:18px}
+.nutrition{margin-top:28px}
+.nutrition td{padding:8px 0;border-bottom:1px solid #eee}
