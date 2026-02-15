@@ -1,4 +1,4 @@
-const API_URL = "PASTE_YOUR_SUPABASE_FUNCTION_URL_HERE";
+const FUNCTION_URL = `${SUPABASE_URL}/functions/v1/hyper-api`;
 
 async function generateRecipe() {
   const ingredientsInput = document.getElementById("ingredients");
