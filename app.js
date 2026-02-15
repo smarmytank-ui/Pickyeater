@@ -1,8 +1,8 @@
-let baseRecipe = null;
-let currentRecipe = null;
+let baseRecipe=null;
+let currentRecipe=null;
 
 function generateRecipe(){
-  baseRecipe = {
+  baseRecipe={
     title:'Chicken Breast with Broccoli and White Rice',
     servings:Number(document.getElementById('servings').value)||1,
     ingredients:[
@@ -33,23 +33,19 @@ function generateRecipe(){
       Sodium:'700 mg'
     }
   };
-
-  currentRecipe = JSON.parse(JSON.stringify(baseRecipe));
+  currentRecipe=JSON.parse(JSON.stringify(baseRecipe));
   render(currentRecipe);
 }
 
 function applyReduceCalories(){
-  currentRecipe.ingredients = currentRecipe.ingredients.map(i =>
-    i.includes('white rice') ? '1/2 cup white rice' : i
+  currentRecipe.ingredients=currentRecipe.ingredients.map(i=>
+    i.includes('white rice')?'1/2 cup white rice':i
   );
-
-  currentRecipe.nutrition.Calories = 460;
-  currentRecipe.nutrition.Carbohydrates = '32 g';
-
-  document.getElementById('swap-result').classList.remove('hidden');
-  document.getElementById('swap-result').innerHTML =
-    'Reduced portion of white rice to lower calories and carbs while keeping texture familiar.';
-
+  currentRecipe.nutrition.Calories=460;
+  currentRecipe.nutrition.Carbohydrates='32 g';
+  const sr=document.getElementById('swap-result');
+  sr.classList.remove('hidden');
+  sr.textContent='Reduced portion of white rice to lower calories and carbs while keeping texture familiar.';
   render(currentRecipe);
 }
 
@@ -59,13 +55,10 @@ function render(recipe){
   document.getElementById('meta-servings').textContent='Servings: '+recipe.servings;
   document.getElementById('meta-calories').textContent='Calories/serving: '+Math.round(recipe.nutrition.Calories/recipe.servings);
   document.getElementById('meta-protein').textContent='Protein/serving: 45 g';
-
   const il=document.getElementById('ingredient-list');il.innerHTML='';
   recipe.ingredients.forEach(i=>{const li=document.createElement('li');li.textContent=i;il.appendChild(li)});
-
   const inst=document.getElementById('instructions');inst.innerHTML='';
   recipe.instructions.forEach(s=>{const li=document.createElement('li');li.textContent=s;inst.appendChild(li)});
-
   const nut=document.getElementById('nutrition');nut.innerHTML='';
   Object.entries(recipe.nutrition).forEach(([k,v])=>{
     const tr=document.createElement('tr');
