@@ -1,25 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Recipe Generator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recipe Generator</title>
+<link rel="icon" href="favicon.ico">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Recipe Generator</h1>
+<main class="container wide">
+<section class="card">
+<h1>Recipe Generator</h1>
+<textarea id="ingredients" rows="7">chicken breast
+white rice
+olive oil
+broccoli
+garlic
+salt
+black pepper</textarea>
 
-    <textarea id="ingredients" rows="6" placeholder="Enter ingredients, one per line"></textarea>
+<div class="controls">
+<input id="servings" type="number" value="2" min="1">
+<select id="goal">
+<option value="balanced">Balanced</option>
+<option value="low_cal">Reduce Calories</option>
+<option value="high_protein">High Protein</option>
+</select>
+<button onclick="generateRecipe()">Generate</button>
+</div>
+</section>
 
-    <div class="row">
-      <input id="servings" type="number" min="1" max="6" value="2" />
-      <button class="primary-btn" onclick="generateRecipe()">Generate</button>
-    </div>
+<section id="recipe" class="card hidden">
+<h2 id="title"></h2>
+<p id="meta"></p>
 
-    <div id="result"></div>
-  </div>
+<div class="grid">
+<div>
+<h3>Ingredients</h3>
+<ul id="ingredient-list"></ul>
+</div>
+<div>
+<h3>Instructions</h3>
+<ol id="instructions"></ol>
+</div>
+</div>
 
-  <script src="app.js"></script>
+<h3>Nutrition</h3>
+<table id="nutrition"></table>
+
+<div class="swap">
+<button onclick="applySwap('low_cal')">Reduce Calories</button>
+<button onclick="applySwap('high_protein')">Increase Protein</button>
+<button onclick="applySwap('add_veg')">Add Vegetables</button>
+</div>
+</section>
+</main>
+<script src="app.js"></script>
 </body>
 </html>
