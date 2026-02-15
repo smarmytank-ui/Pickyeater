@@ -4,20 +4,14 @@
   <meta charset="UTF-8" />
   <title>Recipe Generator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="favicon.ico" />
   <link rel="stylesheet" href="styles.css" />
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
-
 <body>
   <div class="container">
     <h1>Recipe Generator</h1>
 
-    <textarea
-      id="ingredients"
-      rows="8"
-      placeholder="Enter ingredients, one per line"
-    ></textarea>
-
+    <textarea id="ingredients" rows="6" placeholder="Enter ingredients, one per line"></textarea>
     <button onclick="generateRecipe()">Generate</button>
 
     <div id="result"></div>
