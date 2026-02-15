@@ -5,25 +5,31 @@ window.currentScore = null;
 window.currentSwap = null;
 
 async function generateRecipe() {
-  const ingredients = document.getElementById("ingredients").value
+  const ingredientsInput = document.getElementById("ingredients").value;
+
+  const ingredients = ingredientsInput
     .split("\n")
     .map(i => i.trim())
     .filter(Boolean);
 
-  const res = await fetch(API_URL, {
+  const response = await fetch(API_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify({
       recipe: {
         title: "Generated Recipe",
         ingredients,
         calories: 550,
-        macros: { protein_g: 40 }
+        macros: {
+          protein_g: 40
+        }
       }
     })
   });
 
-  const data = await res.json();
+  const data = await response.json();
 
   window.currentRecipe = data.recipe;
   window.currentScore = data.score.overall;
@@ -33,9 +39,11 @@ async function generateRecipe() {
 }
 
 async function applySwap() {
-  const res = await fetch(API_URL, {
+  const response = await fetch(API_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify({
       action: "apply_swap",
       recipe: window.currentRecipe,
@@ -44,7 +52,7 @@ async function applySwap() {
     })
   });
 
-  const data = await res.json();
+  const data = await response.json();
 
   window.currentRecipe = data.recipe;
   window.currentScore = data.score.overall;
@@ -53,20 +61,21 @@ async function applySwap() {
 }
 
 function render(previousScore = null) {
-  const el = document.getElementById("result");
+  const result = document.getElementById("result");
 
-  el.innerHTML = `
+  result.innerHTML = `
     <h3>${window.currentRecipe.title}</h3>
+
     <p><strong>Ingredients:</strong></p>
-    <ul>${window.currentRecipe.ingredients.map(i => `<li>${i}</li>`).join("")}</ul>
+    <ul>
+      ${window.currentRecipe.ingredients.map(i => `<li>${i}</li>`).join("")}
+    </ul>
 
     <p><strong>Score:</strong>
-      ${previousScore ? `${previousScore} → ` : ""}${window.currentScore}
+      ${previousScore !== null ? `${previousScore} → ` : ""}
+      ${window.currentScore}
     </p>
 
     <button onclick="applySwap()">Apply Swap</button>
-
-function showImprovement() {
-  const el = document.getElementById("improvement");
-  if (el) el.style.display = "block";
+  `;
 }
