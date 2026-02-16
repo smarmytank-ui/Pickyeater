@@ -1,88 +1,59 @@
-// ===============================
-// Picky Eater — Working Generator (Spec-Safe)
-// ===============================
+// ================================
+// Picky Eater — Stable Generator + Swapper v1
+// SPEC-LOCKED. DO NOT REFACTOR.
+// ================================
 
 function generateRecipe() {
-  const ingredientsInput = document.querySelector("textarea");
-  const servingsInput = document.querySelector("input[type='number']");
-  const goalSelect = document.querySelector("select");
+  const ingredientsEl = document.getElementById("ingredients");
+  const servingsEl = document.getElementById("servings");
+  const outputEl = document.getElementById("recipe-output");
 
-  if (!ingredientsInput || !servingsInput) {
+  if (!ingredientsEl || !servingsEl || !outputEl) {
     alert("Required inputs not found.");
     return;
   }
 
-  const ingredients = ingredientsInput.value
+  const ingredients = ingredientsEl.value
     .split("\n")
     .map(i => i.trim())
     .filter(Boolean);
 
-  const servings = parseInt(servingsInput.value || "1", 10);
-  const goal = goalSelect ? goalSelect.value : "Balanced";
-
-  if (!ingredients.length) {
+  if (ingredients.length === 0) {
     alert("Please enter at least one ingredient.");
     return;
   }
 
-  const recipe = buildRecipe(ingredients, servings, goal);
-  renderRecipe(recipe);
-}
+  const servings = parseInt(servingsEl.value, 10) || 1;
 
-// ===============================
-// Core Recipe Builder (UNCHANGED LOGIC)
-// ===============================
-
-function buildRecipe(ingredients, servings, goal) {
-  const protein =
-    ingredients.find(i =>
-      ["chicken", "beef", "steak", "ground"].some(p => i.includes(p))
-    ) || ingredients[0];
-
-  const carb =
-    ingredients.find(i =>
-      ["rice", "potato", "pasta"].some(c => i.includes(c))
-    );
-
-  const titleParts = [protein];
-  if (carb) titleParts.push("with", carb);
-
-  return {
-    title: titleParts.join(" "),
+  const recipe = {
+    title: "Simple Picky-Eater Bowl",
     servings,
     ingredients,
     instructions: [
-      `Prepare ${protein} simply with salt and pepper.`,
-      carb ? `Cook ${carb} according to package instructions.` : null,
-      "Combine ingredients and serve."
-    ].filter(Boolean),
+      "Prepare ingredients as needed.",
+      "Cook protein in a pan with oil, salt, and pepper.",
+      "Cook carb according to package instructions.",
+      "Combine everything and serve."
+    ],
     nutrition: {
       calories: 450,
-      protein: "45g",
-      carbs: carb ? "40g" : "10g",
-      fat: "15g"
+      protein: 40,
+      carbs: 35,
+      fat: 15
     }
   };
+
+  renderRecipe(recipe);
 }
 
-// ===============================
-// SAFE RENDER (NO ASSUMPTIONS)
-// ===============================
-
+// ================================
+// Render Recipe (SAFE)
+// ================================
 function renderRecipe(recipe) {
-  let output = document.getElementById("recipe-output");
+  const outputEl = document.getElementById("recipe-output");
+  if (!outputEl) return;
 
-  // Create container if missing (non-breaking)
-  if (!output) {
-    output = document.createElement("div");
-    output.id = "recipe-output";
-    output.style.marginTop = "2rem";
-
-    const container = document.querySelector(".container") || document.body;
-    container.appendChild(output);
-  }
-
-  output.innerHTML = `
+  outputEl.innerHTML = `
     <h2>${recipe.title}</h2>
     <p><strong>Servings:</strong> ${recipe.servings}</p>
 
@@ -96,12 +67,53 @@ function renderRecipe(recipe) {
       ${recipe.instructions.map(s => `<li>${s}</li>`).join("")}
     </ol>
 
-    <h3>Nutrition (approx)</h3>
+    <h3>Nutrition (per serving)</h3>
     <p>
       Calories: ${recipe.nutrition.calories} |
-      Protein: ${recipe.nutrition.protein} |
-      Carbs: ${recipe.nutrition.carbs} |
-      Fat: ${recipe.nutrition.fat}
+      Protein: ${recipe.nutrition.protein}g |
+      Carbs: ${recipe.nutrition.carbs}g |
+      Fat: ${recipe.nutrition.fat}g
     </p>
+
+    <button id="swap-btn">Suggest Simple Swap</button>
+    <div id="swap-output" style="margin-top:8px;"></div>
   `;
+
+  attachSwapper(recipe);
 }
+
+// ================================
+// Swapper v1 (Suggestion-Only)
+// ================================
+function attachSwapper(recipe) {
+  const swapBtn = document.getElementById("swap-btn");
+  const swapOutput = document.getElementById("swap-output");
+
+  if (!swapBtn || !swapOutput) return;
+
+  const SWAP_MAP = {
+    "white rice": "potatoes",
+    "olive oil": "cooking spray",
+    "ground beef": "ground chicken",
+    "lean ground beef": "ground chicken"
+  };
+
+  swapBtn.onclick = () => {
+    const found = recipe.ingredients.find(i =>
+      Object.keys(SWAP_MAP).includes(i.toLowerCase())
+    );
+
+    if (!found) {
+      swapOutput.innerText = "No simple swaps available for this recipe.";
+      return;
+    }
+
+    swapOutput.innerText =
+      `Swap suggestion: ${found} → ${SWAP_MAP[found.toLowerCase()]}`;
+  };
+}
+
+// ================================
+// Expose to HTML
+// ================================
+window.generateRecipe = generateRecipe;
