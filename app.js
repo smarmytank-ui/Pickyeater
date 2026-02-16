@@ -1,24 +1,29 @@
-// app.js — Picky Eater Recipe Generator (Frozen Spec v1)
-// SAFE PATCH — ID mismatch fix only
+// app.js — Picky Eater Generator
+// SPEC-SAFE PATCH: input binding fix only
 
 function generateRecipe() {
-  const ingredientsInput = document.getElementById("ingredientsInput");
-  const servingsInput = document.querySelector('input[type="number"]');
+  const ingredientsInput =
+    document.getElementById("ingredientsInput") ||
+    document.querySelector("textarea");
+
+  const servingsInput =
+    document.getElementById("servingsInput") ||
+    document.querySelector('input[type="number"]');
 
   if (!ingredientsInput || !servingsInput) {
     alert("Required inputs not found.");
     return;
   }
 
-  const input = ingredientsInput.value;
+  const raw = ingredientsInput.value.trim();
   const servings = parseInt(servingsInput.value || "1", 10);
 
-  if (!input.trim()) {
+  if (!raw) {
     alert("Please enter at least one ingredient.");
     return;
   }
 
-  const ingredients = input
+  const ingredients = raw
     .split("\n")
     .map(i => i.trim())
     .filter(Boolean);
@@ -36,7 +41,7 @@ function buildRecipe(ingredients, servings) {
     ) || "protein";
 
   return {
-    title: `${capitalize(protein)} Simple Bowl`,
+    title: `Simple ${capitalize(protein)} Bowl`,
     servings,
     ingredients: ingredients.map(i => ({
       name: i,
@@ -48,7 +53,12 @@ function buildRecipe(ingredients, servings) {
       "Prepare remaining ingredients.",
       "Assemble bowl and serve."
     ],
-    nutrition: estimateNutrition()
+    nutrition: {
+      calories: 460,
+      protein: 45,
+      carbs: 32,
+      fat: 16
+    }
   };
 }
 
@@ -82,15 +92,6 @@ function estimateAmount(ingredient, servings) {
   if (ingredient.includes("oil")) return "1 tbsp";
   if (ingredient.includes("garlic")) return "2 cloves";
   return "to taste";
-}
-
-function estimateNutrition() {
-  return {
-    calories: 460,
-    protein: 45,
-    carbs: 32,
-    fat: 16
-  };
 }
 
 function capitalize(str) {
