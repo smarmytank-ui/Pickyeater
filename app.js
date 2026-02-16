@@ -718,3 +718,45 @@ document.getElementById('mealCancel')?.addEventListener('click', hideMealPicker)
 
 updateDiarySub();
 
+
+// ===============================
+// v1.9.1 — Micro polish
+// ===============================
+const toast = (() => {
+  const t = document.createElement('div');
+  t.className='toast hidden';
+  document.body.appendChild(t);
+  return {
+    show(msg){
+      t.textContent = msg;
+      t.classList.remove('hidden');
+      setTimeout(()=>t.classList.add('hidden'), 1400);
+    }
+  }
+})();
+
+// Patch renderDiary to show empty state
+const _renderDiary = renderDiary;
+renderDiary = function(){
+  _renderDiary();
+  const ul = document.getElementById('diaryList');
+  if(ul && ul.children.length === 0){
+    const li = document.createElement('li');
+    li.className = 'empty';
+    li.textContent = 'Nothing logged here yet. Start with this meal.';
+    ul.appendChild(li);
+  }
+};
+
+// Feedback on add/remove
+const _addCurrentRecipeToMeal = addCurrentRecipeToMeal;
+addCurrentRecipeToMeal = function(meal){
+  _addCurrentRecipeToMeal(meal);
+  toast.show('Added to ' + meal.charAt(0).toUpperCase()+meal.slice(1));
+};
+
+const _deleteEntry = deleteEntry;
+deleteEntry = function(meal, idx){
+  _deleteEntry(meal, idx);
+  toast.show('Removed');
+};
