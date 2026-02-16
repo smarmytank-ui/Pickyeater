@@ -433,3 +433,288 @@ $('backBtn').onclick = ()=>{
   $('resultCard').classList.add('hidden');
   $('inputCard').classList.remove('hidden');
 };
+
+
+// ===============================
+// v1.9.0 — MEALS + Soft Auth Diary (local-first)
+// ===============================
+
+const MEALS = ['breakfast','lunch','dinner','snacks'];
+let activeMeal = 'breakfast';
+
+function lsGet(k, fallback){
+  try { return JSON.parse(localStorage.getItem(k) || 'null') ?? fallback; }
+  catch(e){ return fallback; }
+}
+function lsSet(k, v){ localStorage.setItem(k, JSON.stringify(v)); }
+
+function todayKey(){
+  return new Date().toISOString().slice(0,10);
+}
+
+function getAuth(){
+  return lsGet('pickyAuth', null);
+}
+function setAuthEmail(email){
+  lsSet('pickyAuth', { email, createdAt: new Date().toISOString() });
+}
+function authKnown(){
+  const a = getAuth();
+  return !!(a && a.email);
+}
+
+function getDiary(){
+  return lsGet('pickyDiaryMeals', {});
+}
+function setDiary(d){
+  lsSet('pickyDiaryMeals', d);
+}
+
+function ensureDay(diary, dateKey){
+  if(!diary[dateKey]){
+    diary[dateKey] = { breakfast:[], lunch:[], dinner:[], snacks:[] };
+  } else {
+    MEALS.forEach(m => diary[dateKey][m] = diary[dateKey][m] || []);
+  }
+}
+
+function parseNum(text){
+  const m = String(text||'').match(/(-?\d+(?:\.\d+)?)/);
+  return m ? Number(m[1]) : 0;
+}
+
+function diaryTotalsForDay(diary, dateKey){
+  ensureDay(diary, dateKey);
+  let cal=0,p=0,c=0,f=0;
+  MEALS.forEach(meal => {
+    diary[dateKey][meal].forEach(item => {
+      cal += item.macros.cal || 0;
+      p += item.macros.p || 0;
+      c += item.macros.c || 0;
+      f += item.macros.f || 0;
+    });
+  });
+  return { cal, p, c, f };
+}
+
+function addEntryToDiary(meal, entry){
+  const diary = getDiary();
+  const key = todayKey();
+  ensureDay(diary, key);
+  diary[key][meal].push(entry);
+  setDiary(diary);
+}
+
+function deleteEntry(meal, idx){
+  const diary = getDiary();
+  const key = todayKey();
+  ensureDay(diary, key);
+  diary[key][meal].splice(idx, 1);
+  setDiary(diary);
+}
+
+function openDiary(){
+  $('diaryCard').classList.remove('hidden');
+  updateDiarySub();
+  renderDiary();
+}
+function closeDiary(){
+  $('diaryCard').classList.add('hidden');
+}
+
+function updateDiarySub(){
+  const key = todayKey();
+  const a = getAuth();
+  const who = a?.email ? `Signed in as ${a.email}` : 'Saved on this device (create free account to sync later)';
+  const el = document.getElementById('diarySub');
+  if(el) el.textContent = `${key} • ${who}`;
+}
+
+function setActiveMeal(meal){
+  activeMeal = meal;
+  document.querySelectorAll('.tab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.meal === meal);
+  });
+  renderDiary();
+}
+
+function renderDiary(){
+  const diary = getDiary();
+  const key = todayKey();
+  ensureDay(diary, key);
+
+  const list = diary[key][activeMeal] || [];
+  const ul = document.getElementById('diaryList');
+  if(!ul) return;
+  ul.innerHTML = '';
+
+  list.forEach((item, idx) => {
+    const li = document.createElement('li');
+    li.className = 'diary-item';
+
+    const left = document.createElement('div');
+    left.innerHTML = `<strong>${item.title}</strong>
+      <div class="diary-meta">${item.source}${item.localOnly ? ' • local-only' : ''}</div>`;
+
+    const right = document.createElement('div');
+    right.className = 'diary-right';
+
+    const macroLine = document.createElement('div');
+    macroLine.className = 'diary-meta';
+    macroLine.textContent = `≈ ${Math.round(item.macros.cal)} cal • P ${Math.round(item.macros.p)} • C ${Math.round(item.macros.c)} • F ${Math.round(item.macros.f)}`;
+
+    const del = document.createElement('button');
+    del.className = 'icon-btn';
+    del.textContent = 'Remove';
+    del.onclick = () => { deleteEntry(activeMeal, idx); renderDiary(); };
+
+    right.append(macroLine, del);
+    li.append(left, right);
+    ul.appendChild(li);
+  });
+
+  const totals = diaryTotalsForDay(diary, key);
+  const totalsEl = document.getElementById('diaryTotals');
+  if(totalsEl){
+    totalsEl.innerHTML = `
+      <span>≈ ${Math.round(totals.cal)} cal</span>
+      <span>Protein ${Math.round(totals.p)}g</span>
+      <span>Carbs ${Math.round(totals.c)}g</span>
+      <span>Fat ${Math.round(totals.f)}g</span>
+    `;
+  }
+
+  updateDiarySub();
+}
+
+// -------------------------------
+// Soft auth overlays
+// -------------------------------
+function show(el){ el && el.classList.remove('hidden'); }
+function hide(el){ el && el.classList.add('hidden'); }
+
+function showAuthGate(){ show(document.getElementById('authOverlay')); }
+function hideAuthGate(){ hide(document.getElementById('authOverlay')); }
+function showEmailCapture(){ show(document.getElementById('emailOverlay')); document.getElementById('authEmail')?.focus(); }
+function hideEmailCapture(){ hide(document.getElementById('emailOverlay')); }
+function showMealPicker(){ show(document.getElementById('mealOverlay')); }
+function hideMealPicker(){ hide(document.getElementById('mealOverlay')); }
+
+// -------------------------------
+// Diary actions from recipe
+// -------------------------------
+function addCurrentRecipeToMeal(meal){
+  if(!state) return;
+
+  const cal = parseNum(document.getElementById('calories')?.textContent);
+  const p = parseNum(document.getElementById('protein')?.textContent);
+  const c = parseNum(document.getElementById('carbs')?.textContent);
+  const f = parseNum(document.getElementById('fat')?.textContent);
+
+  addEntryToDiary(meal, {
+    title: state.title,
+    source: 'Picky recipe',
+    macros: { cal, p, c, f },
+    localOnly: !authKnown(),
+    time: new Date().toISOString()
+  });
+
+  setActiveMeal(meal);
+  openDiary();
+}
+
+// -------------------------------
+// Quick Add
+// -------------------------------
+function cleanNum(v){
+  const n = Number(String(v||'').trim());
+  return Number.isFinite(n) ? Math.max(0, n) : 0;
+}
+
+function quickAddToActiveMeal(){
+  const name = document.getElementById('qaName')?.value?.trim() || '';
+  if(!name) return alert('Add a food name');
+
+  const cal = cleanNum(document.getElementById('qaCal')?.value);
+  const p = cleanNum(document.getElementById('qaP')?.value);
+  const c = cleanNum(document.getElementById('qaC')?.value);
+  const f = cleanNum(document.getElementById('qaF')?.value);
+
+  addEntryToDiary(activeMeal, {
+    title: name,
+    source: 'Quick add',
+    macros: { cal, p, c, f },
+    localOnly: !authKnown(),
+    time: new Date().toISOString()
+  });
+
+  ['qaName','qaCal','qaP','qaC','qaF'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+
+  openDiary();
+}
+
+// -------------------------------
+// Wire UI
+// -------------------------------
+document.addEventListener('click', (e) => {
+  const t = e.target;
+  if(t && t.classList && t.classList.contains('tab')){
+    setActiveMeal(t.dataset.meal);
+  }
+  if(t && t.classList && t.classList.contains('meal-btn')){
+    const meal = t.dataset.meal;
+    hideMealPicker();
+    addCurrentRecipeToMeal(meal);
+  }
+});
+
+document.getElementById('openDiary')?.addEventListener('click', openDiary);
+document.getElementById('closeDiary')?.addEventListener('click', closeDiary);
+
+document.getElementById('qaAdd')?.addEventListener('click', quickAddToActiveMeal);
+
+// Add to Diary from recipe: gate once per device/session unless they create account
+let diaryGateDismissed = lsGet('pickyDiaryGateDismissed', false);
+
+document.getElementById('addDiaryBtn')?.addEventListener('click', () => {
+  if(!authKnown() && !diaryGateDismissed){
+    showAuthGate();
+  } else {
+    showMealPicker();
+  }
+});
+
+document.getElementById('authLater')?.addEventListener('click', () => {
+  diaryGateDismissed = true;
+  lsSet('pickyDiaryGateDismissed', true);
+  hideAuthGate();
+  showMealPicker();
+});
+
+document.getElementById('authCreate')?.addEventListener('click', () => {
+  hideAuthGate();
+  showEmailCapture();
+});
+
+document.getElementById('authCancelEmail')?.addEventListener('click', () => {
+  hideEmailCapture();
+  diaryGateDismissed = true;
+  lsSet('pickyDiaryGateDismissed', true);
+  showMealPicker();
+});
+
+document.getElementById('authSaveEmail')?.addEventListener('click', () => {
+  const email = document.getElementById('authEmail')?.value?.trim() || '';
+  if(!email || !email.includes('@')) return alert('Enter a valid email');
+  setAuthEmail(email);
+  hideEmailCapture();
+  showMealPicker();
+});
+
+document.getElementById('mealCancel')?.addEventListener('click', hideMealPicker);
+
+updateDiarySub();
+
