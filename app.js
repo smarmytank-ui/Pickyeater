@@ -823,3 +823,52 @@ if(typeof renderDiary === 'function'){
     });
   };
 }
+
+
+// ===============================
+// v1.9.3 — Yesterday View (read-only)
+// ===============================
+let diaryView = 'today'; // 'today' | 'yesterday'
+
+function dateKeyForView(){
+  if(diaryView === 'yesterday'){
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return d.toISOString().slice(0,10);
+  }
+  return new Date().toISOString().slice(0,10);
+}
+
+// patch renderDiary to respect diaryView
+const _renderDiary_v193 = renderDiary;
+renderDiary = function(){
+  const originalTodayKey = todayKey;
+  todayKey = dateKeyForView;
+  _renderDiary_v193();
+  todayKey = originalTodayKey;
+
+  if(diaryView === 'yesterday'){
+    const ul = document.getElementById('diaryList');
+    if(ul){
+      const note = document.createElement('div');
+      note.className = 'readonly-note';
+      note.textContent = 'Yesterday is read-only. Just reflect.';
+      ul.prepend(note);
+    }
+  }
+};
+
+// wire toggle buttons
+document.getElementById('viewToday')?.addEventListener('click', ()=>{
+  diaryView = 'today';
+  document.getElementById('viewToday').classList.add('active');
+  document.getElementById('viewYesterday').classList.remove('active');
+  renderDiary();
+});
+
+document.getElementById('viewYesterday')?.addEventListener('click', ()=>{
+  diaryView = 'yesterday';
+  document.getElementById('viewYesterday').classList.add('active');
+  document.getElementById('viewToday').classList.remove('active');
+  renderDiary();
+});

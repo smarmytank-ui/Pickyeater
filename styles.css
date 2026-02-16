@@ -184,3 +184,9 @@ textarea{width:100%;min-height:120px;border:1px solid var(--border);border-radiu
 }
 .icon-btn.secondary{opacity:.8}
 .icon-btn.secondary:hover{opacity:1}
+
+/* v1.9.3 — Yesterday toggle */
+.diary-toggle{display:flex;gap:6px;margin-top:8px}
+.btn.small{padding:6px 10px;font-size:12px}
+.btn.active{background:rgba(43,122,99,.12);border-color:rgba(43,122,99,.4)}
+.readonly-note{font-size:12px;color:var(--muted);margin:8px 0}
