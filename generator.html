@@ -2,26 +2,50 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Recipe Generator</title>
-
-  <!-- FAVICONS -->
-  <link rel="icon" href="favicon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Favicons -->
+  <link rel="icon" href="favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="site.webmanifest">
-
-  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="container">
     <h1>Recipe Generator</h1>
-    <textarea id="ingredients" rows="6" placeholder="Ingredients (one per line)"></textarea>
-    <input type="number" id="servings" value="2" min="1" />
-    <button onclick="generateRecipe()">Generate</button>
-    <div id="result"></div>
+
+    <div class="card">
+      <label class="label" for="ingredients">Ingredients (one per line)</label>
+      <textarea id="ingredients" rows="7" placeholder="Example:
+chicken breast
+white rice
+olive oil
+salt
+pepper
+garlic"></textarea>
+
+      <div class="row">
+        <div class="field">
+          <label class="label" for="servings">Servings</label>
+          <input id="servings" type="number" min="1" max="8" value="2" />
+        </div>
+        <div class="field">
+          <label class="label" for="goal">Goal</label>
+          <select id="goal">
+            <option value="balanced" selected>Balanced</option>
+            <option value="high_protein">High Protein</option>
+            <option value="lower_calorie">Lower Calorie</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="primary-btn" onclick="generateRecipe()">Generate</button>
+      <div id="result" class="result"></div>
+    </div>
   </div>
+
   <script src="app.js"></script>
 </body>
 </html>
