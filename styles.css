@@ -1,5 +1,12 @@
-/* Picky Eater — Generator v1
-   Calm, clean, neutral UI. No gradients, no emojis, no flashy AI elements. */
+/* 
+Picky Eater Generator
+Version: v1.1.0 (Visual Polish Pass)
+Date: 2026-02-15
+
+Scope:
+- Visual & UX polish ONLY
+- No logic or behavior changes
+*/
 
 :root{
   --bg: #f6f7fb;
@@ -16,9 +23,10 @@
 
 *{ box-sizing:border-box; }
 html,body{ height:100%; }
+
 body{
   margin:0;
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
   background: var(--bg);
   color: var(--text);
 }
@@ -65,6 +73,7 @@ body{
   color: var(--muted);
   font-size: 13px;
 }
+
 .toggle{
   display:flex;
   align-items:center;
@@ -74,6 +83,7 @@ body{
   border: 1px solid var(--border);
   background: #fff;
 }
+
 .toggle input{ accent-color: #111827; }
 
 .content{
@@ -93,7 +103,7 @@ body{
 
 .card-title{
   font-weight: 650;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   letter-spacing: -0.01em;
 }
 
@@ -101,7 +111,7 @@ body{
   display:block;
   font-size: 13px;
   color: var(--muted);
-  margin: 8px 0 6px;
+  margin: 10px 0 6px;
 }
 
 textarea, select{
@@ -109,10 +119,19 @@ textarea, select{
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: #fff;
-  padding: 12px 12px;
+  padding: 12px;
   font-size: 14px;
   outline: none;
-  transition: box-shadow .15s ease, border-color .15s ease;
+}
+
+textarea{
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.5;
+}
+
+textarea::placeholder{
+  color: #9ca3af;
 }
 
 textarea:focus, select:focus{
@@ -120,52 +139,56 @@ textarea:focus, select:focus{
   border-color: #cbd5e1;
 }
 
-textarea{ resize: vertical; min-height: 110px; }
-
 .grid-2{
   display:grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 14px;
 }
 
 .actions{
   display:flex;
   align-items:center;
   gap: 12px;
-  margin-top: 14px;
+  margin-top: 18px;
 }
 
-.status{ color: var(--muted); font-size: 13px; }
+.status{
+  color: var(--muted);
+  font-size: 13px;
+}
 
 .btn{
   border: 1px solid var(--border);
   background: #fff;
   color: var(--text);
   border-radius: 12px;
-  padding: 10px 14px;
+  padding: 10px 16px;
   font-weight: 600;
   cursor:pointer;
-  transition: transform .05s ease, box-shadow .15s ease, background .15s ease;
 }
-.btn:active{ transform: translateY(1px); }
+
 .btn:hover{ background: var(--soft); }
+
 .btn.primary{
   background: #111827;
   color: #fff;
   border-color: #111827;
 }
-.btn.primary:hover{ background:#0b1220; }
+
+.btn.primary:hover{
+  background: #0e1525;
+}
 
 .result-card{
-  margin-top: 16px;
-  padding: 18px;
+  margin-top: 24px;
+  padding: 20px;
 }
 
 .result-header{
   display:flex;
   justify-content:space-between;
   align-items:flex-start;
-  gap: 12px;
+  gap: 16px;
 }
 
 .recipe-title{
@@ -179,16 +202,14 @@ textarea{ resize: vertical; min-height: 110px; }
   display:flex;
   flex-wrap:wrap;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 .pill{
-  display:inline-flex;
-  align-items:center;
   border: 1px solid var(--border);
   background: #fff;
   color: var(--muted);
-  padding: 6px 10px;
+  padding: 6px 12px;
   border-radius: 999px;
   font-size: 13px;
 }
@@ -196,99 +217,63 @@ textarea{ resize: vertical; min-height: 110px; }
 .divider{
   height: 1px;
   background: var(--border);
-  margin: 16px 0;
+  margin: 24px 0;
 }
 
 .cols{
   display:grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 18px;
 }
 
 .section-title{
   font-size: 13px;
   color: var(--muted);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   font-weight: 650;
 }
 
-.list{
-  margin: 0;
-  padding-left: 18px;
-}
-
 .list li{
-  margin: 8px 0;
-  line-height: 1.4;
-}
-
-.steps{
-  margin: 0;
-  padding-left: 18px;
-}
-
-.steps li{
   margin: 10px 0;
   line-height: 1.5;
 }
 
+.steps li{
+  margin: 12px 0;
+  line-height: 1.6;
+}
+
 .swaps{
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
 .swaps-toggle{
   width:100%;
   display:flex;
-  align-items:center;
   justify-content:space-between;
-  gap: 10px;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: #fff;
   padding: 10px 12px;
-  cursor:pointer;
-  font-weight: 650;
-  color: var(--text);
+  font-weight: 600;
 }
-.swaps-toggle:hover{ background: var(--soft); }
-.chev{ color: var(--muted); }
+
+.swaps-toggle:hover{
+  background: #f9fafb;
+}
 
 .swaps-panel{
   margin-top: 10px;
   border: 1px solid var(--border);
-  background: #fff;
+  background: #fafafa;
   border-radius: 12px;
   padding: 10px;
 }
 
 .swaps-row{
   display:flex;
-  align-items:center;
   justify-content:space-between;
-  gap: 10px;
-  padding: 10px 8px;
-  border-radius: 10px;
-}
-.swaps-row + .swaps-row{
-  border-top: 1px solid var(--border);
-}
-.swap-text{
-  color: var(--text);
-  font-size: 14px;
-}
-.swap-muted{
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 600;
-  padding: 6px 10px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-}
-
-.btn.apply{
-  padding: 8px 12px;
-  border-radius: 999px;
-  font-size: 13px;
+  padding: 12px 8px;
 }
 
 .nutrition-title{
@@ -297,34 +282,26 @@ textarea{ resize: vertical; min-height: 110px; }
   color: var(--muted);
   margin-bottom: 8px;
 }
+
 .nutrition-text{
-  color: var(--text);
   font-size: 14px;
   line-height: 1.5;
 }
+
 .save-hint{
   margin-top: 10px;
   color: var(--muted);
   font-size: 13px;
 }
 
-.footer{
-  margin-top: 16px;
-  color: var(--muted);
-  font-size: 12px;
-}
-
 .hidden{ display:none !important; }
 
 @media (max-width: 860px){
   .cols{ grid-template-columns: 1fr; }
-  .result-actions{ width: 100%; }
 }
 
 @media (max-width: 640px){
-  .topbar{ padding: 16px 16px; }
   .content{ padding: 0 16px 32px; }
   .grid-2{ grid-template-columns: 1fr; }
-  .actions{ flex-direction: column; align-items: stretch; }
   .btn{ width: 100%; }
 }
