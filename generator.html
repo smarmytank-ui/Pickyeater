@@ -1,69 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Recipe Generator</title>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recipe Generator</title>
+
+  <!-- FAVICONS -->
+  <link rel="icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
+
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<main class="container wide">
-
-<section class="card">
-<h1>Recipe Generator</h1>
-<label>Ingredients (one per line)</label>
-<textarea id="ingredients" rows="7">chicken breast
-white rice
-olive oil
-broccoli
-garlic
-salt
-black pepper</textarea>
-<div class="controls">
-<div>
-<label>Servings</label>
-<input id="servings" type="number" value="2" min="1">
-</div>
-<button onclick="generateRecipe()">Generate</button>
-</div>
-</section>
-
-<section id="recipe" class="card hidden">
-<header class="recipe-header">
-<h2 id="title"></h2>
-<div class="meta">
-<span id="meta-servings"></span>
-<span id="meta-calories"></span>
-<span id="meta-protein"></span>
-</div>
-</header>
-
-<div class="grid">
-<div>
-<h3>Ingredients</h3>
-<ul id="ingredient-list"></ul>
-</div>
-<div>
-<h3>Instructions</h3>
-<ol id="instructions"></ol>
-</div>
-</div>
-
-<section class="nutrition">
-<h3>Nutrition (per serving)</h3>
-<table><tbody id="nutrition"></tbody></table>
-</section>
-
-<section class="swap clean">
-<h3>Improve This Recipe</h3>
-<p class="swap-desc">Make small changes that reduce calories without changing flavor.</p>
-<button onclick="applyReduceCalories()">Reduce Calories</button>
-<div id="swap-result" class="swap-result hidden"></div>
-</section>
-
-</section>
-</main>
-
-<script src="app.js"></script>
+  <div class="container">
+    <h1>Recipe Generator</h1>
+    <textarea id="ingredients" rows="6" placeholder="Ingredients (one per line)"></textarea>
+    <input type="number" id="servings" value="2" min="1" />
+    <button onclick="generateRecipe()">Generate</button>
+    <div id="result"></div>
+  </div>
+  <script src="app.js"></script>
 </body>
 </html>
