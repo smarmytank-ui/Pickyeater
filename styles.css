@@ -1,4 +1,4 @@
-/* v1.7.1 — anchored calories */
+/* v1.8.0 — real nutrition map + beginner instructions (visuals locked) */
 :root{
   --bg:#f6f7fb;
   --card:#ffffff;
@@ -59,12 +59,16 @@ textarea{width:100%;min-height:120px;border:1px solid var(--border);border-radiu
 .ing-row{
   display:flex;justify-content:space-between;align-items:center;
   border:1px solid var(--border);border-radius:14px;padding:12px;margin:10px 0;
+  transition: box-shadow .2s ease, border-color .2s ease;
 }
+.ing-row.bump{border-color:rgba(43,122,99,.45);box-shadow:0 10px 18px rgba(43,122,99,.12)}
 .ing-left{display:flex;flex-direction:column;gap:2px}
 .ing-main{font-weight:800}
 .ing-sub{font-size:12px;color:var(--muted)}
 .swap-select{border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:13px;min-width:140px}
 .steps{padding-left:18px;margin:0}
+.steps li{margin:10px 0;line-height:1.55;transition: background .2s ease}
+.steps li.flash{background:var(--flash);border-radius:10px;padding:6px 8px}
 .save-row{margin:16px 0}
 .ownership{color:var(--muted);margin:6px 0 0}
 @media (max-width:560px){ h1{font-size:34px} }

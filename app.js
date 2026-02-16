@@ -1,17 +1,41 @@
-// v1.7.1 — anchored calories (trust-first)
-
+// v1.8.0 — Canonical nutrition table + real conversions + clearer instructions
 const $ = (id) => document.getElementById(id);
+
 let servings = 2;
 let state = null;
+let owned = false;
 
-// --- role detection
+// -------------------------------
+// Normalization + roles
+// -------------------------------
 const ROLE_RULES = [
-  [/\b(chicken|beef|turkey|pork|tofu|beans|lentils|egg|eggs)\b/i,'protein'],
-  [/\b(rice|pasta|potato|potatoes|quinoa)\b/i,'starch'],
+  [/\b(chicken|beef|ground beef|lean beef|turkey|pork|tofu|beans|lentils|egg|eggs)\b/i,'protein'],
+  [/\b(rice|pasta|potato|potatoes|quinoa|sweet potatoes)\b/i,'starch'],
   [/\b(onion|onions|garlic|shallot|scallion|green onion)\b/i,'aromatic']
 ];
 
-// --- base qty (serves 2)
+function canonName(raw){
+  const s = (raw||'').trim().toLowerCase();
+  if(s === 'potato') return 'potatoes';
+  if(s === 'onions') return 'onion';
+  if(s === 'scallion' || s === 'scallions') return 'green onion';
+  if(s === 'beef') return 'beef';
+  return s;
+}
+function roleFor(n){
+  for(const [r,role] of ROLE_RULES) if(r.test(n)) return role;
+  return 'veg';
+}
+function parseLines(s){
+  return (s||'').replace(/,+/g,'\n').split(/\n+/).map(x=>x.trim()).filter(Boolean);
+}
+function pretty(s){
+  return (s||'').split(' ').map(w=>w? w[0].toUpperCase()+w.slice(1) : w).join(' ');
+}
+
+// -------------------------------
+// Base quantities (for SERVES 2 defaults)
+// -------------------------------
 const BASE_QTY = {
   protein:{ v:1, u:'lb' },
   veg:{ v:2, u:'cups' },
@@ -19,180 +43,393 @@ const BASE_QTY = {
   aromatic:{ v:1, u:'medium' }
 };
 
-// --- calorie anchors per serving by meal archetype
-const CAL_ANCHORS = {
-  protein_veg: { min:420, max:560 },
-  protein_starch_veg: { min:520, max:680 },
-  plant_based: { min:360, max:520 }
+// -------------------------------
+// Swap catalog (qty + instruction patches)
+// -------------------------------
+const SWAP_CATALOG = {
+  protein: [
+    { name:'turkey',    unitOverride:'lb',   baseOverride:1,    instrPatchKey:'cook_meat' },
+    { name:'lean beef', unitOverride:'lb',   baseOverride:1,    instrPatchKey:'cook_meat' },
+    { name:'tofu',      unitOverride:'oz',   baseOverride:14,   instrPatchKey:'cook_tofu' },
+    { name:'beans',     unitOverride:'cups', baseOverride:2,    instrPatchKey:'warm_beans' },
+    { name:'eggs',      unitOverride:'eggs', baseOverride:4,    instrPatchKey:'cook_eggs' }
+  ],
+  starch: [
+    { name:'rice',           unitOverride:'cups',   baseOverride:1.5,  instrPatchKey:'cook_rice' },
+    { name:'pasta',          unitOverride:'cups',   baseOverride:1.5,  instrPatchKey:'cook_pasta' },
+    { name:'sweet potatoes', unitOverride:'medium', baseOverride:2,    instrPatchKey:'cook_potato' },
+    { name:'quinoa',         unitOverride:'cups',   baseOverride:1.25, instrPatchKey:'cook_quinoa' }
+  ],
+  aromatic: [
+    { name:'green onion', unitOverride:'cups',   baseOverride:0.5, instrPatchKey:'add_aromatic' },
+    { name:'shallot',     unitOverride:'medium', baseOverride:1,   instrPatchKey:'add_aromatic' },
+    { name:'garlic',      unitOverride:'cloves', baseOverride:2,   instrPatchKey:'add_garlic' },
+    { name:'skip it',     unitOverride:'',       baseOverride:0,   instrPatchKey:'skip_aromatic' }
+  ],
+  veg: [
+    { name:'zucchini',    unitOverride:'cups', baseOverride:2,   instrPatchKey:'cook_veg' },
+    { name:'green beans', unitOverride:'cups', baseOverride:2,   instrPatchKey:'cook_veg' },
+    { name:'carrots',     unitOverride:'cups', baseOverride:1.5, instrPatchKey:'cook_veg' },
+    { name:'spinach',     unitOverride:'cups', baseOverride:3,   instrPatchKey:'cook_veg' }
+  ]
 };
 
-// --- macro signals (relative, dampened)
-const MACRO_SIGNALS = {
-  protein: { p: 1.0, c: 0.2, f: 0.5 },
-  starch:  { p: 0.2, c: 1.0, f: 0.1 },
-  veg:     { p: 0.1, c: 0.3, f: 0.05 },
-  aromatic:{ p: 0.05,c: 0.1, f: 0.0 }
+// -------------------------------
+// Canonical nutrition table (per 100g)
+// Values are standard reference approximations (USDA-consistent).
+// -------------------------------
+const NUTRITION_PER_100G = {
+  // proteins (cooked/typical)
+  'chicken':      { cal:165, p:31.0, c:0.0,  f:3.6 },
+  'turkey':       { cal:170, p:29.0, c:0.0,  f:6.0 },
+  'lean beef':    { cal:176, p:26.0, c:0.0,  f:10.0 },
+  'ground beef':  { cal:176, p:26.0, c:0.0,  f:10.0 },
+  'beef':         { cal:176, p:26.0, c:0.0,  f:10.0 },
+  'pork':         { cal:242, p:27.0, c:0.0,  f:14.0 },
+  'tofu':         { cal:144, p:15.7, c:3.9,  f:8.7 },
+  'beans':        { cal:127, p:8.7,  c:22.8, f:0.5 }, // cooked beans
+  'lentils':      { cal:116, p:9.0,  c:20.1, f:0.4 }, // cooked lentils
+  'eggs':         { cal:143, p:12.6, c:0.7,  f:9.5 }, // whole egg
+
+  // starches (cooked)
+  'rice':         { cal:130, p:2.7,  c:28.2, f:0.3 },
+  'pasta':        { cal:158, p:5.8,  c:30.9, f:0.9 },
+  'quinoa':       { cal:120, p:4.4,  c:21.3, f:1.9 },
+  'potatoes':     { cal:87,  p:1.9,  c:20.1, f:0.1 },
+  'sweet potatoes':{cal:86,  p:1.6,  c:20.1, f:0.1 },
+
+  // vegetables
+  'broccoli':     { cal:34,  p:2.8,  c:7.0,  f:0.4 },
+  'zucchini':     { cal:17,  p:1.2,  c:3.1,  f:0.3 },
+  'green beans':  { cal:31,  p:1.8,  c:7.1,  f:0.1 },
+  'carrots':      { cal:41,  p:0.9,  c:9.6,  f:0.2 },
+  'spinach':      { cal:23,  p:2.9,  c:3.6,  f:0.4 },
+
+  // aromatics
+  'onion':        { cal:40,  p:1.1,  c:9.3,  f:0.1 },
+  'green onion':  { cal:32,  p:1.8,  c:7.3,  f:0.2 },
+  'shallot':      { cal:72,  p:2.5,  c:16.8, f:0.1 },
+  'garlic':       { cal:149, p:6.4,  c:33.1, f:0.5 },
+  'skip it':      { cal:0,   p:0.0,  c:0.0,  f:0.0 }
 };
 
-// --- swaps (qty only; calories anchored separately)
-const SWAPS = {
-  protein:['turkey','lean beef','tofu','beans','eggs'],
-  veg:['zucchini','green beans','carrots','spinach'],
-  starch:['rice','pasta','sweet potatoes','quinoa'],
-  aromatic:['green onion','shallot','garlic','skip it']
+const ROLE_FALLBACK_100G = {
+  protein:  { cal:165, p:25.0, c:0.0,  f:6.0 },
+  starch:   { cal:120, p:3.0,  c:25.0, f:1.0 },
+  veg:      { cal:30,  p:2.0,  c:6.0,  f:0.3 },
+  aromatic: { cal:40,  p:1.0,  c:9.0,  f:0.1 }
 };
 
-function canonName(s){
-  s = (s||'').toLowerCase().trim();
-  if(s === 'potato') return 'potatoes';
-  if(s === 'onions') return 'onion';
-  if(s === 'scallions') return 'green onion';
-  return s;
+function nutrientFor(name, role){
+  const key = canonName(name);
+  return NUTRITION_PER_100G[key] || ROLE_FALLBACK_100G[role] || ROLE_FALLBACK_100G.veg;
 }
-function roleFor(n){
-  for(const [r,v] of ROLE_RULES) if(r.test(n)) return v;
-  return 'veg';
-}
-function parseLines(s){
-  return (s||'').replace(/,+/g,'\n').split(/\n+/).map(x=>x.trim()).filter(Boolean);
-}
-function pretty(s){ return s.split(' ').map(w=>w[0].toUpperCase()+w.slice(1)).join(' '); }
 
+// -------------------------------
+// Quantity conversions → grams
+// -------------------------------
+const UNIT_TO_GRAMS = {
+  lb: 453.592,
+  oz: 28.3495,
+  eggs: 50,
+  cloves: 3
+};
+
+const GRAMS_PER_UNIT = {
+  // cups (approx)
+  'broccoli': { cups: 91 },
+  'zucchini': { cups: 124 },
+  'green beans': { cups: 110 },
+  'carrots': { cups: 128 },
+  'spinach': { cups: 30 },
+  'rice': { cups: 158 },
+  'pasta': { cups: 140 },
+  'quinoa': { cups: 185 },
+  'potatoes': { cups: 150 },
+  'beans': { cups: 172 },
+  'lentils': { cups: 198 },
+  'green onion': { cups: 50 },
+
+  // medium items
+  'onion': { medium: 110 },
+  'shallot': { medium: 44 },
+  'sweet potatoes': { medium: 130 }
+};
+
+function gramsFor(name, unit, qty){
+  const n = canonName(name);
+  if(n === 'skip it' || qty === 0) return 0;
+
+  if(UNIT_TO_GRAMS[unit] != null) return qty * UNIT_TO_GRAMS[unit];
+
+  const map = GRAMS_PER_UNIT[n] || {};
+  if(map[unit] != null) return qty * map[unit];
+
+  // conservative fallbacks
+  if(unit === 'cups') return qty * 120;
+  if(unit === 'medium') return qty * 110;
+
+  return 0;
+}
+
+// -------------------------------
+// Beginner-friendly instructions
+// -------------------------------
+const INSTR = {
+  prep: 'Wash and prep everything: chop veggies into bite-sized pieces.',
+  cook_meat:  'Heat a large pan on medium heat. Add the meat. Break it up (if ground) and cook until no pink remains.',
+  cook_tofu:  'Press tofu with paper towels for 2 minutes, then cube it. Heat a pan on medium and cook tofu until lightly browned.',
+  warm_beans: 'If using canned beans, rinse and drain. Warm beans in a pan for 2–3 minutes and season lightly.',
+  cook_eggs:  'Crack eggs into a bowl, whisk with a pinch of salt, then cook on medium-low until set.',
+  cook_rice:  'Cook rice (or use microwave rice). Fluff with a fork when done.',
+  cook_pasta: 'Boil water, add pasta, and cook until tender. Drain and set aside.',
+  cook_quinoa:'Rinse quinoa. Simmer until water is absorbed, then rest 5 minutes and fluff.',
+  cook_potato:'Cut potatoes into bite-sized pieces. Boil 10–12 minutes (or roast) until fork-tender.',
+  add_aromatic:'Add chopped onion/shallot/green onion to the pan and cook 1–2 minutes until fragrant.',
+  add_garlic: 'Add garlic last (30–45 seconds) so it doesn’t burn.',
+  skip_aromatic:'Skip aromatics. Season with salt/pepper instead.',
+  cook_veg:   'Add veggies and cook until bright and tender-crisp (3–6 minutes depending on veggie).',
+  combine: 'Combine everything. Taste. Add salt/pepper. Serve.'
+};
+
+function buildInstructions(){
+  const steps = [];
+  steps.push({ key:'prep', text: INSTR.prep });
+
+  const aromatic = state.ingredients.find(i=>i.role==='aromatic');
+  if(aromatic){
+    if(aromatic.name === 'skip it') steps.push({ key:'aromatic', text: INSTR.skip_aromatic });
+    else if(aromatic.name === 'garlic') steps.push({ key:'aromatic', text: INSTR.add_garlic });
+    else steps.push({ key:'aromatic', text: INSTR.add_aromatic });
+  }
+
+  const protein = state.ingredients.find(i=>i.role==='protein' && i.name!=='skip it');
+  if(protein){
+    if(protein.name.includes('tofu')) steps.push({ key:'protein', text: INSTR.cook_tofu });
+    else if(protein.name.includes('bean') || protein.name.includes('lentil')) steps.push({ key:'protein', text: INSTR.warm_beans });
+    else if(protein.name.includes('egg')) steps.push({ key:'protein', text: INSTR.cook_eggs });
+    else steps.push({ key:'protein', text: INSTR.cook_meat });
+  }
+
+  const starch = state.ingredients.find(i=>i.role==='starch' && i.name!=='skip it');
+  if(starch){
+    if(starch.name.includes('rice')) steps.push({ key:'starch', text: INSTR.cook_rice });
+    else if(starch.name.includes('pasta')) steps.push({ key:'starch', text: INSTR.cook_pasta });
+    else if(starch.name.includes('quinoa')) steps.push({ key:'starch', text: INSTR.cook_quinoa });
+    else steps.push({ key:'starch', text: INSTR.cook_potato });
+  }
+
+  steps.push({ key:'veg', text: INSTR.cook_veg });
+  steps.push({ key:'combine', text: INSTR.combine });
+  return steps;
+}
+
+// -------------------------------
+// App state + rendering
+// -------------------------------
 function normalize(names){
-  return names.map(n=>{
-    const name = canonName(n);
+  return names.map(raw=>{
+    const name = canonName(raw);
     const role = roleFor(name);
     return {
       id: crypto.randomUUID(),
-      name, role,
-      base:{...BASE_QTY[role]}
+      name,
+      role,
+      base: { ...BASE_QTY[role] },
+      swapMeta: null
     };
   });
 }
 
-function qtyStr(i){
-  const m = servings/2;
-  const v = i.base.v * m;
-  if(!i.base.u || v===0) return '';
-  const n = Math.abs(v - Math.round(v)) < 1e-9 ? Math.round(v) : v.toFixed(1);
-  return `${n} ${i.base.u}`;
+function qtyStr(ing){
+  const m = servings / 2;
+  const val = ing.base.v * m;
+  if(!ing.base.u || val === 0) return '';
+  const nice = (Math.abs(val - Math.round(val)) < 1e-9) ? String(Math.round(val)) : val.toFixed(1);
+  return `${nice} ${ing.base.u}`;
 }
 
 function titleFrom(ings){
   const protein = ings.find(i=>i.role==='protein' && i.name!=='skip it');
   const hasStarch = ings.some(i=>i.role==='starch' && i.name!=='skip it');
+  const style = hasStarch ? 'Dinner' : 'Plate';
   const main = protein ? pretty(protein.name) : 'Veggie';
-  return `Simple ${main} ${hasStarch ? 'Dinner' : 'Plate'}`;
+  return `Simple ${main} ${style}`;
 }
 
-// --- anchored calories
-function computeAnchoredCalories(){
-  const hasProtein = state.ingredients.some(i=>i.role==='protein' && i.name!=='skip it');
-  const hasStarch = state.ingredients.some(i=>i.role==='starch' && i.name!=='skip it');
-  const isPlant = state.ingredients.every(i=>i.role!=='protein' || ['tofu','beans','lentils'].includes(i.name));
+function computeMacrosPerServing(){
+  let cal=0, p=0, c=0, f=0;
 
-  let anchor;
-  if(isPlant) anchor = CAL_ANCHORS.plant_based;
-  else if(hasProtein && hasStarch) anchor = CAL_ANCHORS.protein_starch_veg;
-  else anchor = CAL_ANCHORS.protein_veg;
+  state.ingredients.forEach(ing=>{
+    const m = servings/2;
+    const qty = ing.base.v * m;
+    const grams = gramsFor(ing.name, ing.base.u, qty);
+    const n = nutrientFor(ing.name, ing.role);
 
-  // nudge within range based on swaps count
-  const swapsCount = state.ingredients.filter(i=>i.name && i._swapped).length;
-  const span = anchor.max - anchor.min;
-  const nudge = Math.min(span*0.2, swapsCount*span*0.08);
-  const cal = anchor.min + span*0.45 + nudge;
-
-  return Math.round(cal);
-}
-
-// --- macro direction (relative, dampened)
-function computeMacroDirection(){
-  let p=0,c=0,f=0;
-  state.ingredients.forEach(i=>{
-    const m = MACRO_SIGNALS[i.role];
-    p += m.p; c += m.c; f += m.f;
+    cal += n.cal * (grams/100);
+    p   += n.p   * (grams/100);
+    c   += n.c   * (grams/100);
+    f   += n.f   * (grams/100);
   });
-  const norm = Math.max(p,c,f,1);
-  return {
-    p: Math.round((p/norm)*100),
-    c: Math.round((c/norm)*100),
-    f: Math.round((f/norm)*100)
-  };
+
+  const per = { cal: cal/servings, p: p/servings, c: c/servings, f: f/servings };
+
+  $('calories').textContent = `≈ ${Math.round(per.cal)} cal/serv`;
+  $('protein').textContent  = `Protein ${Math.round(per.p)}g`;
+  $('carbs').textContent    = `Carbs ${Math.round(per.c)}g`;
+  $('fat').textContent      = `Fat ${Math.round(per.f)}g`;
+}
+
+function bump(el, cls='bump', ms=450){
+  el.classList.add(cls);
+  setTimeout(()=>el.classList.remove(cls), ms);
+}
+function flashStepByKey(key){
+  const lis = $('instructionsList').querySelectorAll('li');
+  const idx = state.steps.findIndex(s=>s.key===key);
+  if(idx < 0 || !lis[idx]) return;
+  lis[idx].classList.add('flash');
+  setTimeout(()=>lis[idx].classList.remove('flash'), 520);
+}
+function setOwned(){
+  owned = true;
+  $('saveRow').classList.remove('hidden');
 }
 
 function render(){
   $('servingsVal').textContent = servings;
   $('recipeTitle').textContent = state.title;
 
-  // macros
-  const cal = computeAnchoredCalories();
-  $('calories').textContent = `≈ ${cal} cal/serv`;
+  // Ingredients
+  const ul = $('ingredientsList');
+  ul.innerHTML = '';
+  state.ingredients.forEach((ing)=>{
+    const li = document.createElement('li');
+    li.className = 'ing-row';
 
-  const md = computeMacroDirection();
-  $('protein').textContent = `Protein ${md.p}%`;
-  $('carbs').textContent   = `Carbs ${md.c}%`;
-  $('fat').textContent     = `Fat ${md.f}%`;
+    const left = document.createElement('div');
+    left.className = 'ing-left';
 
-  // ingredients
-  const ul = $('ingredientsList'); ul.innerHTML='';
-  state.ingredients.forEach(i=>{
-    const li = document.createElement('li'); li.className='ing-row';
-    const left = document.createElement('div'); left.className='ing-left';
-    const main = document.createElement('div'); main.className='ing-main';
-    const q = qtyStr(i);
-    main.textContent = q ? `${q} ${pretty(i.name)}` : `${pretty(i.name)}`;
-    const sub = document.createElement('div'); sub.className='ing-sub'; sub.textContent = i.role.toUpperCase();
-    left.append(main,sub);
+    const main = document.createElement('div');
+    main.className = 'ing-main';
+    const q = qtyStr(ing);
+    main.textContent = q ? `${q} ${pretty(ing.name)}` : `${pretty(ing.name)}`;
 
-    const sel = document.createElement('select'); sel.className='swap-select';
-    sel.innerHTML = `<option value="">Swap</option>` + (SWAPS[i.role]||[]).map(s=>`<option>${s}</option>`).join('');
+    const sub = document.createElement('div');
+    sub.className = 'ing-sub';
+    sub.textContent = ing.role.toUpperCase();
+
+    left.append(main, sub);
+
+    const sel = document.createElement('select');
+    sel.className = 'swap-select';
+
+    const opts = SWAP_CATALOG[ing.role] || [];
+    sel.innerHTML = `<option value="">Swap</option>` + opts.map(o=>`<option value="${o.name}">${pretty(o.name)}</option>`).join('');
+
     sel.onchange = ()=>{
-      if(!sel.value) return;
-      i.name = canonName(sel.value);
-      i._swapped = true;
-      $('saveRow').classList.remove('hidden');
-      state.title = titleFrom(state.ingredients);
-      render();
-      sel.value='';
+      const chosen = sel.value;
+      if(!chosen) return;
+      const opt = opts.find(o=>o.name===chosen);
+      applySwap(ing.id, opt);
+      sel.value = '';
+      bump(li);
+      setOwned();
+      // flash the step most likely affected
+      flashStepByKey(ing.role);
     };
 
-    li.append(left,sel);
+    li.append(left, sel);
     ul.appendChild(li);
   });
 
-  // instructions
-  const ol = $('instructionsList'); ol.innerHTML='';
-  [
-    'Prep ingredients and season lightly.',
-    'Cook protein until done; cook starch if included.',
-    'Cook veggies until tender-crisp.',
-    'Combine everything, adjust seasoning, and serve.'
-  ].forEach(t=>{
-    const li = document.createElement('li'); li.textContent=t; ol.appendChild(li);
+  // Instructions
+  const ol = $('instructionsList');
+  ol.innerHTML = '';
+  state.steps.forEach(s=>{
+    const li = document.createElement('li');
+    li.textContent = s.text;
+    ol.appendChild(li);
   });
+
+  computeMacrosPerServing();
 }
 
-// events
+function applySwap(ingId, opt){
+  const ing = state.ingredients.find(i=>i.id===ingId);
+  if(!ing || !opt) return;
+
+  ing.name = canonName(opt.name);
+
+  if(typeof opt.baseOverride === 'number') ing.base.v = opt.baseOverride;
+  if(typeof opt.unitOverride === 'string') ing.base.u = opt.unitOverride;
+
+  if(ing.name === 'skip it'){
+    ing.base.v = 0;
+    ing.base.u = '';
+  }
+
+  state.title = titleFrom(state.ingredients);
+  state.steps = buildInstructions();
+
+  render();
+}
+
+// -------------------------------
+// Events
+// -------------------------------
 $('generateBtn').onclick = ()=>{
   const raw = parseLines($('ingredientsInput').value);
   if(!raw.length) return alert('Add ingredients');
+
   const ingredients = normalize(raw);
-  state = { ingredients, title:titleFrom(ingredients) };
+  state = { ingredients, title: titleFrom(ingredients), steps: [] };
+  state.steps = buildInstructions();
+
+  owned = false;
+  $('saveRow').classList.add('hidden');
+  $('saveBtn').textContent = '⭐ Save to Favorites';
+
   $('inputCard').classList.add('hidden');
   $('resultCard').classList.remove('hidden');
-  $('saveRow').classList.add('hidden');
   render();
 };
-$('incServ').onclick = ()=>{ servings=Math.min(8,servings+1); $('saveRow').classList.remove('hidden'); render(); };
-$('decServ').onclick = ()=>{ servings=Math.max(1,servings-1); $('saveRow').classList.remove('hidden'); render(); };
-$('saveBtn').onclick = ()=>{
-  const saved = JSON.parse(localStorage.getItem('pickyFavorites')||'[]');
-  saved.push({ title:state.title, servings, ingredients:state.ingredients, savedAt:new Date().toISOString() });
-  localStorage.setItem('pickyFavorites', JSON.stringify(saved));
-  $('saveBtn').textContent='✓ Saved';
+
+$('incServ').onclick = ()=>{
+  servings = Math.min(8, servings+1);
+  setOwned();
+  render();
 };
+$('decServ').onclick = ()=>{
+  servings = Math.max(1, servings-1);
+  setOwned();
+  render();
+};
+
+$('saveBtn').onclick = ()=>{
+  if(!state) return;
+  const saved = JSON.parse(localStorage.getItem('pickyFavorites')||'[]');
+  saved.push({
+    title: state.title,
+    servings,
+    ingredients: state.ingredients,
+    steps: state.steps,
+    macros_per_serving: {
+      calories: $('calories').textContent,
+      protein: $('protein').textContent,
+      carbs: $('carbs').textContent,
+      fat: $('fat').textContent
+    },
+    savedAt: new Date().toISOString()
+  });
+  localStorage.setItem('pickyFavorites', JSON.stringify(saved));
+  $('saveBtn').textContent = '✓ Saved';
+};
+
 $('backBtn').onclick = ()=>{
-  servings=2; state=null;
+  servings = 2;
+  state = null;
+  owned = false;
   $('resultCard').classList.add('hidden');
   $('inputCard').classList.remove('hidden');
 };
