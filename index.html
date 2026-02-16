@@ -9,7 +9,7 @@
 <body>
 <div class="page">
 
-<header class="topbar hero-bg">
+<header class="topbar">
   <div class="brand">
     <div class="brand-mark"></div>
     <div>
@@ -33,7 +33,7 @@
   <button id="generateBtn" class="btn primary full">Generate recipe</button>
 </section>
 
-<section id="resultCard" class="card hidden">
+<section id="resultCard" class="card hidden" aria-live="polite">
   <div class="result-header">
     <div>
       <div id="recipeTitle" class="recipe-title"></div>
@@ -42,18 +42,19 @@
         <span class="pill">Editable with swaps</span>
         <span class="pill servings">
           Serves
-          <button class="step" id="decServ">–</button>
+          <button class="step" id="decServ" aria-label="Decrease servings">–</button>
           <strong id="servingsVal">2</strong>
-          <button class="step" id="incServ">+</button>
+          <button class="step" id="incServ" aria-label="Increase servings">+</button>
         </span>
       </div>
 
-      <div id="macroRow" class="macro-row">
-        <span id="calories">≈ 0 cal</span>
+      <div class="macro-row" aria-label="Macro estimates per serving">
+        <span id="calories">≈ 0 cal/serv</span>
         <span id="protein">Protein 0g</span>
         <span id="carbs">Carbs 0g</span>
         <span id="fat">Fat 0g</span>
       </div>
+      <div class="macro-note">≈ estimates per serving — updates when you swap or change servings.</div>
     </div>
   </div>
 
