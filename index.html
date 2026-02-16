@@ -3,21 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Picky Eater — Generator v1.2</title>
+  <title>Picky Eater — Make It Yours</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <div class="page">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-mark" aria-hidden="true"></div>
+        <div class="brand-mark"></div>
         <div class="brand-text">
           <div class="brand-title">Picky Eater</div>
-          <div class="brand-subtitle">Recipe Generator</div>
+          <div class="brand-subtitle">Make it yours</div>
         </div>
       </div>
-
-      <!-- Demo-only toggle (safe to remove later) -->
       <div class="acct">
         <label class="toggle">
           <input id="isProToggle" type="checkbox" />
@@ -27,149 +25,114 @@
     </header>
 
     <main class="content">
-      <!-- HERO: orientation + premium confidence -->
-      <section class="hero" aria-label="Recipe generator introduction">
+      <!-- HERO -->
+      <section class="hero">
         <div class="hero-inner">
           <div class="hero-copy">
-            <div class="hero-eyebrow">Make it yours</div>
-            <h1 class="hero-title">Build a recipe you’ll actually eat.</h1>
+            <div class="hero-eyebrow">Your food, your way</div>
+            <h1 class="hero-title">Create recipes you actually want to eat.</h1>
             <p class="hero-subtitle">
-              Drop in ingredients you like. Generate a simple recipe. Then use <span class="accent">Simple Swaps</span> to
-              remove what you don’t and make it yours.
+              Start from ingredients you like <strong>or</strong> bring a recipe you almost love.
+              Then use <span class="accent">Simple Swaps</span> to make it yours.
             </p>
-
-            <div class="hero-steps" aria-label="How it works">
-              <div class="step">
-                <div class="step-badge">1</div>
-                <div class="step-text">Add what you like</div>
-              </div>
-              <div class="step">
-                <div class="step-badge">2</div>
-                <div class="step-text">Generate a recipe</div>
-              </div>
-              <div class="step">
-                <div class="step-badge">3</div>
-                <div class="step-text">Swap to make it yours</div>
-              </div>
+            <div class="hero-cta">
+              <button id="startGenerate" class="btn primary">Build from ingredients</button>
+              <button id="startImport" class="btn ghost">Start from a recipe</button>
             </div>
-
             <div class="hero-note">
-              Swaps are optional — but they’re the superpower.
+              Save your version. Share it later with other picky eaters.
             </div>
           </div>
-
           <div class="hero-card">
-            <div class="hero-card-title">Quick start</div>
-            <div class="hero-card-body">
-              <div class="mini-label">Try:</div>
-              <div class="mini-list">
-                chicken<br/>
-                rice<br/>
-                broccoli<br/>
-                garlic
-              </div>
-              <div class="mini-foot">
-                Tip: If you don’t like something, generate first — then swap.
-              </div>
+            <div class="hero-card-title">How it works</div>
+            <div class="hero-steps">
+              <div class="step"><span>1</span>Add or paste a recipe</div>
+              <div class="step"><span>2</span>Swap what you don’t like</div>
+              <div class="step"><span>3</span>Save your version</div>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="card input-card">
-        <div class="card-title">Generate a simple recipe</div>
+      <!-- MODE SELECT -->
+      <section class="mode-switch">
+        <button id="modeGenerate" class="mode active">Build from ingredients</button>
+        <button id="modeImport" class="mode">Start from a recipe</button>
+      </section>
 
+      <!-- GENERATE MODE -->
+      <section id="generateSection" class="card input-card">
+        <div class="card-title">Build from ingredients</div>
         <div class="field">
-          <label for="ingredientsInput">Ingredients (one per line)</label>
-          <textarea id="ingredientsInput" rows="6" placeholder="Enter ingredients you like (one per line)&#10;chicken&#10;rice&#10;broccoli"></textarea>
+          <label>Ingredients (one per line)</label>
+          <textarea id="ingredientsInput" placeholder="chicken&#10;rice&#10;broccoli"></textarea>
         </div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label for="servingsSelect">Servings</label>
-            <select id="servingsSelect">
-              <option value="1">1</option>
-              <option value="2" selected>2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="goalSelect">Goal</label>
-            <select id="goalSelect">
-              <option value="balanced" selected>Balanced</option>
-              <option value="lower_cal">Lower Calorie</option>
-              <option value="higher_protein">Higher Protein</option>
-            </select>
-          </div>
-        </div>
-
         <div class="actions">
-          <button id="generateBtn" class="btn primary">Generate Recipe</button>
-          <div id="statusLine" class="status"></div>
+          <button id="generateBtn" class="btn primary">Generate recipe</button>
         </div>
       </section>
 
-      <section id="resultCard" class="card result-card hidden" aria-live="polite">
+      <!-- IMPORT MODE -->
+      <section id="importSection" class="card input-card hidden">
+        <div class="card-title">Start from a recipe</div>
+        <div class="import-help">
+          Paste a recipe you like. Don’t worry if it’s messy — you can fix it with swaps.
+        </div>
+        <div class="field">
+          <label>Recipe name (optional)</label>
+          <input id="importTitle" placeholder="Grandma’s Chicken Casserole" />
+        </div>
+        <div class="field">
+          <label>Ingredients (required, one per line)</label>
+          <textarea id="importIngredients" placeholder="2 chicken breasts&#10;cream of mushroom soup&#10;rice"></textarea>
+        </div>
+        <div class="field">
+          <label>Instructions (optional)</label>
+          <textarea id="importInstructions" placeholder="Preheat oven to 375°F..."></textarea>
+        </div>
+        <div class="actions">
+          <button id="importBtn" class="btn primary">Make this recipe mine</button>
+        </div>
+      </section>
+
+      <!-- RESULT -->
+      <section id="resultCard" class="card result-card hidden">
         <div class="result-header">
           <div>
-            <div id="recipeTitle" class="recipe-title">—</div>
-            <div class="pill-row" id="pillRow">
-              <span class="pill" id="pillServings">Servings · —</span>
-              <span class="pill" id="pillCalories">~— Calories</span>
-              <span class="pill" id="pillProtein">~—g Protein</span>
+            <div id="recipeTitle" class="recipe-title"></div>
+            <div class="pill-row">
+              <span class="pill">Editable with swaps</span>
             </div>
           </div>
-          <div class="result-actions">
-            <button id="saveBtn" class="btn">Save</button>
-          </div>
+          <button id="saveBtn" class="btn">Save</button>
         </div>
 
         <div class="divider"></div>
 
         <div class="cols">
-          <div class="col">
+          <div>
             <div class="section-title">Ingredients</div>
             <ul id="ingredientsList" class="list"></ul>
-
-            <!-- Swaps panel lives DIRECTLY under Ingredients -->
             <div id="swapsWrap" class="swaps hidden">
-              <button id="swapsToggle" class="swaps-toggle" aria-expanded="false">
-                <span>Simple Swaps</span>
-                <span class="swap-hint">Make it yours</span>
-                <span class="chev">▾</span>
+              <button id="swapsToggle" class="swaps-toggle">
+                Simple Swaps <span class="swap-hint">Make it yours</span>
               </button>
               <div id="swapsPanel" class="swaps-panel hidden">
-                <div class="swaps-topline">
-                  Swap out anything you don’t like — no regeneration.
-                </div>
-                <div id="swapsList" class="swaps-list"></div>
+                <div id="swapsList"></div>
               </div>
             </div>
           </div>
-
-          <div class="col">
+          <div>
             <div class="section-title">Instructions</div>
             <ol id="instructionsList" class="steps"></ol>
           </div>
         </div>
 
         <div class="divider"></div>
-
-        <div class="nutrition">
-          <div class="nutrition-title">Nutrition (approximate)</div>
-          <div id="nutritionText" class="nutrition-text">—</div>
-          <div id="saveHint" class="save-hint"></div>
-          <div class="momentum">That was easy. Want to try another? Adjust ingredients and generate again.</div>
+        <div class="momentum">
+          This is your version now. Save it — and share it when you’re ready.
         </div>
       </section>
-
-      <footer class="footer">
-        <div class="footer-note">
-          v1.2: premium entry + swaps emphasized (logic unchanged).
-        </div>
-      </footer>
     </main>
   </div>
 
