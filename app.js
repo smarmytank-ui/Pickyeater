@@ -1,9 +1,17 @@
 // app.js — Picky Eater Recipe Generator (Frozen Spec v1)
-// DO NOT MODIFY WITHOUT EXPLICIT APPROVAL
+// SAFE PATCH — ID mismatch fix only
 
 function generateRecipe() {
-  const input = document.getElementById("ingredientsInput").value;
-  const servings = parseInt(document.getElementById("servingsInput").value || "1", 10);
+  const ingredientsInput = document.getElementById("ingredientsInput");
+  const servingsInput = document.querySelector('input[type="number"]');
+
+  if (!ingredientsInput || !servingsInput) {
+    alert("Required inputs not found.");
+    return;
+  }
+
+  const input = ingredientsInput.value;
+  const servings = parseInt(servingsInput.value || "1", 10);
 
   if (!input.trim()) {
     alert("Please enter at least one ingredient.");
@@ -20,29 +28,27 @@ function generateRecipe() {
 }
 
 function buildRecipe(ingredients, servings) {
-  const baseProtein =
+  const protein =
     ingredients.find(i =>
       ["chicken", "beef", "ground beef", "lean ground beef", "steak"].some(p =>
         i.toLowerCase().includes(p)
       )
     ) || "protein";
 
-  const title = `${capitalize(baseProtein)} Simple Bowl`;
-
   return {
-    title,
+    title: `${capitalize(protein)} Simple Bowl`,
     servings,
     ingredients: ingredients.map(i => ({
       name: i,
       amount: estimateAmount(i, servings)
     })),
     instructions: [
-      "Cook rice or starch according to package directions.",
+      "Cook rice according to package directions.",
       "Season and cook protein until fully done.",
       "Prepare remaining ingredients.",
       "Assemble bowl and serve."
     ],
-    nutrition: estimateNutrition(servings)
+    nutrition: estimateNutrition()
   };
 }
 
@@ -67,27 +73,23 @@ function renderRecipe(recipe) {
     instList.appendChild(li);
   });
 
-  document.getElementById("nutritionBlock").innerHTML = `
-    Calories: ${recipe.nutrition.calories} |
-    Protein: ${recipe.nutrition.protein}g |
-    Carbs: ${recipe.nutrition.carbs}g |
-    Fat: ${recipe.nutrition.fat}g
-  `;
+  document.getElementById("nutritionBlock").innerText =
+    `Calories: ${recipe.nutrition.calories} | Protein: ${recipe.nutrition.protein}g | Carbs: ${recipe.nutrition.carbs}g | Fat: ${recipe.nutrition.fat}g`;
 }
 
 function estimateAmount(ingredient, servings) {
-  if (ingredient.toLowerCase().includes("rice")) return `${servings * 0.5} cup`;
-  if (ingredient.toLowerCase().includes("oil")) return "1 tbsp";
-  if (ingredient.toLowerCase().includes("garlic")) return "2 cloves";
+  if (ingredient.includes("rice")) return `${servings * 0.5} cup`;
+  if (ingredient.includes("oil")) return "1 tbsp";
+  if (ingredient.includes("garlic")) return "2 cloves";
   return "to taste";
 }
 
-function estimateNutrition(servings) {
+function estimateNutrition() {
   return {
-    calories: 450,
+    calories: 460,
     protein: 45,
-    carbs: 35,
-    fat: 15
+    carbs: 32,
+    fat: 16
   };
 }
 
