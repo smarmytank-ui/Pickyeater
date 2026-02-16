@@ -760,3 +760,66 @@ deleteEntry = function(meal, idx){
   _deleteEntry(meal, idx);
   toast.show('Removed');
 };
+
+
+// ===============================
+// v1.9.2 — Best Next Polish
+// ===============================
+
+// highlight the active meal tab briefly
+function flashActiveMeal(){
+  const btn = document.querySelector(`.tab[data-meal="${activeMeal}"]`);
+  if(btn){
+    btn.classList.remove('flash');
+    void btn.offsetWidth;
+    btn.classList.add('flash');
+  }
+}
+
+// patch addCurrentRecipeToMeal to flash tab
+if(typeof addCurrentRecipeToMeal === 'function'){
+  const _addCurrentRecipeToMeal_v192 = addCurrentRecipeToMeal;
+  addCurrentRecipeToMeal = function(meal){
+    _addCurrentRecipeToMeal_v192(meal);
+    flashActiveMeal();
+  };
+}
+
+// add Move action to diary items
+if(typeof renderDiary === 'function'){
+  const _renderDiary_v192 = renderDiary;
+  renderDiary = function(){
+    _renderDiary_v192();
+    let diary;
+    try { diary = JSON.parse(localStorage.getItem('pickyDiaryMeals')||'{}'); } catch(e){ diary = {}; }
+    const key = (new Date()).toISOString().slice(0,10);
+    const list = diary[key]?.[activeMeal] || [];
+    const ul = document.getElementById('diaryList');
+    if(!ul) return;
+
+    Array.from(ul.children).forEach((li, idx) => {
+      const right = li.querySelector('.diary-right');
+      if(!right) return;
+      if(right.querySelector('.move-btn')) return;
+
+      const move = document.createElement('button');
+      move.className = 'icon-btn secondary move-btn';
+      move.textContent = 'Move';
+      move.onclick = () => {
+        const to = prompt('Move to which meal? (breakfast, lunch, dinner, snacks)');
+        if(!to) return;
+        const m = to.toLowerCase();
+        if(!['breakfast','lunch','dinner','snacks'].includes(m)) return alert('Invalid meal');
+        const entry = diary[key][activeMeal][idx];
+        diary[key][activeMeal].splice(idx,1);
+        diary[key][m].push(entry);
+        localStorage.setItem('pickyDiaryMeals', JSON.stringify(diary));
+        activeMeal = m;
+        document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b.dataset.meal===m));
+        renderDiary();
+        flashActiveMeal();
+      };
+      right.appendChild(move);
+    });
+  };
+}
