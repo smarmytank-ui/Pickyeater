@@ -1,16 +1,17 @@
 // app.js — Picky Eater Generator
-// SPEC-SAFE PATCH: input binding fix only
+// SPEC-SAFE: restore original render target behavior
 
 function generateRecipe() {
   const ingredientsInput =
-    document.getElementById("ingredientsInput") ||
     document.querySelector("textarea");
 
   const servingsInput =
-    document.getElementById("servingsInput") ||
     document.querySelector('input[type="number"]');
 
-  if (!ingredientsInput || !servingsInput) {
+  const output =
+    document.getElementById("recipeOutput");
+
+  if (!ingredientsInput || !servingsInput || !output) {
     alert("Required inputs not found.");
     return;
   }
@@ -29,7 +30,7 @@ function generateRecipe() {
     .filter(Boolean);
 
   const recipe = buildRecipe(ingredients, servings);
-  renderRecipe(recipe);
+  renderRecipe(recipe, output);
 }
 
 function buildRecipe(ingredients, servings) {
@@ -43,55 +44,31 @@ function buildRecipe(ingredients, servings) {
   return {
     title: `Simple ${capitalize(protein)} Bowl`,
     servings,
-    ingredients: ingredients.map(i => ({
-      name: i,
-      amount: estimateAmount(i, servings)
-    })),
+    ingredients,
     instructions: [
       "Cook rice according to package directions.",
       "Season and cook protein until fully done.",
       "Prepare remaining ingredients.",
       "Assemble bowl and serve."
-    ],
-    nutrition: {
-      calories: 460,
-      protein: 45,
-      carbs: 32,
-      fat: 16
-    }
+    ]
   };
 }
 
-function renderRecipe(recipe) {
-  document.getElementById("recipeTitle").innerText = recipe.title;
-  document.getElementById("recipeMeta").innerText =
-    `Servings: ${recipe.servings} • Calories/serving: ${recipe.nutrition.calories}`;
+function renderRecipe(recipe, output) {
+  output.innerHTML = `
+    <h2>${recipe.title}</h2>
+    <p><strong>Servings:</strong> ${recipe.servings}</p>
 
-  const ingList = document.getElementById("ingredientsList");
-  ingList.innerHTML = "";
-  recipe.ingredients.forEach(i => {
-    const li = document.createElement("li");
-    li.innerText = `${i.amount} ${i.name}`;
-    ingList.appendChild(li);
-  });
+    <h3>Ingredients</h3>
+    <ul>
+      ${recipe.ingredients.map(i => `<li>${i}</li>`).join("")}
+    </ul>
 
-  const instList = document.getElementById("instructionsList");
-  instList.innerHTML = "";
-  recipe.instructions.forEach(step => {
-    const li = document.createElement("li");
-    li.innerText = step;
-    instList.appendChild(li);
-  });
-
-  document.getElementById("nutritionBlock").innerText =
-    `Calories: ${recipe.nutrition.calories} | Protein: ${recipe.nutrition.protein}g | Carbs: ${recipe.nutrition.carbs}g | Fat: ${recipe.nutrition.fat}g`;
-}
-
-function estimateAmount(ingredient, servings) {
-  if (ingredient.includes("rice")) return `${servings * 0.5} cup`;
-  if (ingredient.includes("oil")) return "1 tbsp";
-  if (ingredient.includes("garlic")) return "2 cloves";
-  return "to taste";
+    <h3>Instructions</h3>
+    <ol>
+      ${recipe.instructions.map(i => `<li>${i}</li>`).join("")}
+    </ol>
+  `;
 }
 
 function capitalize(str) {
