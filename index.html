@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Picky Eater — Generator v1</title>
+  <title>Picky Eater — Generator v1.2</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <div class="page">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-mark"></div>
+        <div class="brand-mark" aria-hidden="true"></div>
         <div class="brand-text">
           <div class="brand-title">Picky Eater</div>
           <div class="brand-subtitle">Recipe Generator</div>
@@ -27,6 +27,55 @@
     </header>
 
     <main class="content">
+      <!-- HERO: orientation + premium confidence -->
+      <section class="hero" aria-label="Recipe generator introduction">
+        <div class="hero-inner">
+          <div class="hero-copy">
+            <div class="hero-eyebrow">Make it yours</div>
+            <h1 class="hero-title">Build a recipe you’ll actually eat.</h1>
+            <p class="hero-subtitle">
+              Drop in ingredients you like. Generate a simple recipe. Then use <span class="accent">Simple Swaps</span> to
+              remove what you don’t and make it yours.
+            </p>
+
+            <div class="hero-steps" aria-label="How it works">
+              <div class="step">
+                <div class="step-badge">1</div>
+                <div class="step-text">Add what you like</div>
+              </div>
+              <div class="step">
+                <div class="step-badge">2</div>
+                <div class="step-text">Generate a recipe</div>
+              </div>
+              <div class="step">
+                <div class="step-badge">3</div>
+                <div class="step-text">Swap to make it yours</div>
+              </div>
+            </div>
+
+            <div class="hero-note">
+              Swaps are optional — but they’re the superpower.
+            </div>
+          </div>
+
+          <div class="hero-card">
+            <div class="hero-card-title">Quick start</div>
+            <div class="hero-card-body">
+              <div class="mini-label">Try:</div>
+              <div class="mini-list">
+                chicken<br/>
+                rice<br/>
+                broccoli<br/>
+                garlic
+              </div>
+              <div class="mini-foot">
+                Tip: If you don’t like something, generate first — then swap.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="card input-card">
         <div class="card-title">Generate a simple recipe</div>
 
@@ -88,9 +137,13 @@
             <div id="swapsWrap" class="swaps hidden">
               <button id="swapsToggle" class="swaps-toggle" aria-expanded="false">
                 <span>Simple Swaps</span>
+                <span class="swap-hint">Make it yours</span>
                 <span class="chev">▾</span>
               </button>
               <div id="swapsPanel" class="swaps-panel hidden">
+                <div class="swaps-topline">
+                  Swap out anything you don’t like — no regeneration.
+                </div>
                 <div id="swapsList" class="swaps-list"></div>
               </div>
             </div>
@@ -108,12 +161,13 @@
           <div class="nutrition-title">Nutrition (approximate)</div>
           <div id="nutritionText" class="nutrition-text">—</div>
           <div id="saveHint" class="save-hint"></div>
+          <div class="momentum">That was easy. Want to try another? Adjust ingredients and generate again.</div>
         </div>
       </section>
 
       <footer class="footer">
         <div class="footer-note">
-          v1 demo: generator + swaps + apply swap + silent learning signals (localStorage).
+          v1.2: premium entry + swaps emphasized (logic unchanged).
         </div>
       </footer>
     </main>

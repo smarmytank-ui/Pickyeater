@@ -1,24 +1,32 @@
 /* 
 Picky Eater Generator
-Version: v1.1.0 (Visual Polish Pass)
+Version: v1.2.0 (Entry + Swaps Emphasis)
 Date: 2026-02-15
 
 Scope:
-- Visual & UX polish ONLY
+- Visual & UX orchestration ONLY
 - No logic or behavior changes
+Vibe: B (Empowered control) with a touch of C (Warm mastery)
+Accent: muted green leaning slate
 */
 
 :root{
   --bg: #f6f7fb;
   --card: #ffffff;
-  --text: #111827;
-  --muted: #6b7280;
+  --text: #0b1220;
+  --muted: #64748b;
   --border: #e5e7eb;
   --soft: #f3f4f6;
-  --shadow: 0 8px 30px rgba(17,24,39,0.06);
+  --shadow: 0 10px 34px rgba(15,23,42,0.06);
   --radius: 14px;
   --radius-sm: 10px;
-  --focus: rgba(17,24,39,0.12);
+  --focus: rgba(15,23,42,0.10);
+
+  /* Accent (muted green leaning slate) */
+  --accent: #1f7a5a;
+  --accent-ink: #0f2b22;
+  --accent-soft: rgba(31,122,90,0.10);
+  --accent-soft-2: rgba(31,122,90,0.16);
 }
 
 *{ box-sizing:border-box; }
@@ -52,11 +60,20 @@ body{
   width:36px; height:36px;
   border-radius: 10px;
   border: 1px solid var(--border);
-  background: #fff;
+  background: linear-gradient(180deg, #fff, #fbfbfb);
+  position: relative;
+}
+.brand-mark::after{
+  content:"";
+  position:absolute;
+  inset:8px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  border: 1px solid rgba(31,122,90,0.18);
 }
 
 .brand-title{
-  font-weight: 650;
+  font-weight: 720;
   letter-spacing: -0.01em;
 }
 
@@ -83,15 +100,148 @@ body{
   border: 1px solid var(--border);
   background: #fff;
 }
-
-.toggle input{ accent-color: #111827; }
+.toggle input{ accent-color: var(--accent); }
 
 .content{
   max-width: 1100px;
   margin: 0 auto;
-  padding: 0 22px 40px;
+  padding: 0 22px 44px;
 }
 
+/* -----------------------------
+   HERO (Orientation)
+------------------------------ */
+.hero{
+  margin: 6px 0 14px;
+}
+.hero-inner{
+  display:grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 14px;
+  align-items: stretch;
+}
+.hero-copy{
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px 18px 16px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-copy::before{
+  content:"";
+  position:absolute;
+  inset:-40px -40px auto -40px;
+  height: 140px;
+  background: radial-gradient(closest-side, var(--accent-soft-2), rgba(31,122,90,0.0));
+  pointer-events:none;
+}
+.hero-eyebrow{
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.hero-title{
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+}
+.hero-subtitle{
+  margin: 10px 0 14px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+  max-width: 62ch;
+}
+.accent{
+  color: var(--accent);
+  font-weight: 700;
+}
+.hero-steps{
+  display:flex;
+  flex-wrap:wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+.step{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 999px;
+}
+.step-badge{
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 800;
+  font-size: 12px;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  border: 1px solid rgba(31,122,90,0.18);
+}
+.step-text{
+  font-weight: 650;
+  font-size: 13px;
+  color: var(--text);
+}
+.hero-note{
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.hero-card{
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+.hero-card-title{
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  margin-bottom: 10px;
+}
+.hero-card-body{
+  border: 1px solid var(--border);
+  background: #fbfbfb;
+  border-radius: 12px;
+  padding: 12px;
+}
+.mini-label{
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+.mini-list{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text);
+}
+.mini-foot{
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+/* -----------------------------
+   Cards & inputs
+------------------------------ */
 .card{
   background: var(--card);
   border: 1px solid var(--border);
@@ -102,8 +252,8 @@ body{
 .input-card{ padding: 18px; }
 
 .card-title{
-  font-weight: 650;
-  margin-bottom: 16px;
+  font-weight: 750;
+  margin-bottom: 14px;
   letter-spacing: -0.01em;
 }
 
@@ -131,7 +281,7 @@ textarea{
 }
 
 textarea::placeholder{
-  color: #9ca3af;
+  color: #94a3b8;
 }
 
 textarea:focus, select:focus{
@@ -149,7 +299,7 @@ textarea:focus, select:focus{
   display:flex;
   align-items:center;
   gap: 12px;
-  margin-top: 18px;
+  margin-top: 16px;
 }
 
 .status{
@@ -163,24 +313,28 @@ textarea:focus, select:focus{
   color: var(--text);
   border-radius: 12px;
   padding: 10px 16px;
-  font-weight: 600;
+  font-weight: 650;
   cursor:pointer;
+  transition: transform .05s ease, background .15s ease, box-shadow .15s ease, border-color .15s ease;
 }
 
+.btn:active{ transform: translateY(1px); }
 .btn:hover{ background: var(--soft); }
 
 .btn.primary{
-  background: #111827;
+  background: var(--accent);
   color: #fff;
-  border-color: #111827;
+  border-color: var(--accent);
+  box-shadow: 0 10px 18px rgba(31,122,90,0.16);
 }
 
 .btn.primary:hover{
-  background: #0e1525;
+  background: #1a6a4f;
+  border-color: #1a6a4f;
 }
 
 .result-card{
-  margin-top: 24px;
+  margin-top: 16px;
   padding: 20px;
 }
 
@@ -193,7 +347,7 @@ textarea:focus, select:focus{
 
 .recipe-title{
   font-size: 22px;
-  font-weight: 700;
+  font-weight: 780;
   letter-spacing: -0.02em;
   line-height: 1.15;
 }
@@ -217,7 +371,7 @@ textarea:focus, select:focus{
 .divider{
   height: 1px;
   background: var(--border);
-  margin: 24px 0;
+  margin: 22px 0;
 }
 
 .cols{
@@ -230,7 +384,14 @@ textarea:focus, select:focus{
   font-size: 13px;
   color: var(--muted);
   margin-bottom: 12px;
-  font-weight: 650;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.list{
+  margin: 0;
+  padding-left: 18px;
 }
 
 .list li{
@@ -238,11 +399,19 @@ textarea:focus, select:focus{
   line-height: 1.5;
 }
 
+.steps{
+  margin: 0;
+  padding-left: 18px;
+}
+
 .steps li{
   margin: 12px 0;
   line-height: 1.6;
 }
 
+/* -----------------------------
+   Swaps (superpower)
+------------------------------ */
 .swaps{
   margin-top: 16px;
 }
@@ -250,37 +419,93 @@ textarea:focus, select:focus{
 .swaps-toggle{
   width:100%;
   display:flex;
+  align-items:center;
   justify-content:space-between;
-  border: 1px solid var(--border);
+  gap: 10px;
+  border: 1px solid rgba(31,122,90,0.22);
   border-radius: 12px;
   background: #fff;
   padding: 10px 12px;
-  font-weight: 600;
+  font-weight: 750;
 }
 
 .swaps-toggle:hover{
   background: #f9fafb;
+  border-color: rgba(31,122,90,0.32);
 }
+
+.swap-hint{
+  margin-left: auto;
+  margin-right: 6px;
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 750;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  border: 1px solid rgba(31,122,90,0.18);
+}
+
+.chev{ color: var(--muted); }
 
 .swaps-panel{
   margin-top: 10px;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(31,122,90,0.18);
   background: #fafafa;
   border-radius: 12px;
   padding: 10px;
 }
 
-.swaps-row{
-  display:flex;
-  justify-content:space-between;
-  padding: 12px 8px;
+.swaps-topline{
+  font-size: 13px;
+  color: var(--muted);
+  padding: 8px 8px 10px;
 }
 
-.nutrition-title{
+.swaps-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+  padding: 12px 8px;
+  border-radius: 10px;
+}
+
+.swaps-row + .swaps-row{
+  border-top: 1px solid var(--border);
+}
+
+.swap-text{
+  color: var(--text);
+  font-size: 14px;
+}
+
+.swap-muted{
+  color: var(--muted);
+  font-size: 13px;
   font-weight: 650;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+}
+
+.btn.apply{
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+/* -----------------------------
+   Nutrition
+------------------------------ */
+.nutrition-title{
+  font-weight: 750;
   font-size: 13px;
   color: var(--muted);
   margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .nutrition-text{
@@ -294,14 +519,33 @@ textarea:focus, select:focus{
   font-size: 13px;
 }
 
+.momentum{
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.footer{
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .hidden{ display:none !important; }
+
+@media (max-width: 980px){
+  .hero-inner{ grid-template-columns: 1fr; }
+}
 
 @media (max-width: 860px){
   .cols{ grid-template-columns: 1fr; }
 }
 
 @media (max-width: 640px){
+  .topbar{ padding: 16px 16px; }
   .content{ padding: 0 16px 32px; }
   .grid-2{ grid-template-columns: 1fr; }
+  .actions{ flex-direction: column; align-items: stretch; }
   .btn{ width: 100%; }
+  .hero-title{ font-size: 24px; }
 }
