@@ -1,4 +1,4 @@
-// v1.5.1 — conditional save
+// v1.6.0 — macro estimates (directional)
 const $ = (id) => document.getElementById(id);
 
 let servings = 2;
@@ -12,10 +12,10 @@ const ROLE_RULES = [
 ];
 
 const BASE = {
-  protein:{v:1,u:'lb'},
-  veg:{v:2,u:'cups'},
-  starch:{v:2,u:'cups'},
-  aromatic:{v:1,u:'medium'}
+  protein:{v:1,u:'lb', cal:800, p:90, c:0, f:50},
+  veg:{v:2,u:'cups', cal:80, p:5, c:15, f:1},
+  starch:{v:2,u:'cups', cal:400, p:10, c:90, f:4},
+  aromatic:{v:1,u:'medium', cal:40, p:1, c:10, f:0}
 };
 
 const SWAPS = {
@@ -43,7 +43,6 @@ function normalize(list){
 function qtyStr(ing){
   const m = servings / 2;
   const v = ing.base.v * m;
-  if(v === 0 || !ing.base.u) return '';
   const n = Math.abs(v - Math.round(v)) < 0.01 ? Math.round(v) : v.toFixed(1);
   return `${n} ${ing.base.u}`;
 }
@@ -51,6 +50,21 @@ function qtyStr(ing){
 function titleFrom(ings){
   const p = ings.find(i=>i.role==='protein' && i.name!=='skip it');
   return `Simple ${p ? pretty(p.name) : 'Veggie'} Dinner`;
+}
+
+function computeMacros(){
+  let cal=0,p=0,c=0,f=0;
+  const m = servings / 2;
+  state.ingredients.forEach(i=>{
+    cal += i.base.cal * m;
+    p   += i.base.p   * m;
+    c   += i.base.c   * m;
+    f   += i.base.f   * m;
+  });
+  $('calories').textContent = `≈ ${Math.round(cal)} cal`;
+  $('protein').textContent  = `Protein ${Math.round(p)}g`;
+  $('carbs').textContent    = `Carbs ${Math.round(c)}g`;
+  $('fat').textContent      = `Fat ${Math.round(f)}g`;
 }
 
 function render(){
@@ -72,6 +86,7 @@ function render(){
       owned = true;
       $('saveRow').classList.remove('hidden');
       state.title = titleFrom(state.ingredients);
+      computeMacros();
       render();
     };
     li.append(left,sel);
@@ -89,6 +104,8 @@ function render(){
     li.textContent = t;
     ol.appendChild(li);
   });
+
+  computeMacros();
 }
 
 $('generateBtn').onclick = ()=>{

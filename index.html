@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Picky Eater — Make it yours</title>
+  <title>Picky Eater — Make recipes your way</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
 <div class="page">
+
 <header class="topbar hero-bg">
   <div class="brand">
     <div class="brand-mark"></div>
@@ -19,7 +20,8 @@
 </header>
 
 <main class="content">
-<section class="hero card">
+
+<section class="hero card hero-tint">
   <div class="eyebrow">For picky eaters</div>
   <h1>Make recipes your way.</h1>
   <p>Start with ingredients you like. Swap what you don’t. Keep it simple.</p>
@@ -35,6 +37,7 @@
   <div class="result-header">
     <div>
       <div id="recipeTitle" class="recipe-title"></div>
+
       <div class="pill-row">
         <span class="pill">Editable with swaps</span>
         <span class="pill servings">
@@ -43,6 +46,13 @@
           <strong id="servingsVal">2</strong>
           <button class="step" id="incServ">+</button>
         </span>
+      </div>
+
+      <div id="macroRow" class="macro-row">
+        <span id="calories">≈ 0 cal</span>
+        <span id="protein">Protein 0g</span>
+        <span id="carbs">Carbs 0g</span>
+        <span id="fat">Fat 0g</span>
       </div>
     </div>
   </div>
@@ -70,6 +80,7 @@
   <p class="ownership">This is your version now.</p>
   <button id="backBtn" class="btn ghost full">← Make another</button>
 </section>
+
 </main>
 </div>
 

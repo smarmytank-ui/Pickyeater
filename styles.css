@@ -1,19 +1,20 @@
-/* v1.5.1 — polish + save */
+/* v1.6.0 — macros + hero tint */
 :root{
   --bg:#f6f7fb;--card:#fff;--text:#0b1220;--muted:#64748b;--border:#e5e7eb;
-  --accent:#2b7a63;--accent-soft:rgba(43,122,99,.12);
+  --accent:#2b7a63;--accent-soft:rgba(43,122,99,.14);
   --shadow:0 14px 40px rgba(15,23,42,.07);
 }
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui;background:linear-gradient(180deg,#f6f7fb,#f2f5f3);color:var(--text)}
-.hero-bg{background:radial-gradient(1200px 400px at 50% -20%, rgba(43,122,99,.18), transparent)}
+.hero-bg{background:radial-gradient(1200px 420px at 50% -25%, rgba(43,122,99,.22), transparent)}
+.hero-tint{background:linear-gradient(180deg, rgba(43,122,99,.10), #fff)}
 .topbar{max-width:1100px;margin:0 auto;padding:18px}
 .brand{display:flex;gap:12px;align-items:center}
 .brand-mark{width:44px;height:44px;border-radius:14px;border:1px solid rgba(43,122,99,.3);background:var(--accent-soft);box-shadow:var(--shadow)}
 .brand-title{font-weight:800}
 .brand-sub{font-size:13px;color:var(--muted)}
 .content{max-width:760px;margin:0 auto;padding:0 16px 36px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:22px;margin-bottom:18px}
+.card{border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:22px;margin-bottom:18px;background:var(--card)}
 .eyebrow{color:var(--accent);font-size:12px;font-weight:800;text-transform:uppercase}
 .btn{border:1px solid var(--border);background:#fff;border-radius:999px;padding:12px 18px;font-weight:700;cursor:pointer}
 .btn.primary{background:linear-gradient(180deg,#3f8e77,#2b7a63);border-color:#2b7a63;color:#fff}
@@ -26,6 +27,8 @@ label{display:block;font-size:13px;color:var(--muted);margin-bottom:8px}
 .pill-row{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
 .pill{border:1px solid var(--border);border-radius:999px;padding:6px 12px;color:var(--muted)}
 .step{border:1px solid var(--border);background:#fff;border-radius:999px;padding:2px 10px;cursor:pointer}
+.macro-row{display:flex;gap:14px;margin-top:10px;font-size:13px;color:#1f2937}
+.macro-row span{background:rgba(43,122,99,.08);border-radius:999px;padding:6px 10px}
 .section-title{font-size:12px;color:var(--muted);font-weight:800;letter-spacing:.06em;margin-bottom:10px}
 .divider{height:1px;background:var(--border);margin:18px 0}
 .list{padding-left:0;list-style:none;margin:0}
