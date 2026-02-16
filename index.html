@@ -8,65 +8,69 @@
 </head>
 <body>
 <div class="page">
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-mark"></div>
-      <div>
-        <div class="brand-title">Picky Eater</div>
-        <div class="brand-sub">Make it yours</div>
+<header class="topbar hero-bg">
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <div>
+      <div class="brand-title">Picky Eater</div>
+      <div class="brand-sub">Make recipes your way</div>
+    </div>
+  </div>
+</header>
+
+<main class="content">
+<section class="hero card">
+  <div class="eyebrow">For picky eaters</div>
+  <h1>Make recipes your way.</h1>
+  <p>Start with ingredients you like. Swap what you don’t. Keep it simple.</p>
+</section>
+
+<section id="inputCard" class="card">
+  <label>Ingredients (one per line)</label>
+  <textarea id="ingredientsInput" placeholder="ground beef&#10;broccoli&#10;potatoes&#10;onion"></textarea>
+  <button id="generateBtn" class="btn primary full">Generate recipe</button>
+</section>
+
+<section id="resultCard" class="card hidden">
+  <div class="result-header">
+    <div>
+      <div id="recipeTitle" class="recipe-title"></div>
+      <div class="pill-row">
+        <span class="pill">Editable with swaps</span>
+        <span class="pill servings">
+          Serves
+          <button class="step" id="decServ">–</button>
+          <strong id="servingsVal">2</strong>
+          <button class="step" id="incServ">+</button>
+        </span>
       </div>
     </div>
-  </header>
+  </div>
 
-  <main class="content">
-    <section class="hero card">
-      <div class="eyebrow">For picky eaters</div>
-      <h1>Make recipes your way.</h1>
-      <p>Start with ingredients you like. Swap what you don’t. Keep it simple.</p>
-    </section>
+  <div class="divider"></div>
 
-    <section id="inputCard" class="card">
-      <label>Ingredients (one per line)</label>
-      <textarea id="ingredientsInput" placeholder="chicken&#10;onion&#10;broccoli&#10;potatoes"></textarea>
-      <button id="generateBtn" class="btn primary full">Generate recipe</button>
-    </section>
+  <div>
+    <div class="section-title">Ingredients</div>
+    <ul id="ingredientsList" class="list"></ul>
+  </div>
 
-    <section id="resultCard" class="card hidden" aria-live="polite">
-      <div class="result-header">
-        <div>
-          <div id="recipeTitle" class="recipe-title"></div>
-          <div class="pill-row">
-            <span class="pill">Editable with swaps</span>
-            <span class="pill servings">
-              Serves
-              <button class="step" id="decServ" aria-label="Decrease servings">–</button>
-              <strong id="servingsVal">2</strong>
-              <button class="step" id="incServ" aria-label="Increase servings">+</button>
-            </span>
-          </div>
-        </div>
-      </div>
+  <div class="divider"></div>
 
-      <div class="divider"></div>
+  <div>
+    <div class="section-title">Instructions</div>
+    <ol id="instructionsList" class="steps"></ol>
+  </div>
 
-      <div>
-        <div class="section-title">Ingredients</div>
-        <ul id="ingredientsList" class="list"></ul>
-      </div>
+  <div class="divider"></div>
 
-      <div class="divider"></div>
+  <div class="save-row hidden" id="saveRow">
+    <button id="saveBtn" class="btn primary full">⭐ Save to Favorites</button>
+  </div>
 
-      <div>
-        <div class="section-title">Instructions</div>
-        <ol id="instructionsList" class="steps"></ol>
-      </div>
-
-      <div class="divider"></div>
-
-      <p class="ownership">This is your version now.</p>
-      <button id="backBtn" class="btn ghost full">← Make another</button>
-    </section>
-  </main>
+  <p class="ownership">This is your version now.</p>
+  <button id="backBtn" class="btn ghost full">← Make another</button>
+</section>
+</main>
 </div>
 
 <script src="./app.js"></script>

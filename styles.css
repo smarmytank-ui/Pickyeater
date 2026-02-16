@@ -1,46 +1,38 @@
-/* v1.5.0 — smarter swaps: qty + instruction patches */
+/* v1.5.1 — polish + save */
 :root{
   --bg:#f6f7fb;--card:#fff;--text:#0b1220;--muted:#64748b;--border:#e5e7eb;
   --accent:#2b7a63;--accent-soft:rgba(43,122,99,.12);
   --shadow:0 14px 40px rgba(15,23,42,.07);
-  --warn:#f59e0b;
 }
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui;background:linear-gradient(180deg,#f6f7fb,#f2f5f3);color:var(--text)}
-.topbar{max-width:1100px;margin:0 auto;padding:16px}
+.hero-bg{background:radial-gradient(1200px 400px at 50% -20%, rgba(43,122,99,.18), transparent)}
+.topbar{max-width:1100px;margin:0 auto;padding:18px}
 .brand{display:flex;gap:12px;align-items:center}
-.brand-mark{width:42px;height:42px;border-radius:14px;border:1px solid rgba(43,122,99,.3);background:var(--accent-soft);box-shadow:var(--shadow)}
-.content{max-width:740px;margin:0 auto;padding:0 16px 32px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
+.brand-mark{width:44px;height:44px;border-radius:14px;border:1px solid rgba(43,122,99,.3);background:var(--accent-soft);box-shadow:var(--shadow)}
+.brand-title{font-weight:800}
+.brand-sub{font-size:13px;color:var(--muted)}
+.content{max-width:760px;margin:0 auto;padding:0 16px 36px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:22px;margin-bottom:18px}
 .eyebrow{color:var(--accent);font-size:12px;font-weight:800;text-transform:uppercase}
-.btn{border:1px solid var(--border);background:#fff;border-radius:999px;padding:10px 16px;font-weight:700;cursor:pointer}
+.btn{border:1px solid var(--border);background:#fff;border-radius:999px;padding:12px 18px;font-weight:700;cursor:pointer}
 .btn.primary{background:linear-gradient(180deg,#3f8e77,#2b7a63);border-color:#2b7a63;color:#fff}
 .btn.ghost{background:#fff}
-.full{width:100%;margin-top:12px}
+.full{width:100%;margin-top:14px}
 .hidden{display:none}
-textarea{width:100%;min-height:120px;border:1px solid var(--border);border-radius:12px;padding:12px;font-size:14px}
+textarea{width:100%;min-height:120px;border:1px solid var(--border);border-radius:14px;padding:12px;font-size:14px}
 label{display:block;font-size:13px;color:var(--muted);margin-bottom:8px}
-.recipe-title{font-size:24px;font-weight:800}
+.recipe-title{font-size:26px;font-weight:800}
 .pill-row{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
 .pill{border:1px solid var(--border);border-radius:999px;padding:6px 12px;color:var(--muted)}
 .step{border:1px solid var(--border);background:#fff;border-radius:999px;padding:2px 10px;cursor:pointer}
 .section-title{font-size:12px;color:var(--muted);font-weight:800;letter-spacing:.06em;margin-bottom:10px}
-.divider{height:1px;background:var(--border);margin:16px 0}
+.divider{height:1px;background:var(--border);margin:18px 0}
 .list{padding-left:0;list-style:none;margin:0}
-.ing-row{
-  display:flex;justify-content:space-between;align-items:center;
-  border:1px solid var(--border);border-radius:12px;padding:10px;margin:8px 0;
-  transition: box-shadow .2s ease, transform .05s ease, border-color .2s ease;
-}
-.ing-row.bump{border-color:rgba(43,122,99,.45);box-shadow:0 10px 18px rgba(43,122,99,.12)}
-.ing-left{display:flex;flex-direction:column;gap:2px}
+.ing-row{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border);border-radius:14px;padding:12px;margin:10px 0}
 .ing-main{font-weight:700}
 .ing-sub{font-size:12px;color:var(--muted)}
-.swap-select{
-  border:1px solid var(--border);border-radius:10px;padding:8px 10px;background:#fff;
-  font-size:13px;min-width:140px;
-}
+.swap-select{border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:13px}
 .steps{padding-left:18px;margin:0}
-.steps li{margin:10px 0;line-height:1.5;transition: background .2s ease}
-.steps li.flash{background:rgba(245,158,11,.16);border-radius:10px;padding:6px 8px}
-.ownership{color:var(--muted);margin:0}
+.save-row{margin:16px 0}
+.ownership{color:var(--muted);margin:6px 0 0}
