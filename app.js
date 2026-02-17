@@ -218,7 +218,7 @@ const INSTR = {
   combine: 'Combine everything. Taste. Add salt/pepper. Serve.'
 };
 
-function buildInstructions(){
+function buildInstructions(ingredients){
   const steps = [];
   steps.push({ key:'prep', text: INSTR.prep });
 
@@ -427,7 +427,7 @@ $('generateBtn').onclick = ()=>{
 
   const ingredients = normalize(raw);
   state = { ingredients, title: titleFrom(ingredients), steps: [] };
-  state.steps = buildInstructions();
+  state.steps = buildInstructions(state.ingredients);
 
   owned = false;
   $('saveRow').classList.add('hidden');
