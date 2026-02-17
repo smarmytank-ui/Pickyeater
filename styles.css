@@ -264,3 +264,144 @@ button:hover{
 /* v1.1 visual: section logo */
 .section-title{display:flex;align-items:center;gap:10px}
 .picky-mark{width:18px;height:18px;opacity:.9}
+
+
+
+/* =========================================================
+   Phase 3.1 — Visual Polish (CSS ONLY, SAFE)
+   ========================================================= */
+
+/* Swap button — primary action */
+.swap-btn{
+  background: linear-gradient(180deg, #ffffff 0%, #f4f6fb 100%);
+  border: 1px solid rgba(59,108,255,0.25);
+  color: #1f2a44;
+  font-weight: 700;
+  letter-spacing: .2px;
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.swap-btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(59,108,255,0.15);
+  border-color: rgba(59,108,255,0.45);
+}
+.swap-btn:active{
+  transform: translateY(0);
+  box-shadow: 0 6px 14px rgba(59,108,255,0.18);
+}
+
+/* Swap panel container */
+.swap-panel{
+  background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(248,249,255,0.9));
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.12);
+}
+
+/* Panel titles */
+.swap-panel-title{
+  font-size: 15px;
+  letter-spacing: .3px;
+}
+.swap-panel-subtitle{
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  font-size: 11px;
+}
+
+/* Suggested swap pills */
+.swap-option{
+  background: linear-gradient(180deg, #ffffff, #f7f8fc);
+  border: 1px solid rgba(0,0,0,0.12);
+  font-weight: 600;
+  transition: transform .1s ease, box-shadow .1s ease, border-color .1s ease;
+}
+.swap-option:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+  border-color: rgba(59,108,255,0.35);
+}
+
+/* Custom swap input */
+.swap-input{
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.14);
+}
+.swap-input:focus{
+  outline: none;
+  border-color: rgba(59,108,255,0.6);
+  box-shadow: 0 0 0 3px rgba(59,108,255,0.15);
+}
+
+/* Apply swap button */
+.swap-apply{
+  background: linear-gradient(180deg, #3b6cff, #2f56cc);
+  color: #fff;
+  border: none;
+  font-weight: 800;
+}
+.swap-apply:hover{
+  box-shadow: 0 10px 24px rgba(59,108,255,0.35);
+}
+.swap-apply:disabled{
+  background: linear-gradient(180deg, #cfd6f6, #bfc8ee);
+  box-shadow: none;
+}
+
+/* Ingredient row breathing room */
+.ing-row{
+  padding: 14px;
+}
+
+/* Mobile tweaks */
+@media (max-width: 560px){
+  .swap-panel{
+    padding: 14px;
+  }
+  .swap-option{
+    font-size: 12px;
+  }
+}
+
+
+
+/* Phase 3.2 — Brand colors */
+:root{
+  --picky-orange:#f39a3d;       /* burnt / warm orange */
+  --picky-orange-2:#e48322;     /* hover */
+  --picky-green:#6fbf8f;        /* soft green */
+}
+
+/* Primary action buttons */
+.swap-btn, .save-btn{
+  background: linear-gradient(180deg, var(--picky-orange), var(--picky-orange-2));
+  color:#fff;
+  border:none;
+}
+.swap-btn:hover, .save-btn:hover{
+  box-shadow: 0 12px 26px rgba(243,154,61,0.45);
+}
+
+/* Suggested swap pills */
+.swap-option{
+  border-color: rgba(243,154,61,0.35);
+}
+.swap-option:hover{
+  border-color: var(--picky-orange);
+}
+
+/* Success accents */
+.badge-success, .pill-green{
+  background: rgba(111,191,143,0.18);
+  color:#1b5e3a;
+  border:1px solid rgba(111,191,143,0.45);
+}
+
+.save-btn{
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.save-btn.saved{
+  background: linear-gradient(180deg, var(--picky-green), #58a877);
+}

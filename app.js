@@ -1036,3 +1036,20 @@ if(document.readyState === 'loading'){
 } else {
   init();
 }
+// Phase 3.2 — Save Recipe (local snapshot)
+function saveRecipe(){
+  try{
+    const key = 'picky_saved_recipes';
+    const saved = JSON.parse(localStorage.getItem(key) || '[]');
+    const snapshot = JSON.parse(JSON.stringify(state));
+    snapshot.savedAt = Date.now();
+    saved.unshift(snapshot);
+    localStorage.setItem(key, JSON.stringify(saved.slice(0,20)));
+    const btn = document.querySelector('.save-btn');
+    if(btn){
+      btn.textContent = 'Saved ✓';
+      btn.classList.add('saved');
+      setTimeout(()=>{ btn.textContent='Save recipe'; btn.classList.remove('saved'); }, 1600);
+    }
+  }catch(e){ console.warn('Save failed', e); }
+}
