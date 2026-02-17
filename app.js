@@ -1,3 +1,16 @@
+
+// Phase 2 — Dairy swap priority (v1.1 only)
+function prioritizeDairySwaps(ingredient, options){
+  if (!ingredient || ingredient.category !== 'dairy' || !Array.isArray(options)) return options;
+  const primary = [];
+  const secondary = [];
+  options.forEach(opt => {
+    if (opt && opt.category === 'dairy') primary.push(opt);
+    else secondary.push(opt);
+  });
+  return [...primary, ...secondary];
+}
+
 // =======================================================
 // Picky Eater — LOCKED FOUNDATION PATCH
 // Re-enable swaps visually + re-attach diary add button
@@ -16,6 +29,7 @@ let owned = false;
 // -------------------------------
 const ROLE_RULES = [
   // Specific phrases FIRST (prevents "green beans" matching "beans")
+  [/\b(cheese|shredded cheese|cheddar cheese|mozzarella cheese|parmesan cheese|sour cream|greek yogurt|cottage cheese|cream cheese)\b/i,'dairy'],
   [/\bgreen beans\b/i,'veg'],
   [/\b(olive oil|butter)\b/i,'fat'],
   [/\b(lemon|lemon juice|vinegar)\b/i,'acid'],
@@ -500,8 +514,7 @@ function render(){
 // -------------------------------
 // LOCKED NUTRITION DISCLOSURE (auto-inserts if missing)
 // -------------------------------
-function ensureNutritionDisclosure() {
-  if (document.getElementById("truthLabel")) return;
+function ensureNutritionDisclosure(){
   // Try to place under macros area if we can find it.
   // If we can't, place it under the result card header area.
   const existing = document.getElementById('nutritionDisclosure');
@@ -922,13 +935,3 @@ if(document.readyState === 'loading'){
 } else {
   init();
 }
-
-
-// -------------------------------
-// Nutrition disclosure toggle (LOCKED)
-// -------------------------------
-window.toggleTruth = function () {
-  const el = document.getElementById("truthText");
-  if (!el) return;
-  el.style.display = el.style.display === "none" ? "block" : "none";
-};
