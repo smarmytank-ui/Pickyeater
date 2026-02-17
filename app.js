@@ -9,18 +9,32 @@ let owned = false;
 // Normalization + roles
 // -------------------------------
 const ROLE_RULES = [
-  [/\b(chicken|beef|ground beef|lean beef|turkey|pork|tofu|beans|lentils|egg|eggs)\b/i,'protein'],
-  [/\b(rice|pasta|potato|potatoes|quinoa|sweet potatoes)\b/i,'starch'],
-  [/\b(onion|onions|garlic|shallot|scallion|green onion)\b/i,'aromatic']
+  // Specific phrases FIRST (prevents "green beans" matching "beans")
+  [/\bgreen beans\b/i,'veg'],
+  [/\b(olive oil|butter)\b/i,'fat'],
+  [/\b(lemon|lemon juice|vinegar)\b/i,'acid'],
+  [/\b(salmon|chicken|chicken breast|beef|ground beef|lean beef|turkey|pork|tofu|lentils|egg|eggs)\b/i,'protein'],
+  [/\bbeans\b/i,'protein'],
+  [/\b(rice|pasta|potato|potatoes|quinoa|sweet potato|sweet potatoes)\b/i,'starch'],
+  [/\b(onion|onions|green onion|scallion|scallions|shallot|garlic)\b/i,'aromatic']
 ];
 
-function canonName(raw){
-  const s = (raw||'').trim().toLowerCase();
-  if(s === 'potato') return 'potatoes';
-  if(s === 'onions') return 'onion';
-  if(s === 'scallion' || s === 'scallions') return 'green onion';
-  if(s === 'beef') return 'beef';
-  return s;
+function canonName(s){
+  const t = String(s||'').trim().toLowerCase();
+  if(!t) return '';
+  const x = t
+    .replace(/\bfillet\b/g,'')
+    .replace(/\bfilet\b/g,'')
+    .replace(/\s+/g,' ')
+    .trim();
+
+  if(x === 'potato') return 'potatoes';
+  if(x === 'onions') return 'onion';
+  if(x === 'lemons') return 'lemon';
+  if(x === 'scallion' || x === 'scallions') return 'green onion';
+  if(x === 'salmon fillets' || x === 'salmon filet' || x === 'salmon filets') return 'salmon';
+  if(x === 'chicken') return 'chicken breast';
+  return x;
 }
 function roleFor(n){
   for(const [r,role] of ROLE_RULES) if(r.test(n)) return role;
@@ -37,11 +51,23 @@ function pretty(s){
 // Base quantities (for SERVES 2 defaults)
 // -------------------------------
 const BASE_QTY = {
-  protein:{ v:1, u:'lb' },
+  protein:{ v:1, u:'lb' },      // serves 2 default
   veg:{ v:2, u:'cups' },
   starch:{ v:2, u:'cups' },
-  aromatic:{ v:1, u:'medium' }
+  aromatic:{ v:1, u:'medium' },
+  fat:{ v:1, u:'tbsp' },
+  acid:{ v:1, u:'tbsp' }
 };
+
+// Ingredient-specific default quantities (SERVES 2 baseline)
+const CANON_DEFAULT_BASE = {
+  'olive oil': { v: 1, u: 'tbsp' },
+  'butter': { v: 1, u: 'tbsp' },
+  'lemon': { v: 1, u: 'tbsp' },
+  'vinegar': { v: 1, u: 'tbsp' },
+  'garlic': { v: 2, u: 'cloves' }
+};
+
 
 // -------------------------------
 // Swap catalog (qty + instruction patches)
@@ -117,7 +143,9 @@ const ROLE_FALLBACK_100G = {
   protein:  { cal:165, p:25.0, c:0.0,  f:6.0 },
   starch:   { cal:120, p:3.0,  c:25.0, f:1.0 },
   veg:      { cal:30,  p:2.0,  c:6.0,  f:0.3 },
-  aromatic: { cal:40,  p:1.0,  c:9.0,  f:0.1 }
+  aromatic: { cal:40,  p:1.0,  c:9.0,  f:0.1 },
+  fat:      { cal:884, p:0.0,  c:0.0,  f:100.0 },
+  acid:     { cal:20,  p:0.0,  c:1.0,  f:0.0 }
 };
 
 function nutrientFor(name, role){
@@ -132,7 +160,9 @@ const UNIT_TO_GRAMS = {
   lb: 453.592,
   oz: 28.3495,
   eggs: 50,
-  cloves: 3
+  cloves: 3,
+  tbsp: 15,
+  tsp: 5
 };
 
 const GRAMS_PER_UNIT = {
@@ -160,14 +190,10 @@ function gramsFor(name, unit, qty){
   const n = canonName(name);
   if(n === 'skip it' || qty === 0) return 0;
 
-  if(UNIT_TO_GRAMS[unit] != null) return qty * UNIT_TO_GRAMS[unit];
-
   const map = GRAMS_PER_UNIT[n] || {};
   if(map[unit] != null) return qty * map[unit];
 
-  // conservative fallbacks
-  if(unit === 'cups') return qty * 120;
-  if(unit === 'medium') return qty * 110;
+  if(UNIT_TO_GRAMS[unit] != null) return qty * UNIT_TO_GRAMS[unit];
 
   return 0;
 }
@@ -220,6 +246,12 @@ function buildInstructions(){
   }
 
   steps.push({ key:'veg', text: INSTR.cook_veg });
+  if(ings.some(i=>i.role==='fat' && i.name!=='skip it')){
+    steps.unshift({ key:'oil', text: INSTR.use_oil });
+  }
+  if(ings.some(i=>i.role==='acid' && i.name!=='skip it')){
+    steps.push({ key:'acid', text: INSTR.finish_acid });
+  }
   steps.push({ key:'combine', text: INSTR.combine });
   return steps;
 }
@@ -231,11 +263,17 @@ function normalize(names){
   return names.map(raw=>{
     const name = canonName(raw);
     const role = roleFor(name);
+    const base = { ...(BASE_QTY[role] || BASE_QTY.veg) };
+    const override = CANON_DEFAULT_BASE[name];
+    if(override){
+      base.v = override.v;
+      base.u = override.u;
+    }
     return {
       id: crypto.randomUUID(),
       name,
       role,
-      base: { ...BASE_QTY[role] },
+      base,
       swapMeta: null
     };
   });
@@ -360,19 +398,24 @@ function applySwap(ingId, opt){
   if(!ing || !opt) return;
 
   ing.name = canonName(opt.name);
+  ing.role = roleFor(ing.name);
+
+  // Reset to role baseline then apply specific overrides
+  ing.base = { ...(BASE_QTY[ing.role] || BASE_QTY.veg) };
 
   if(typeof opt.baseOverride === 'number') ing.base.v = opt.baseOverride;
   if(typeof opt.unitOverride === 'string') ing.base.u = opt.unitOverride;
 
-  if(ing.name === 'skip it'){
-    ing.base.v = 0;
-    ing.base.u = '';
+  // Canon defaults (e.g., garlic cloves) take precedence if present
+  const override = CANON_DEFAULT_BASE[ing.name];
+  if(override){
+    ing.base.v = override.v;
+    ing.base.u = override.u;
   }
 
-  state.title = titleFrom(state.ingredients);
-  state.steps = buildInstructions();
-
-  render();
+  ing.swapMeta = { patchKey: opt.instrPatchKey || null };
+  state.steps = buildSteps(state.ingredients);
+  computeMacrosPerServing();
 }
 
 // -------------------------------
@@ -872,3 +915,83 @@ document.getElementById('viewYesterday')?.addEventListener('click', ()=>{
   document.getElementById('viewToday').classList.remove('active');
   renderDiary();
 });
+
+
+// ===============================
+// v1.9.5 — Trust & Delight Pass
+// ===============================
+
+const POPULAR_SWAP_ORDER = {
+  protein: ['chicken breast','turkey','salmon','tofu','beans','ground beef'],
+  starch: ['sweet potatoes','potatoes','rice','quinoa','pasta'],
+  veg: ['broccoli','green beans','carrots','zucchini','bell pepper'],
+  fat: ['olive oil','butter'],
+  acid: ['lemon','vinegar'],
+  aromatic: ['garlic','onion','green onion','shallot']
+};
+
+if(typeof swapOptionsFor === 'function'){
+  const _swapOptionsFor_v195 = swapOptionsFor;
+  swapOptionsFor = function(role){
+    const opts = _swapOptionsFor_v195(role) || [];
+    const pref = POPULAR_SWAP_ORDER[role] || [];
+    return opts.slice().sort((a,b)=>{
+      const ia = pref.indexOf(a.name); const ib = pref.indexOf(b.name);
+      const aa = ia === -1 ? 999 : ia;
+      const bb = ib === -1 ? 999 : ib;
+      return aa - bb;
+    });
+  };
+}
+
+if(typeof renderIngredients === 'function'){
+  const _renderIngredients_v195 = renderIngredients;
+  renderIngredients = function(){
+    _renderIngredients_v195();
+    document.querySelectorAll('[data-role]').forEach(li=>{
+      const role = li.getAttribute('data-role');
+      if(role==='fat' || role==='acid'){
+        li.classList.add('support');
+        const q = li.querySelector('.qty');
+        if(q && !li.querySelector('.ingredient-note')){
+          const note = document.createElement('span');
+          note.className = 'ingredient-note';
+          note.textContent = '(used in small amounts)';
+          q.after(note);
+        }
+      }
+    });
+  };
+}
+
+if(typeof INSTR === 'object'){
+  INSTR.cook_protein = 'Heat a pan over medium heat. Add oil. Cook the protein 5–7 minutes per side until fully cooked.';
+  INSTR.combine = 'Combine everything in the pan. Stir gently so ingredients stay intact.';
+  INSTR.veg = 'Add the veggies. Cook 4–6 minutes until tender-crisp.';
+}
+
+if(typeof buildTitle === 'function'){
+  buildTitle = function(ings){
+    const protein = ings.find(i=>i.role==='protein' && i.name!=='skip it')?.name || 'Protein';
+    const starch = ings.find(i=>i.role==='starch' && i.name!=='skip it')?.name || '';
+    const main = protein
+      .replace(/\bchicken breast\b/i,'Chicken')
+      .replace(/\bground beef\b/i,'Beef')
+      .replace(/\bturkey\b/i,'Turkey')
+      .replace(/\bsalmon\b/i,'Salmon')
+      .replace(/\btofu\b/i,'Tofu')
+      .replace(/\bbeans\b/i,'Beans');
+    const side = starch ? (starch.includes('potato') ? ' & Potatoes' : ' & ' + starch.charAt(0).toUpperCase()+starch.slice(1)) : '';
+    return `Simple ${main}${side} Skillet`;
+  };
+}
+
+
+// ===============================
+// v1.9.6 — Truth Labels
+// ===============================
+function toggleTruth(){
+  const el = document.getElementById('truthLabel');
+  if(!el) return;
+  el.classList.toggle('open');
+}

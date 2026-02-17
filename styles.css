@@ -190,3 +190,27 @@ textarea{width:100%;min-height:120px;border:1px solid var(--border);border-radiu
 .btn.small{padding:6px 10px;font-size:12px}
 .btn.active{background:rgba(43,122,99,.12);border-color:rgba(43,122,99,.4)}
 .readonly-note{font-size:12px;color:var(--muted);margin:8px 0}
+
+/* v1.9.5 — Trust & Delight */
+.support{opacity:.88}
+.ingredient-note{font-size:12px;color:var(--muted);margin-left:6px}
+
+/* v1.9.6 — Truth Labels */
+.truth-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.truth-label span {
+  cursor: pointer;
+  text-decoration: underline;
+}
+.truth-detail {
+  display: none;
+  font-size: 11px;
+  margin-top: 4px;
+  color: var(--muted);
+}
+.truth-label.open .truth-detail {
+  display: block;
+}
