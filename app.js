@@ -135,6 +135,19 @@ const SWAP_CATALOG = {
     { name:'vinegar', unitOverride:'tbsp', baseOverride:1, instrPatchKey:'finish_acid' },
     { name:'skip it', unitOverride:'',     baseOverride:0, instrPatchKey:'skip_acid' }
   ]
+  ,
+  dairy: [
+    { name:'cheese',          unitOverride:'cups', baseOverride:0.5, instrPatchKey:null },
+    { name:'shredded cheese', unitOverride:'cups', baseOverride:0.5, instrPatchKey:null },
+    { name:'cheddar cheese',  unitOverride:'cups', baseOverride:0.5, instrPatchKey:null },
+    { name:'mozzarella cheese', unitOverride:'cups', baseOverride:0.5, instrPatchKey:null },
+    { name:'parmesan cheese', unitOverride:'cups', baseOverride:0.25, instrPatchKey:null },
+    { name:'sour cream',      unitOverride:'tbsp', baseOverride:4,   instrPatchKey:null },
+    { name:'greek yogurt',    unitOverride:'cups', baseOverride:1,   instrPatchKey:null },
+    { name:'cottage cheese',  unitOverride:'cups', baseOverride:1,   instrPatchKey:null },
+    { name:'cream cheese',    unitOverride:'tbsp', baseOverride:4,   instrPatchKey:null }
+  ]
+
 };
 
 // -------------------------------
@@ -414,6 +427,8 @@ function applySwap(ingId, opt){
   const ing = state.ingredients.find(i=>i.id===ingId);
   if(!ing || !opt) return;
 
+  if(!ing.origName) ing.origName = ing.name;
+
   ing.name = canonName(opt.name);
   ing.role = roleFor(ing.name);
 
@@ -431,6 +446,8 @@ function applySwap(ingId, opt){
   }
 
   ing.swapMeta = { patchKey: opt.instrPatchKey || null };
+
+  ing.customSwap = !!opt._custom;
 
   // Rebuild instructions safely
   state.steps = buildInstructions(state.ingredients);
@@ -470,28 +487,112 @@ function render(){
       sub.textContent = ing.role.toUpperCase();
 
       left.append(main, sub);
+      // SWAP UI (Phase 3 — Jackpot Swapper UI)
+      if(!ing.origName) ing.origName = ing.name;
 
-      // SWAP UI (VISUAL RE-ENABLED)
-      const sel = document.createElement('select');
-      sel.className = 'swap-select';
+      const optsRaw = SWAP_CATALOG[ing.role] || [];
+      const opts = prioritizeDairySwaps(ing, optsRaw.map(o=>({ ...o, category: roleFor(o.name) })));
 
-      const opts = SWAP_CATALOG[ing.role] || [];
-      sel.innerHTML =
-        `<option value="">Swap ingredient</option>` +
-        opts.map(o=>`<option value="${o.name}">${pretty(o.name)}</option>`).join('');
+      const hasSwap = (ing.name !== ing.origName) || !!ing.customSwap;
 
-      sel.onchange = ()=>{
-        const chosen = sel.value;
-        if(!chosen) return;
-        const opt = opts.find(o=>o.name===chosen);
-        applySwap(ing.id, opt);
-        sel.value = '';
-        bump(li);
-        setOwned();
-        flashStepByKey(ing.role);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'swap-btn';
+      btn.textContent = hasSwap ? 'Change swap ▾' : 'Swap ingredient ▾';
+
+      const panel = document.createElement('div');
+      panel.className = 'swap-panel';
+      panel.style.display = 'none';
+
+      const title = document.createElement('div');
+      title.className = 'swap-panel-title';
+      title.textContent = `Swap ${pretty(ing.name)}`;
+
+      const listWrap = document.createElement('div');
+      listWrap.className = 'swap-suggest';
+
+      const listTitle = document.createElement('div');
+      listTitle.className = 'swap-panel-subtitle';
+      listTitle.textContent = 'Suggested swaps';
+
+      const list = document.createElement('div');
+      list.className = 'swap-suggest-list';
+
+      // Reset option (back to original)
+      if(ing.origName){
+        const resetBtn = document.createElement('button');
+        resetBtn.type = 'button';
+        resetBtn.className = 'swap-option';
+        resetBtn.textContent = `${pretty(ing.origName)} (reset)`;
+        resetBtn.onclick = ()=>{
+          applySwap(ing.id, { name: ing.origName, _custom:false });
+          panel.style.display = 'none';
+        };
+        list.appendChild(resetBtn);
+      }
+
+      // Catalog options
+      opts.forEach(o=>{
+        const ob = document.createElement('button');
+        ob.type = 'button';
+        ob.className = 'swap-option';
+        ob.textContent = pretty(o.name);
+        ob.onclick = ()=>{
+          applySwap(ing.id, { ...o, _custom:false });
+          panel.style.display = 'none';
+        };
+        list.appendChild(ob);
+      });
+
+      listWrap.append(listTitle, list);
+
+      const divider = document.createElement('div');
+      divider.className = 'swap-divider';
+
+      const customWrap = document.createElement('div');
+      customWrap.className = 'swap-custom';
+
+      const customTitle = document.createElement('div');
+      customTitle.className = 'swap-panel-subtitle';
+      customTitle.textContent = 'Custom swap';
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'swap-input';
+      input.placeholder = 'Enter ingredient name';
+
+      const help = document.createElement('div');
+      help.className = 'swap-helper';
+      help.textContent = 'Custom ingredient (nutrition estimated)';
+
+      const apply = document.createElement('button');
+      apply.type = 'button';
+      apply.className = 'swap-apply';
+      apply.textContent = 'Apply swap';
+      apply.disabled = true;
+
+      input.oninput = ()=>{
+        apply.disabled = !input.value.trim();
       };
 
-      li.append(left, sel);
+      apply.onclick = ()=>{
+        const name = input.value.trim();
+        if(!name) return;
+        applySwap(ing.id, { name, _custom:true });
+        panel.style.display = 'none';
+      };
+
+      customWrap.append(customTitle, input, help, apply);
+
+      panel.append(title, listWrap, divider, customWrap);
+
+      btn.onclick = ()=>{
+        const open = panel.style.display !== 'none';
+        panel.style.display = open ? 'none' : 'block';
+      };
+
+      li.append(left, btn);
+      li.appendChild(panel);
       ul.appendChild(li);
     });
   }
