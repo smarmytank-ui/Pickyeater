@@ -20,6 +20,7 @@ function prioritizeDairySwaps(ingredient, options){
 
 const $ = (id) => document.getElementById(id);
 
+let baseServings = 2;
 let servings = 2;
 let state = null;
 let owned = false;
@@ -1053,3 +1054,6 @@ function saveRecipe(){
     }
   }catch(e){ console.warn('Save failed', e); }
 }
+
+function servingsRatio(){return servings/baseServings;}
+function scaleQty(n){if(typeof n!=='number'||!isFinite(n))return n;return +(n*servingsRatio()).toFixed(2);}

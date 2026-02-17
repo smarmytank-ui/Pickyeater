@@ -472,3 +472,10 @@ button:hover{
     padding: 14px;
   }
 }
+
+.make-header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:12px;}
+.make-header-right{display:flex;align-items:center;gap:12px;}
+.servings-control{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid rgba(0,0,0,.1);border-radius:999px;padding:6px 10px;font-weight:700;}
+.servings-control button{background:none;border:none;font-size:16px;cursor:pointer;padding:0 6px;}
+.save-btn{background:linear-gradient(180deg,#f39a3d,#e48322);color:#fff;border:none;border-radius:12px;padding:8px 14px;font-weight:800;cursor:pointer;}
+.save-btn.saved{background:linear-gradient(180deg,#6fbf8f,#58a877);}
