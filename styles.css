@@ -405,3 +405,70 @@ button:hover{
 .save-btn.saved{
   background: linear-gradient(180deg, var(--picky-green), #58a877);
 }
+
+
+
+/* =========================================================
+   Phase 3.3 — Swap Panel Refinement (CSS ONLY)
+   ========================================================= */
+
+/* Make swap panel feel like a composed card */
+.swap-panel{
+  padding: 14px 16px;
+  border-radius: 16px;
+}
+
+/* Stronger header, cleaner separation */
+.swap-panel-title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:16px;
+  font-weight:900;
+  margin-bottom: 6px;
+}
+
+.swap-panel-title::after{
+  content:'';
+  flex:1;
+  height:1px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.10), transparent);
+}
+
+/* Suggested swaps grouping */
+.swap-suggest{
+  background: rgba(255,255,255,0.65);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 14px;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+
+.swap-suggest-list{
+  gap: 10px;
+}
+
+/* Custom swap grouping */
+.swap-custom{
+  background: rgba(255,255,255,0.6);
+  border: 1px dashed rgba(0,0,0,0.12);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+/* Softer divider */
+.swap-divider{
+  opacity:.6;
+}
+
+/* Reduce button soup */
+.swap-option{
+  padding: 8px 12px;
+}
+
+/* Mobile breathing room */
+@media (max-width: 560px){
+  .swap-panel{
+    padding: 14px;
+  }
+}
