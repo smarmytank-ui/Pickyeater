@@ -500,7 +500,8 @@ function render(){
 // -------------------------------
 // LOCKED NUTRITION DISCLOSURE (auto-inserts if missing)
 // -------------------------------
-function ensureNutritionDisclosure(){
+function ensureNutritionDisclosure() {
+  if (document.getElementById("truthLabel")) return;
   // Try to place under macros area if we can find it.
   // If we can't, place it under the result card header area.
   const existing = document.getElementById('nutritionDisclosure');
@@ -921,3 +922,13 @@ if(document.readyState === 'loading'){
 } else {
   init();
 }
+
+
+// -------------------------------
+// Nutrition disclosure toggle (LOCKED)
+// -------------------------------
+window.toggleTruth = function () {
+  const el = document.getElementById("truthText");
+  if (!el) return;
+  el.style.display = el.style.display === "none" ? "block" : "none";
+};
