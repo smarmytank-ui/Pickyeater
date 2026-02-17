@@ -477,7 +477,7 @@ function render(){
 
       const opts = SWAP_CATALOG[ing.role] || [];
       sel.innerHTML =
-        `<option value="">Swap</option>` +
+        `<option value="">Swap ingredient</option>` +
         opts.map(o=>`<option value="${o.name}">${pretty(o.name)}</option>`).join('');
 
       sel.onchange = ()=>{

@@ -259,3 +259,8 @@ button:hover{
     margin-bottom: 10px;
   }
 }
+
+
+/* v1.1 visual: section logo */
+.section-title{display:flex;align-items:center;gap:10px}
+.picky-mark{width:18px;height:18px;opacity:.9}
