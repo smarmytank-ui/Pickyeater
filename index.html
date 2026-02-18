@@ -2,204 +2,38 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title><img class="picky-mark" src="./picky-mark.svg" alt="Picky" /> Picky Eater — Make recipes your way</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <title>Picky Eater</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
-
 <body>
+
+  <!-- STATIC TOP BAR -->
   <div class="static-make-bar">
-    <div class="static-left">
-      <h2 id="staticRecipeTitle">Simple Veggie Dinner</h2>
-    </div>
-    <div class="static-right">
-      <div class="servings-control">
-        <span>Serves</span>
-        <button onclick="decServings()">−</button>
-        <span id="servingsCount">2</span>
-        <button onclick="incServings()">+</button>
-      </div>
-      <button id="saveRecipeBtn" class="save-btn" onclick="saveRecipe()">Save recipe</button>
-    </div>
+    <h2 id="staticRecipeTitle">Picky Eater</h2>
   </div>
 
-<div class="page">
+  <!-- MAIN APP CONTENT -->
+  <div class="app-body">
 
-<header class="topbar">
-  <div class="brand">
-    <div class="brand-mark"></div>
-    <div>
-      <div class="brand-title">Picky Eater</div>
-      <div class="brand-sub">Make recipes your way</div>
-    </div>
-  </div>
-  <button id="openDiary" class="btn ghost topbar-btn">📓 Today</button>
-</header>
+    <section id="inputCard">
+      <textarea
+        id="ingredientsInput"
+        placeholder="Enter ingredients…"
+        rows="5"
+      ></textarea>
 
-<main class="content">
+      <button id="generateBtn" class="btn primary full">
+        Generate recipe
+      </button>
+    </section>
 
-<section class="hero card hero-tint">
-  <div class="eyebrow">For picky eaters</div>
-  <h1>Make recipes your way.</h1>
-  <p>Start with ingredients you like. Swap what you don’t. Keep it simple.</p>
-<div class="truth-label" id="truthLabel">
-  Estimates based on standard nutrition references.
-  <span onclick="toggleTruth()">Details</span>
-  <div class="truth-detail">
-    Calculations use common ingredient weights and serving sizes.
-    Actual values may vary based on brand, prep, and portioning.
-  </div>
-</div>
-</section>
+    <section id="resultCard" class="hidden">
+      <!-- recipe output renders here -->
+    </section>
 
-<section id="inputCard" class="card">
-  <label>Ingredients (one per line)</label>
-  <textarea id="ingredientsInput" placeholder="ground beef&#10;broccoli&#10;potatoes&#10;onion"></textarea>
-  <button id="generateBtn" class="btn primary full">Generate recipe</button>
-</section>
-
-<section id="resultCard" class="card hidden" aria-live="polite">
-  <div class="result-header">
-    <div>
-      <div id="recipeTitle" class="recipe-title"></div>
-
-      <div class="pill-row">
-        <span class="pill">Editable with swaps</span>
-        <span class="pill servings">
-          Serves
-          <button class="step" id="decServ" aria-label="Decrease servings">–</button>
-          <strong id="servingsVal">2</strong>
-          <button class="step" id="incServ" aria-label="Increase servings">+</button>
-        </span>
-      </div>
-
-      <div class="macro-row" aria-label="Nutrition estimates per serving">
-        <span id="calories">≈ 0 cal/serv</span>
-        <span id="protein">Protein 0g</span>
-        <span id="carbs">Carbs 0g</span>
-        <span id="fat">Fat 0g</span>
-      </div>
-      <div class="macro-note">≈ estimates per serving (based on standard nutrition references). Updates when you swap or change servings.</div>
-    </div>
   </div>
 
-  <div class="divider"></div>
-
-  <div>
-    <div class="section-title"><img class="picky-mark" src="./picky-mark.svg" alt="Picky" /> Ingredients</div>
-    <ul id="ingredientsList" class="list"></ul>
-  </div>
-
-  <div class="divider"></div>
-
-  <div>
-    <div class="section-title">Instructions</div>
-    <ol id="instructionsList" class="steps"></ol>
-  </div>
-
-  <div class="divider"></div>
-
-  <div class="save-row hidden" id="saveRow">
-    <button id="saveBtn" class="btn primary full">⭐ Save to Favorites</button>
-    <button id="addDiaryBtn" class="btn full">➕ Add to Diary</button>
-  </div>
-
-  <p class="ownership">This is your version now.</p>
-  <button id="backBtn" class="btn ghost full">← Make another</button>
-</section>
-
-<!-- Diary -->
-<section id="diaryCard" class="card hidden" aria-live="polite">
-  <div class="diary-head">
-    <div>
-      <div class="diary-title">Today</div><div class="diary-toggle"><button id="viewToday" class="btn ghost small active">Today</button><button id="viewYesterday" class="btn ghost small">Yesterday</button></div><div class="diary-hint">Log meals you actually eat. No pressure.</div>
-      <div id="diarySub" class="diary-sub"></div>
-    </div>
-    <button id="closeDiary" class="btn ghost">Close</button>
-  </div>
-
-  <div class="diary-tabs" role="tablist" aria-label="Meals">
-    <button class="tab active" data-meal="breakfast" role="tab">Breakfast</button>
-    <button class="tab" data-meal="lunch" role="tab">Lunch</button>
-    <button class="tab" data-meal="dinner" role="tab">Dinner</button>
-    <button class="tab" data-meal="snacks" role="tab">Snacks</button>
-  </div>
-
-  <div class="diary-pane">
-    <ul id="diaryList" class="list"></ul>
-
-    <div class="divider"></div>
-
-    <div class="section-title">Quick Add</div>
-    <div class="quick-grid">
-      <input id="qaName" class="field" placeholder="Food name (e.g., Greek yogurt)" />
-      <div class="quick-macros">
-        <input id="qaCal" class="field small" inputmode="numeric" placeholder="Cal" />
-        <input id="qaP" class="field small" inputmode="numeric" placeholder="P" />
-        <input id="qaC" class="field small" inputmode="numeric" placeholder="C" />
-        <input id="qaF" class="field small" inputmode="numeric" placeholder="F" />
-      </div>
-      <button id="qaAdd" class="btn full">Add to this meal</button>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="section-title">Today totals</div>
-    <div id="diaryTotals" class="macro-row"></div>
-    <div class="macro-note">No judgment. Just awareness.</div>
-  </div>
-</section>
-
-<!-- Soft Auth Modal -->
-<div id="authOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-label="Save your diary">
-  <div class="modal">
-    <div class="modal-title">Save your food diary</div>
-    <div class="modal-sub">Create a free account to keep your diary across devices. You can also save on this device for now.</div>
-
-    <div class="modal-actions">
-      <button id="authCreate" class="btn primary full">Create free account</button>
-      <button id="authLater" class="btn ghost full">Maybe later</button>
-    </div>
-
-    <div class="modal-foot">
-      <span class="pill subtle">Local save is on this device only.</span>
-    </div>
-  </div>
-</div>
-
-<!-- Create Account Modal -->
-<div id="emailOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-label="Create account">
-  <div class="modal">
-    <div class="modal-title">Create your free account</div>
-    <div class="modal-sub">Just an email for now. Password/login comes later.</div>
-
-    <label class="modal-label">Email</label>
-    <input id="authEmail" class="field" type="email" placeholder="you@email.com" />
-
-    <div class="modal-actions">
-      <button id="authSaveEmail" class="btn primary full">Continue</button>
-      <button id="authCancelEmail" class="btn ghost full">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<!-- Meal Picker Modal -->
-<div id="mealOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-label="Choose meal">
-  <div class="modal">
-    <div class="modal-title">Add to…</div>
-    <div class="modal-sub">Pick where this goes in your day.</div>
-
-    <div class="meal-grid">
-      <button class="btn meal-btn" data-meal="breakfast">Breakfast</button>
-      <button class="btn meal-btn" data-meal="lunch">Lunch</button>
-      <button class="btn meal-btn" data-meal="dinner">Dinner</button>
-      <button class="btn meal-btn" data-meal="snacks">Snacks</button>
-    </div>
-
-    <button id="mealCancel" class="btn ghost full">Cancel</button>
-  </div>
-</div>
-
-<script src="./app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
