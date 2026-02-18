@@ -479,3 +479,20 @@ button:hover{
 .servings-control button{background:none;border:none;font-size:16px;cursor:pointer;padding:0 6px;}
 .save-btn{background:linear-gradient(180deg,#f39a3d,#e48322);color:#fff;border:none;border-radius:12px;padding:8px 14px;font-weight:800;cursor:pointer;}
 .save-btn.saved{background:linear-gradient(180deg,#6fbf8f,#58a877);}
+.static-make-bar{
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: linear-gradient(180deg, #ffffff, #f7f7f7);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+.static-right{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}

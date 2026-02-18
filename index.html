@@ -6,7 +6,23 @@
   <title><img class="picky-mark" src="./picky-mark.svg" alt="Picky" /> Picky Eater — Make recipes your way</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
+
 <body>
+  <div class="static-make-bar">
+    <div class="static-left">
+      <h2 id="staticRecipeTitle">Simple Veggie Dinner</h2>
+    </div>
+    <div class="static-right">
+      <div class="servings-control">
+        <span>Serves</span>
+        <button onclick="decServings()">−</button>
+        <span id="servingsCount">2</span>
+        <button onclick="incServings()">+</button>
+      </div>
+      <button id="saveRecipeBtn" class="save-btn" onclick="saveRecipe()">Save recipe</button>
+    </div>
+  </div>
+
 <div class="page">
 
 <header class="topbar">

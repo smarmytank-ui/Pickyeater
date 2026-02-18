@@ -1057,3 +1057,14 @@ function saveRecipe(){
 
 function servingsRatio(){return servings/baseServings;}
 function scaleQty(n){if(typeof n!=='number'||!isFinite(n))return n;return +(n*servingsRatio()).toFixed(2);}
+
+function updateStaticTitle(title){
+  const el = document.getElementById('staticRecipeTitle');
+  if(el) el.textContent = title;
+}
+
+
+function updateServingsCount(){
+  const el = document.getElementById('servingsCount');
+  if(el) el.textContent = servings;
+}
