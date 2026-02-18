@@ -496,3 +496,58 @@ button:hover{
   align-items: center;
   gap: 12px;
 }
+
+
+/* ===============================
+   Phase 5.1 — Ingredient Quantity Overrides
+   =============================== */
+.qty-controls{
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.adjust-btn{
+  align-self: flex-start;
+  background: rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.adjust-panel{
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+.adjust-panel.open{
+  display: flex;
+}
+.qty-btn{
+  width: 34px;
+  height: 30px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: rgba(255,255,255,0.9);
+  font-weight: 900;
+  cursor: pointer;
+}
+.qty-input{
+  width: 72px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.12);
+  font-weight: 800;
+}
+.qty-unit{
+  opacity: 0.75;
+  font-weight: 800;
+}
+.clear-override{
+  background: none;
+  border: none;
+  opacity: 0.65;
+  font-weight: 900;
+  cursor: pointer;
+}

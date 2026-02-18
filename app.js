@@ -20,10 +20,84 @@ function prioritizeDairySwaps(ingredient, options){
 
 const $ = (id) => document.getElementById(id);
 
-let baseServings = 2;
+let baseServings = 2; // Phase 4.1 foundation
 let servings = 2;
 let state = null;
 let owned = false;
+
+// -------------------------------
+// Phase 4.1 — Servings foundation (state-only for now)
+// -------------------------------
+function servingsRatio(){
+  return servings / baseServings;
+}
+function scaleQty(n){
+  if (typeof n !== 'number' || !isFinite(n)) return n;
+  return +(n * servingsRatio()).toFixed(2);
+}
+
+// ===============================
+// Phase 5.1 — Ingredient Quantity Overrides (qty-only)
+// Stored as ing.mult multiplier on the ingredient's base quantity (at 2 servings).
+// ===============================
+function qtyStepForUnit(u){
+  const unit = (u||'').toLowerCase();
+  if(unit==='tsp') return 0.5;
+  if(unit==='tbsp') return 0.5;
+  if(unit==='cup') return 0.25;
+  if(unit==='oz') return 0.5;
+  return 1;
+}
+function effectiveQtyVal(ing){
+  const m = servings / 2;
+  return (ing.base?.v || 0) * (ing.mult || 1) * m;
+}
+function setIngQty(ingId, newQty){
+  if(!state?.ingredients) return;
+  const ing = state.ingredients.find(i=>i.id===ingId);
+  if(!ing) return;
+  const m = servings / 2;
+  const baseV = ing.base?.v || 0;
+  const v = Number(newQty);
+  if(!isFinite(v) || v < 0){
+    // ignore invalid
+    render();
+    return;
+  }
+  // If baseV is 0, nothing to scale; just re-render
+  if(baseV === 0 || m === 0){
+    ing.mult = 1;
+    render();
+    return;
+  }
+  // mult is defined at current servings scale
+  ing.mult = +(v / (baseV * m)).toFixed(4);
+  render();
+}
+function incIngQty(ingId){
+  const ing = state?.ingredients?.find(i=>i.id===ingId);
+  if(!ing) return;
+  const step = qtyStepForUnit(ing.base?.u);
+  const cur = effectiveQtyVal(ing);
+  setIngQty(ingId, +(cur + step).toFixed(2));
+}
+function decIngQty(ingId){
+  const ing = state?.ingredients?.find(i=>i.id===ingId);
+  if(!ing) return;
+  const step = qtyStepForUnit(ing.base?.u);
+  const cur = effectiveQtyVal(ing);
+  const next = Math.max(0, cur - step);
+  setIngQty(ingId, +next.toFixed(2));
+}
+function resetIngQty(ingId){
+  const ing = state?.ingredients?.find(i=>i.id===ingId);
+  if(!ing) return;
+  ing.mult = 1;
+  render();
+}
+
+
+
 
 // -------------------------------
 // Normalization + roles
@@ -353,6 +427,7 @@ function normalize(names){
       name,
       role,
       base,
+      mult: 1,
       swapMeta: null
     };
   });
@@ -360,9 +435,10 @@ function normalize(names){
 
 function qtyStr(ing){
   const m = servings / 2;
-  const val = ing.base.v * m;
+  const val = ing.base.v * (ing.mult || 1) * m;
   if(!ing.base.u || val === 0) return '';
-  const nice = (Math.abs(val - Math.round(val)) < 1e-9) ? String(Math.round(val)) : val.toFixed(1);
+  let nice = (Math.abs(val - Math.round(val)) < 1e-9) ? String(Math.round(val)) : val.toFixed(2);
+  nice = nice.replace(/\.00$/,'').replace(/(\.\d)0$/,'$1');
   return `${nice} ${ing.base.u}`;
 }
 
@@ -379,7 +455,7 @@ function computeMacrosPerServing(){
 
   state.ingredients.forEach(ing=>{
     const m = servings/2;
-    const qty = ing.base.v * m;
+    const qty = ing.base.v * (ing.mult || 1) * m;
     const grams = gramsFor(ing.name, ing.base.u, qty);
     const n = nutrientFor(ing.name, ing.role);
 
@@ -488,6 +564,52 @@ function render(){
       sub.textContent = ing.role.toUpperCase();
 
       left.append(main, sub);
+
+      // Quantity override controls (Phase 5.1)
+      const qc = document.createElement('div');
+      qc.className = 'qty-controls';
+
+      const adjBtn = document.createElement('button');
+      adjBtn.type = 'button';
+      adjBtn.className = 'adjust-btn';
+      adjBtn.textContent = 'Adjust';
+
+      const panelQ = document.createElement('div');
+      panelQ.className = 'adjust-panel';
+
+      const minus = document.createElement('button');
+      minus.type = 'button';
+      minus.className = 'qty-btn';
+      minus.textContent = '−';
+      minus.onclick = ()=>decIngQty(ing.id);
+
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.step = '0.1';
+      input.className = 'qty-input';
+      input.value = effectiveQtyVal(ing).toFixed(2).replace(/\.00$/,'');
+      input.onchange = ()=>setIngQty(ing.id, input.value);
+
+      const plus = document.createElement('button');
+      plus.type = 'button';
+      plus.className = 'qty-btn';
+      plus.textContent = '+';
+      plus.onclick = ()=>incIngQty(ing.id);
+
+      const unit = document.createElement('span');
+      unit.className = 'qty-unit';
+      unit.textContent = ing.base?.u || '';
+
+      const reset = document.createElement('button');
+      reset.type = 'button';
+      reset.className = 'clear-override';
+      reset.textContent = 'Reset';
+      reset.onclick = ()=>resetIngQty(ing.id);
+
+      panelQ.append(minus, input, unit, plus, reset);
+      adjBtn.onclick = ()=>panelQ.classList.toggle('open');
+      qc.append(adjBtn, panelQ);
+      left.appendChild(qc);
       // SWAP UI (Phase 3 — Jackpot Swapper UI)
       if(!ing.origName) ing.origName = ing.name;
 
@@ -904,10 +1026,10 @@ function wireEvents(){
       // (does NOT change their recipe; just enables swapping into them)
       const hasFat = ingredients.some(i=>i.role==='fat');
       const hasAcid = ingredients.some(i=>i.role==='acid');
-      if(!hasFat) ingredients.push({ id: crypto.randomUUID(), name:'skip it', role:'fat', base:{ v:0, u:'' }, swapMeta:null });
-      if(!hasAcid) ingredients.push({ id: crypto.randomUUID(), name:'skip it', role:'acid', base:{ v:0, u:'' }, swapMeta:null });
+      if(!hasFat) ingredients.push({ id: crypto.randomUUID(), name:'skip it', role:'fat', base:{ v:0, u:'' }, mult:1, swapMeta:null });
+      if(!hasAcid) ingredients.push({ id: crypto.randomUUID(), name:'skip it', role:'acid', base:{ v:0, u:'' }, mult:1, swapMeta:null });
 
-      state = { ingredients, title: titleFrom(ingredients), steps: [] };
+      state = { ingredients, title: titleFrom(ingredients), steps: [], baseServings, currentServings: servings };
       state.steps = buildInstructions(state.ingredients);
 
       owned = false;
@@ -966,7 +1088,7 @@ function wireEvents(){
   if(backBtn && !backBtn.dataset.wired){
     backBtn.dataset.wired='1';
     backBtn.onclick = ()=>{
-      servings = 2;
+      servings = baseServings;
       state = null;
       owned = false;
       $('resultCard')?.classList.add('hidden');
@@ -1053,18 +1175,4 @@ function saveRecipe(){
       setTimeout(()=>{ btn.textContent='Save recipe'; btn.classList.remove('saved'); }, 1600);
     }
   }catch(e){ console.warn('Save failed', e); }
-}
-
-function servingsRatio(){return servings/baseServings;}
-function scaleQty(n){if(typeof n!=='number'||!isFinite(n))return n;return +(n*servingsRatio()).toFixed(2);}
-
-function updateStaticTitle(title){
-  const el = document.getElementById('staticRecipeTitle');
-  if(el) el.textContent = title;
-}
-
-
-function updateServingsCount(){
-  const el = document.getElementById('servingsCount');
-  if(el) el.textContent = servings;
 }
