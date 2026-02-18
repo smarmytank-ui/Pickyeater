@@ -1,8 +1,216 @@
+/* v1.8.0 — real nutrition map + beginner instructions (visuals locked) */
+:root{
+  --bg:#f6f7fb;
+  --card:#ffffff;
+  --text:#0b1220;
+  --muted:#64748b;
+  --border:#e5e7eb;
+  --accent:#2b7a63;
+  --accent-soft:rgba(43,122,99,.12);
+  --tint:rgba(43,122,99,.10);
+  --shadow:0 14px 40px rgba(15,23,42,.07);
+  --flash:rgba(245,158,11,.16);
+}
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#fafafa;color:#111}
-.static-make-bar{position:fixed;top:0;left:0;right:0;height:64px;background:#fff;border-bottom:1px solid rgba(0,0,0,.1);display:flex;align-items:center;padding:0 16px;z-index:100}
-.app-body{padding-top:72px}
-button{font-family:inherit;cursor:pointer}
-.btn.primary{background:#f39a3d;color:#fff;border:none;padding:14px;border-radius:12px;font-weight:700}
-.btn.full{width:100%}
+body{
+  margin:0;
+  font-family:system-ui;
+  color:var(--text);
+  background:
+    radial-gradient(1200px 520px at 50% 0%, rgba(43,122,99,.14), transparent 60%),
+    linear-gradient(180deg,#f6f7fb,#f2f5f3);
+}
+.page{min-height:100vh}
+.topbar{max-width:1100px;margin:0 auto;padding:18px}
+.brand{display:flex;gap:12px;align-items:center}
+.brand-mark{width:44px;height:44px;border-radius:14px;border:1px solid rgba(43,122,99,.3);background:var(--accent-soft);box-shadow:var(--shadow)}
+.brand-title{font-weight:800}
+.brand-sub{font-size:13px;color:var(--muted)}
+.content{max-width:760px;margin:0 auto;padding:0 16px 36px}
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  box-shadow:var(--shadow);
+  padding:22px;
+  margin-bottom:18px;
+}
+.hero-tint{background:linear-gradient(180deg, var(--tint), #fff)}
+.eyebrow{color:var(--accent);font-size:12px;font-weight:800;text-transform:uppercase}
+h1{margin:10px 0 8px;font-size:44px;letter-spacing:-.02em}
+p{margin:0;color:#111827;font-size:18px;line-height:1.45}
+label{display:block;font-size:13px;color:var(--muted);margin-bottom:8px}
+textarea{width:100%;min-height:120px;border:1px solid var(--border);border-radius:14px;padding:12px;font-size:14px}
+.btn{border:1px solid var(--border);background:#fff;border-radius:999px;padding:12px 18px;font-weight:700;cursor:pointer}
+.btn.primary{background:linear-gradient(180deg,#3f8e77,#2b7a63);border-color:#2b7a63;color:#fff}
+.btn.ghost{background:#fff}
+.full{width:100%;margin-top:14px}
 .hidden{display:none}
+.recipe-title{font-size:26px;font-weight:800}
+.pill-row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.pill{border:1px solid var(--border);border-radius:999px;padding:6px 12px;color:var(--muted)}
+.step{border:1px solid var(--border);background:#fff;border-radius:999px;padding:2px 10px;cursor:pointer}
+.macro-row{display:flex;gap:12px;margin-top:10px;flex-wrap:wrap;font-size:13px}
+.macro-row span{background:rgba(43,122,99,.08);border-radius:999px;padding:6px 10px}
+.macro-note{margin-top:6px;color:var(--muted);font-size:12px}
+.section-title{font-size:12px;color:var(--muted);font-weight:800;letter-spacing:.06em;margin-bottom:10px}
+.divider{height:1px;background:var(--border);margin:18px 0}
+.list{padding-left:0;list-style:none;margin:0}
+.ing-row{
+  display:flex;justify-content:space-between;align-items:center;
+  border:1px solid var(--border);border-radius:14px;padding:12px;margin:10px 0;
+  transition: box-shadow .2s ease, border-color .2s ease;
+}
+.ing-row.bump{border-color:rgba(43,122,99,.45);box-shadow:0 10px 18px rgba(43,122,99,.12)}
+.ing-left{display:flex;flex-direction:column;gap:2px}
+.ing-main{font-weight:800}
+.ing-sub{font-size:12px;color:var(--muted)}
+.swap-select{border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:13px;min-width:140px}
+.steps{padding-left:18px;margin:0}
+.steps li{margin:10px 0;line-height:1.55;transition: background .2s ease}
+.steps li.flash{background:var(--flash);border-radius:10px;padding:6px 8px}
+.save-row{margin:16px 0}
+.ownership{color:var(--muted);margin:6px 0 0}
+@media (max-width:560px){ h1{font-size:34px} }
+
+
+/* --- v1.9.0 additions: topbar button --- */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.topbar-btn{white-space:nowrap}
+
+/* --- Diary UI --- */
+.diary-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.diary-title{font-size:22px;font-weight:900}
+.diary-sub{font-size:12px;color:var(--muted);margin-top:2px}
+
+.diary-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 6px}
+.tab{
+  border:1px solid var(--border);
+  background:#fff;
+  border-radius:999px;
+  padding:8px 12px;
+  font-weight:800;
+  cursor:pointer;
+  color:var(--muted);
+}
+.tab.active{
+  border-color:rgba(43,122,99,.45);
+  background:rgba(43,122,99,.08);
+  color:var(--text);
+}
+
+.quick-grid{display:flex;flex-direction:column;gap:10px}
+.quick-macros{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.field{
+  width:100%;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:10px 12px;
+  font-size:14px;
+  outline:none;
+}
+.field:focus{border-color:rgba(43,122,99,.55);box-shadow:0 0 0 4px rgba(43,122,99,.10)}
+.field.small{padding:10px 10px;text-align:center}
+
+/* Entry cards inside diary list */
+.diary-item{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:12px;
+  margin:10px 0;
+}
+.diary-item strong{display:block}
+.diary-meta{font-size:12px;color:var(--muted);margin-top:4px}
+.diary-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.icon-btn{
+  border:1px solid var(--border);
+  background:#fff;
+  border-radius:10px;
+  padding:6px 10px;
+  cursor:pointer;
+  font-weight:800;
+  color:var(--muted);
+}
+.icon-btn:hover{border-color:rgba(43,122,99,.45);color:var(--text)}
+
+/* --- Overlays / Modals --- */
+.overlay{
+  position:fixed;inset:0;
+  background:rgba(2,6,23,.55);
+  display:flex;align-items:flex-end;justify-content:center;
+  padding:18px;
+  z-index:50;
+}
+.modal{
+  width:min(520px, 100%);
+  background:#fff;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.25);
+  box-shadow:0 18px 60px rgba(0,0,0,.22);
+  padding:18px;
+}
+.modal-title{font-size:18px;font-weight:900}
+.modal-sub{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.35}
+.modal-actions{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+.modal-foot{margin-top:12px}
+.pill.subtle{background:rgba(100,116,139,.10);color:var(--muted)}
+.modal-label{display:block;margin-top:14px;margin-bottom:8px;font-size:13px;color:var(--muted)}
+.meal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+.meal-btn{padding:14px 14px;font-weight:900}
+
+/* Ensure hidden works for overlays too */
+.overlay.hidden{display:none}
+
+@media (min-width: 720px){
+  .overlay{align-items:center}
+}
+
+/* v1.9.1 micro polish */
+.diary-hint{font-size:12px;color:var(--muted);margin-top:4px}
+.empty{padding:16px;border:1px dashed var(--border);border-radius:14px;color:var(--muted);text-align:center}
+.toast{
+  position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+  background:#111827;color:#fff;padding:10px 14px;border-radius:999px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);font-weight:800;z-index:60
+}
+.toast.hidden{display:none}
+
+/* v1.9.2 polish */
+.tab.flash{animation:flash 600ms ease}
+@keyframes flash{
+  0%{box-shadow:0 0 0 0 rgba(43,122,99,.35)}
+  100%{box-shadow:0 0 0 10px rgba(43,122,99,0)}
+}
+.icon-btn.secondary{opacity:.8}
+.icon-btn.secondary:hover{opacity:1}
+
+/* v1.9.3 — Yesterday toggle */
+.diary-toggle{display:flex;gap:6px;margin-top:8px}
+.btn.small{padding:6px 10px;font-size:12px}
+.btn.active{background:rgba(43,122,99,.12);border-color:rgba(43,122,99,.4)}
+.readonly-note{font-size:12px;color:var(--muted);margin:8px 0}
+
+/* v1.9.5 — Trust & Delight */
+.support{opacity:.88}
+.ingredient-note{font-size:12px;color:var(--muted);margin-left:6px}
+
+/* v1.9.6 — Truth Labels */
+.truth-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.truth-label span {
+  cursor: pointer;
+  text-decoration: underline;
+}
+.truth-detail {
+  display: none;
+  font-size: 11px;
+  margin-top: 4px;
+  color: var(--muted);
+}
+.truth-label.open .truth-detail {
+  display: block;
+}
