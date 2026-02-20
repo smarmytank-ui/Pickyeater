@@ -17,6 +17,7 @@ let owned = false;
 const ROLE_RULES = [
   // Specific phrases FIRST (prevents "green beans" matching "beans")
   [/\bgreen beans\b/i,'veg'],
+  [/(salt|pepper|black pepper|kosher salt|sea salt|garlic powder|onion powder|paprika|smoked paprika|italian seasoning|oregano|basil|parsley|thyme|rosemary|cumin|chili flakes|red pepper flakes|herbs)/i,'seasoning'],
   [/\b(olive oil|butter)\b/i,'fat'],
   [/\b(lemon|lemon juice|vinegar)\b/i,'acid'],
   [/\b(salmon|chicken|chicken breast|beef|ground beef|lean beef|turkey|pork|tofu|lentils|egg|eggs)\b/i,'protein'],
@@ -65,7 +66,8 @@ const BASE_QTY = {
   starch:{ v:2, u:'cups' },
   aromatic:{ v:1, u:'medium' },
   fat:{ v:1, u:'tbsp' },
-  acid:{ v:1, u:'tbsp' }
+  acid:{ v:1, u:'tbsp' },
+  seasoning:{ v:0.5, u:'tsp' }
 };
 
 // Ingredient-specific default quantities (SERVES 2 baseline)
@@ -120,7 +122,17 @@ const SWAP_CATALOG = {
     { name:'lemon',   unitOverride:'tbsp', baseOverride:1, instrPatchKey:'finish_acid' },
     { name:'vinegar', unitOverride:'tbsp', baseOverride:1, instrPatchKey:'finish_acid' },
     { name:'skip it', unitOverride:'',     baseOverride:0, instrPatchKey:'skip_acid' }
-  ]
+  ],
+seasoning: [
+  { name:'salt',              unitOverride:'tsp', baseOverride:0.5,  instrPatchKey:'season' },
+  { name:'black pepper',      unitOverride:'tsp', baseOverride:0.25, instrPatchKey:'season' },
+  { name:'garlic powder',     unitOverride:'tsp', baseOverride:0.5,  instrPatchKey:'season' },
+  { name:'paprika',           unitOverride:'tsp', baseOverride:0.5,  instrPatchKey:'season' },
+  { name:'italian seasoning', unitOverride:'tsp', baseOverride:0.5,  instrPatchKey:'season' },
+  { name:'chili flakes',      unitOverride:'tsp', baseOverride:0.25, instrPatchKey:'season' },
+  { name:'skip it',           unitOverride:'',   baseOverride:0,     instrPatchKey:'skip_seasoning' }
+]
+
 };
 
 // -------------------------------
@@ -167,6 +179,24 @@ const NUTRITION_PER_100G = {
   'lemon':         { cal:29,  p:1.1,  c:9.3,  f:0.3 },
   'vinegar':       { cal:18,  p:0.0,  c:0.0,  f:0.0 },
 
+
+// seasonings (treated as ~0 for now; tiny amounts)
+'salt':          { cal:0,   p:0.0,  c:0.0,  f:0.0 },
+'pepper':        { cal:0,   p:0.0,  c:0.0,  f:0.0 },
+'black pepper':  { cal:0,   p:0.0,  c:0.0,  f:0.0 },
+'garlic powder': { cal:0,   p:0.0,  c:0.0,  f:0.0 },
+'onion powder':  { cal:0,   p:0.0,  c:0.0,  f:0.0 },
+'paprika':       { cal:0,   p:0.0,  c:0.0,  f:0.0 },
+'smoked paprika':{ cal:0,   p:0.0,  c:0.0,  f:0.0 },
+'italian seasoning': { cal:0, p:0.0, c:0.0, f:0.0 },
+'oregano':       { cal:0,   p:0.0,  c:0.0,  f:0.0 },
+'basil':         { cal:0,   p:0.0,  c:0.0,  f:0.0 },
+'parsley':       { cal:0,   p:0.0,  c:0.0,  f:0.0 },
+'thyme':         { cal:0,   p:0.0,  c:0.0,  f:0.0 },
+'rosemary':      { cal:0,   p:0.0,  c:0.0,  f:0.0 },
+'cumin':         { cal:0,   p:0.0,  c:0.0,  f:0.0 },
+'chili flakes':  { cal:0,   p:0.0,  c:0.0,  f:0.0 },
+'red pepper flakes': { cal:0, p:0.0, c:0.0, f:0.0 },
   'skip it':       { cal:0,   p:0.0,  c:0.0,  f:0.0 }
 };
 
@@ -176,7 +206,8 @@ const ROLE_FALLBACK_100G = {
   veg:      { cal:30,  p:2.0,  c:6.0,  f:0.3 },
   aromatic: { cal:40,  p:1.0,  c:9.0,  f:0.1 },
   fat:      { cal:884, p:0.0,  c:0.0,  f:100.0 },
-  acid:     { cal:20,  p:0.0,  c:1.0,  f:0.0 }
+  acid:     { cal:20,  p:0.0,  c:1.0,  f:0.0 },
+  seasoning:{ cal:0,   p:0.0,  c:0.0,  f:0.0 }
 };
 
 function nutrientFor(name, role){
@@ -256,6 +287,8 @@ const INSTR = {
   skip_aromatic:'Skip aromatics. Season with salt/pepper instead.',
   cook_veg:   'Add veggies. Cook until tender-crisp (3–6 minutes).',
   finish_acid:'Finish with lemon or vinegar off heat to brighten flavor.',
+  season:  'Season to taste with salt, pepper, or herbs.',
+  skip_seasoning: 'Skip extra seasoning for now.',
   combine: 'Combine everything. Taste. Season. Serve.'
 };
 
@@ -301,6 +334,11 @@ function buildInstructions(ingredients){
   // Acid finish at the end (if present)
   if(ingredients.some(i=>i.role==='acid' && i.name!=='skip it')){
     steps.push({ key:'acid', text: INSTR.finish_acid });
+  }
+
+  // Seasoning guidance (optional)
+  if(ingredients.some(i=>i.role==='seasoning' && i.name!=='skip it')){
+    steps.push({ key:'seasoning', text: INSTR.season });
   }
 
   steps.push({ key:'combine', text: INSTR.combine });
@@ -396,24 +434,41 @@ function setOwned(){
 // -------------------------------
 // SWAPS: apply swap (NO buildSteps calls, no undefined refs)
 // -------------------------------
-function applySwap(ingId, opt){
+function applySwap(ingId, opt, optsArg){
   const ing = state.ingredients.find(i=>i.id===ingId);
   if(!ing || !opt) return;
 
+  const opts = optsArg || {};
+  const keepRole = !!opts.keepRole;
+  const keepQty  = !!opts.keepQty;
+
+  const prevRole = ing.role;
+  const prevBase = { ...ing.base };
+
   ing.name = canonName(opt.name);
-  ing.role = roleFor(ing.name);
 
-  // Reset to role baseline then apply overrides
-  ing.base = { ...(BASE_QTY[ing.role] || BASE_QTY.veg) };
+  // Role handling:
+  // - Catalog swaps: role follows the ingredient name.
+  // - Custom "Jackpot" swaps: role stays on the slot (persist behavior).
+  ing.role = keepRole ? prevRole : roleFor(ing.name);
 
-  if(typeof opt.baseOverride === 'number') ing.base.v = opt.baseOverride;
-  if(typeof opt.unitOverride === 'string') ing.base.u = opt.unitOverride;
+  // Quantity handling:
+  // - Catalog swaps: reset to role baseline, then apply overrides.
+  // - Custom swaps: keep the slot's current qty/unit (persist behavior).
+  if(keepQty){
+    ing.base = prevBase;
+  } else {
+    ing.base = { ...(BASE_QTY[ing.role] || BASE_QTY.veg) };
 
-  // Canon defaults (e.g., garlic cloves) take precedence if present
-  const override = CANON_DEFAULT_BASE[ing.name];
-  if(override){
-    ing.base.v = override.v;
-    ing.base.u = override.u;
+    if(typeof opt.baseOverride === 'number') ing.base.v = opt.baseOverride;
+    if(typeof opt.unitOverride === 'string') ing.base.u = opt.unitOverride;
+
+    // Canon defaults (e.g., garlic cloves) take precedence if present
+    const override = CANON_DEFAULT_BASE[ing.name];
+    if(override){
+      ing.base.v = override.v;
+      ing.base.u = override.u;
+    }
   }
 
   ing.swapMeta = { patchKey: opt.instrPatchKey || null };
@@ -464,18 +519,79 @@ function render(){
       const opts = SWAP_CATALOG[ing.role] || [];
       sel.innerHTML =
         `<option value="">Swap</option>` +
+        `<option value="__custom__">➕ Enter your own…</option>` +
         opts.map(o=>`<option value="${o.name}">${pretty(o.name)}</option>`).join('');
 
       sel.onchange = ()=>{
-        const chosen = sel.value;
-        if(!chosen) return;
-        const opt = opts.find(o=>o.name===chosen);
-        applySwap(ing.id, opt);
-        sel.value = '';
-        bump(li);
-        setOwned();
-        flashStepByKey(ing.role);
-      };
+  const chosen = sel.value;
+  if(!chosen) return;
+
+  // Jackpot: user enters their own ingredient
+  if(chosen === '__custom__'){
+    sel.value = '';
+
+    // Remove any existing custom UI in this row
+    const existing = li.querySelector('.custom-swap');
+    if(existing) existing.remove();
+
+    const wrap = document.createElement('div');
+    wrap.className = 'custom-swap';
+    wrap.style.marginTop = '8px';
+    wrap.style.display = 'flex';
+    wrap.style.gap = '8px';
+    wrap.style.alignItems = 'center';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = 'Enter ingredient (e.g., feta, soy sauce, oregano)';
+    input.style.flex = '1';
+    input.style.padding = '10px';
+    input.style.borderRadius = '10px';
+    input.style.border = '1px solid rgba(0,0,0,0.12)';
+
+    const add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'btn primary';
+    add.textContent = 'Apply';
+    add.style.padding = '10px 12px';
+    add.style.borderRadius = '12px';
+
+    const cancel = document.createElement('button');
+    cancel.type = 'button';
+    cancel.className = 'btn ghost';
+    cancel.textContent = 'Cancel';
+    cancel.style.padding = '10px 12px';
+    cancel.style.borderRadius = '12px';
+
+    cancel.onclick = ()=> wrap.remove();
+
+    add.onclick = ()=>{
+      const raw = input.value.trim();
+      if(!raw) return;
+
+      // Keep role + qty on the SLOT (persist behavior)
+      applySwap(ing.id, { name: raw, instrPatchKey: null }, { keepRole:true, keepQty:true });
+
+      wrap.remove();
+      bump(li);
+      setOwned();
+      flashStepByKey(ing.role);
+    };
+
+    wrap.append(input, add, cancel);
+    li.appendChild(wrap);
+    input.focus();
+    return;
+  }
+
+  // Normal catalog swap
+  const opt = opts.find(o=>o.name===chosen);
+  applySwap(ing.id, opt);
+  sel.value = '';
+  bump(li);
+  setOwned();
+  flashStepByKey(ing.role);
+};
 
       li.append(left, sel);
       ul.appendChild(li);
@@ -791,6 +907,9 @@ function wireEvents(){
       const hasAcid = ingredients.some(i=>i.role==='acid');
       if(!hasFat) ingredients.push({ id: crypto.randomUUID(), name:'skip it', role:'fat', base:{ v:0, u:'' }, swapMeta:null });
       if(!hasAcid) ingredients.push({ id: crypto.randomUUID(), name:'skip it', role:'acid', base:{ v:0, u:'' }, swapMeta:null });
+
+      const hasSeasoning = ingredients.some(i=>i.role==='seasoning');
+      if(!hasSeasoning) ingredients.push({ id: crypto.randomUUID(), name:'skip it', role:'seasoning', base:{ v:0, u:'' }, swapMeta:null });
 
       state = { ingredients, title: titleFrom(ingredients), steps: [] };
       state.steps = buildInstructions(state.ingredients);
