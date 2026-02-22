@@ -10,13 +10,15 @@ const $ = (id) => document.getElementById(id);
 let servings = 2;
 let state = null;
 let owned = false;
-
+let hasUserSwap = false;
 // -------------------------------
 // Normalization + roles
 // -------------------------------
 const ROLE_RULES = [
   // Specific phrases FIRST (prevents "green beans" matching "beans")
   [/\bgreen beans\b/i,'veg'],
+  [/\b(taco seasoning|bbq sauce|barbecue sauce|italian seasoning|pizza sauce|marinara|soy sauce|teriyaki|curry powder|curry paste|ranch seasoning|fajita seasoning)\b/i,'seasoning'],
+  [/\b(salt|pepper|black pepper|kosher salt|sea salt|garlic powder|onion powder|paprika|smoked paprika|oregano|basil|parsley|thyme|rosemary|cumin|chili flakes|red pepper flakes|herbs)\b/i,'seasoning'],
   [/\b(olive oil|butter)\b/i,'fat'],
   [/\b(lemon|lemon juice|vinegar)\b/i,'acid'],
   [/\b(salmon|chicken|chicken breast|beef|ground beef|lean beef|turkey|pork|tofu|lentils|egg|eggs)\b/i,'protein'],
@@ -221,6 +223,16 @@ const GRAMS_PER_UNIT = {
   'butter': { tbsp: 14 },
   'lemon': { tbsp: 15, tsp: 5 },
   'vinegar': { tbsp: 15, tsp: 5 },
+  'taco seasoning': { tsp: 2.7, tbsp: 8 },
+  'italian seasoning': { tsp: 1, tbsp: 3 },
+  'bbq sauce': { tbsp: 17, tsp: 5.5 },
+  'barbecue sauce': { tbsp: 17, tsp: 5.5 },
+  'soy sauce': { tbsp: 16, tsp: 5 },
+  'teriyaki': { tbsp: 18, tsp: 6 },
+  'marinara': { cups: 245, tbsp: 15, tsp: 5 },
+  'pizza sauce': { cups: 245, tbsp: 15, tsp: 5 },
+  'curry powder': { tsp: 2.2, tbsp: 6.6 },
+  'curry paste': { tsp: 5, tbsp: 15 },
   'garlic': { cloves: 3 }
 };
 
@@ -338,13 +350,41 @@ function qtyStr(ing){
   return `${nice} ${ing.base.u}`;
 }
 
+function detectFlavorTag(ings){
+  const names = ings.map(i=>i.name);
+  const s = names.join(' | ');
+
+  const has = (rx)=> rx.test(s);
+
+  if(has(/(taco seasoning|taco|fajita|salsa|tortilla)/i)) return 'taco';
+  if(has(/(pizza|pizza sauce|marinara|mozzarella|italian seasoning)/i)) return 'pizza';
+  if(has(/(bbq|barbecue|bbq sauce|barbecue sauce|smoked paprika)/i)) return 'bbq';
+  if(has(/(italian|italian seasoning|marinara|basil|oregano)/i)) return 'italian';
+  if(has(/(soy sauce|teriyaki|sesame|ginger)/i)) return 'asian';
+  if(has(/(curry|curry powder|curry paste)/i)) return 'curry';
+  return '';
+}
+
 function titleFrom(ings){
   const protein = ings.find(i=>i.role==='protein' && i.name!=='skip it');
   const hasStarch = ings.some(i=>i.role==='starch' && i.name!=='skip it');
-  const style = hasStarch ? 'Dinner' : 'Plate';
+  const hasLeafy = ings.some(i=>/(lettuce|spinach|arugula|mixed greens|kale)/i.test(i.name));
+
+  const flavor = detectFlavorTag(ings);
+
+  // Format: Salad if leafy present, Bowl if starch present, else Plate
+  const format = hasLeafy ? 'Salad' : (hasStarch ? 'Bowl' : 'Plate');
+
   const main = protein ? pretty(protein.name) : 'Veggie';
-  return `Simple ${main} ${style}`;
+
+  if(flavor){
+    const flavorWord = pretty(flavor);
+    return `Simple ${flavorWord} ${main} ${format}`;
+  }
+
+  return `Simple ${main} ${format}`;
 }
+
 
 function computeMacrosPerServing(){
   let cal=0, p=0, c=0, f=0;
@@ -396,33 +436,54 @@ function setOwned(){
 // -------------------------------
 // SWAPS: apply swap (NO buildSteps calls, no undefined refs)
 // -------------------------------
-function applySwap(ingId, opt){
+function applySwap(ingId, opt, optsArg){
   const ing = state.ingredients.find(i=>i.id===ingId);
   if(!ing || !opt) return;
 
+  const opts = optsArg || {};
+  const keepRole = !!opts.keepRole;
+  const keepQty  = !!opts.keepQty;
+
+  const prevRole = ing.role;
+  const prevBase = { ...ing.base };
+
   ing.name = canonName(opt.name);
-  ing.role = roleFor(ing.name);
 
-  // Reset to role baseline then apply overrides
-  ing.base = { ...(BASE_QTY[ing.role] || BASE_QTY.veg) };
+  // If user typed a known seasoning/flavor item, force seasoning role + sane qty.
+  const forceSeasoning = /(taco seasoning|italian seasoning|bbq sauce|barbecue sauce|soy sauce|teriyaki|curry powder|curry paste|pizza sauce|marinara)/i.test(ing.name);
 
-  if(typeof opt.baseOverride === 'number') ing.base.v = opt.baseOverride;
-  if(typeof opt.unitOverride === 'string') ing.base.u = opt.unitOverride;
+  if(forceSeasoning){
+    ing.role = 'seasoning';
+  } else {
+    ing.role = keepRole ? prevRole : roleFor(ing.name);
+  }
 
-  // Canon defaults (e.g., garlic cloves) take precedence if present
-  const override = CANON_DEFAULT_BASE[ing.name];
-  if(override){
-    ing.base.v = override.v;
-    ing.base.u = override.u;
+  if(keepQty && !forceSeasoning){
+    ing.base = prevBase;
+  } else {
+    ing.base = { ...(BASE_QTY[ing.role] || BASE_QTY.veg) };
+
+    if(typeof opt.baseOverride === 'number') ing.base.v = opt.baseOverride;
+    if(typeof opt.unitOverride === 'string') ing.base.u = opt.unitOverride;
+
+    // Common overrides
+    if(ing.name === 'garlic'){ ing.base.v = 2; ing.base.u = 'cloves'; }
+    if(ing.name === 'olive oil'){ ing.base.v = 1; ing.base.u = 'tbsp'; }
+    if(ing.name === 'butter'){ ing.base.v = 1; ing.base.u = 'tbsp'; }
+    if(ing.name === 'lemon'){ ing.base.v = 1; ing.base.u = 'tbsp'; }
+    if(ing.name === 'vinegar'){ ing.base.v = 1; ing.base.u = 'tbsp'; }
   }
 
   ing.swapMeta = { patchKey: opt.instrPatchKey || null };
+
+  // Update title (flavor-aware)
+  state.title = titleFrom(state.ingredients);
 
   // Rebuild instructions safely
   state.steps = buildInstructions(state.ingredients);
 
   computeMacrosPerServing();
-  render(); // keep visual swap state consistent
+  render();
 }
 
 // -------------------------------
@@ -457,23 +518,82 @@ function render(){
 
       left.append(main, sub);
 
-      // SWAP UI (VISUAL RE-ENABLED)
+      // SWAP UI (includes ➕ custom)
       const sel = document.createElement('select');
       sel.className = 'swap-select';
 
       const opts = SWAP_CATALOG[ing.role] || [];
       sel.innerHTML =
         `<option value="">Swap</option>` +
+        `<option value="__custom__">➕ Enter your own…</option>` +
         opts.map(o=>`<option value="${o.name}">${pretty(o.name)}</option>`).join('');
 
       sel.onchange = ()=>{
         const chosen = sel.value;
         if(!chosen) return;
+
+        // Custom (Jackpot) swap
+        if(chosen === '__custom__'){
+          sel.value = '';
+
+          const existing = li.querySelector('.custom-swap');
+          if(existing) existing.remove();
+
+          const wrap = document.createElement('div');
+          wrap.className = 'custom-swap';
+          wrap.style.marginTop = '8px';
+          wrap.style.display = 'flex';
+          wrap.style.gap = '8px';
+          wrap.style.alignItems = 'center';
+
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.placeholder = 'Enter ingredient (e.g., taco seasoning, feta, soy sauce)';
+          input.style.flex = '1';
+          input.style.padding = '10px';
+          input.style.borderRadius = '10px';
+          input.style.border = '1px solid rgba(0,0,0,0.12)';
+
+          const add = document.createElement('button');
+          add.type = 'button';
+          add.className = 'btn primary';
+          add.textContent = 'Apply';
+          add.style.padding = '10px 12px';
+          add.style.borderRadius = '12px';
+
+          const cancel = document.createElement('button');
+          cancel.type = 'button';
+          cancel.className = 'btn ghost';
+          cancel.textContent = 'Cancel';
+          cancel.style.padding = '10px 12px';
+          cancel.style.borderRadius = '12px';
+
+          cancel.onclick = ()=> wrap.remove();
+
+          add.onclick = ()=>{
+            const raw = input.value.trim();
+            if(!raw) return;
+
+            applySwap(ing.id, { name: raw, instrPatchKey: null }, { keepRole:true, keepQty:true });
+
+            hasUserSwap = true;
+            wrap.remove();
+            bump(li);
+            flashStepByKey(ing.role);
+          };
+
+          wrap.append(input, add, cancel);
+          li.appendChild(wrap);
+          input.focus();
+          return;
+        }
+
+        // Catalog swap
         const opt = opts.find(o=>o.name===chosen);
         applySwap(ing.id, opt);
+        hasUserSwap = true;
         sel.value = '';
         bump(li);
-        setOwned();
         flashStepByKey(ing.role);
       };
 
@@ -795,8 +915,9 @@ function wireEvents(){
       state.steps = buildInstructions(state.ingredients);
 
       owned = false;
+      hasUserSwap = false;
       const sr = $('saveRow');
-      if(sr) sr.classList.add('hidden');
+      if(sr) sr.classList.remove('hidden');
       if(saveBtn) saveBtn.textContent = '⭐ Save to Favorites';
 
       $('inputCard')?.classList.add('hidden');
@@ -810,7 +931,6 @@ function wireEvents(){
     inc.dataset.wired='1';
     inc.onclick = ()=>{
       servings = Math.min(8, servings+1);
-      setOwned();
       render();
     };
   }
@@ -819,7 +939,6 @@ function wireEvents(){
     dec.dataset.wired='1';
     dec.onclick = ()=>{
       servings = Math.max(1, servings-1);
-      setOwned();
       render();
     };
   }
@@ -853,6 +972,11 @@ function wireEvents(){
       servings = 2;
       state = null;
       owned = false;
+      hasUserSwap = false;
+      const sr = $('saveRow');
+      if(sr) sr.classList.add('hidden');
+      const sb = $('saveBtn');
+      if(sb) sb.textContent = '⭐ Save to Favorites';
       $('resultCard')?.classList.add('hidden');
       $('inputCard')?.classList.remove('hidden');
     };
