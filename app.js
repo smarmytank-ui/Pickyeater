@@ -941,10 +941,9 @@ function wireEvents(){
   if(dec && !dec.dataset.wired){
     dec.dataset.wired='1';
     dec.onclick = ()=>{
-      servings = Math.max(1, servings-1);
-      setOwned();
-      render();
-    };
+  servings = Math.max(1, servings-1);
+  render();
+};
   }
 
   if(saveBtn && !saveBtn.dataset.wired){
