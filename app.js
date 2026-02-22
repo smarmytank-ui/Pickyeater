@@ -10,7 +10,7 @@ const $ = (id) => document.getElementById(id);
 let servings = 2;
 let state = null;
 let owned = false;
-let hasUserSwap = false;
+
 // -------------------------------
 // Normalization + roles
 // -------------------------------
@@ -471,7 +471,6 @@ function render(){
         if(!chosen) return;
         const opt = opts.find(o=>o.name===chosen);
         applySwap(ing.id, opt);
-        hasUserSwap = true;
         sel.value = '';
         bump(li);
         setOwned();
@@ -796,7 +795,6 @@ function wireEvents(){
       state.steps = buildInstructions(state.ingredients);
 
       owned = false;
-      hasUserSwap = false;
       const sr = $('saveRow');
       if(sr) sr.classList.add('hidden');
       if(saveBtn) saveBtn.textContent = '⭐ Save to Favorites';
@@ -812,6 +810,7 @@ function wireEvents(){
     inc.dataset.wired='1';
     inc.onclick = ()=>{
       servings = Math.min(8, servings+1);
+      setOwned();
       render();
     };
   }
@@ -820,6 +819,7 @@ function wireEvents(){
     dec.dataset.wired='1';
     dec.onclick = ()=>{
       servings = Math.max(1, servings-1);
+      setOwned();
       render();
     };
   }
@@ -853,7 +853,6 @@ function wireEvents(){
       servings = 2;
       state = null;
       owned = false;
-      hasUserSwap = false;
       $('resultCard')?.classList.add('hidden');
       $('inputCard')?.classList.remove('hidden');
     };
