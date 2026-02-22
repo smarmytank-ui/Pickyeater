@@ -64,18 +64,18 @@ const BASE_QTY = {
 // Nutrition (simple + reliable)
 // -------------------------------
 const NUTRITION = {
-  'chicken breast': { cal:165 },
-  'lean beef': { cal:176 },
-  'ground beef': { cal:176 },
-  'salmon': { cal:208 },
-  'eggs': { cal:72 },
-  'rice': { cal:130 },
-  'potatoes': { cal:87 },
-  'broccoli': { cal:34 },
-  'cheddar cheese': { cal:403 },
-  'sour cream': { cal:193 },
-  'tortillas': { cal:304 },
-  'olive oil': { cal:884 }
+  'ground beef':      { cal:176, p:26, c:0,  f:10 },
+  'lean beef':        { cal:176, p:26, c:0,  f:10 },
+  'chicken breast':  { cal:165, p:31, c:0,  f:4  },
+  'salmon':           { cal:208, p:20, c:0,  f:13 },
+  'eggs':             { cal:72,  p:6,  c:0,  f:5  },
+  'cheddar cheese':   { cal:403, p:25, c:1,  f:33 },
+  'sour cream':       { cal:193, p:2,  c:4,  f:19 },
+  'broccoli':         { cal:34,  p:3,  c:7,  f:0  },
+  'tomatoes':         { cal:18,  p:1,  c:4,  f:0  },
+  'rice':             { cal:130, p:2,  c:28, f:0  },
+  'tortillas':        { cal:304, p:8,  c:50, f:6  },
+  'olive oil':        { cal:884, p:0,  c:0,  f:100 }
 };
 
 function caloriesFor(ing){
