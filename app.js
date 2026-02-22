@@ -1,105 +1,74 @@
 // =======================================================
-// Picky Eater — LOCKED FOUNDATION PATCH
-// STEP 1 FIX: Save visible after Generate (not swap-gated)
-// FULL FILE — replace app.js entirely
+// Picky Eater — STABLE SWAPPER + SAVE FIX (LOCKED)
+// Matches current index.html exactly
 // =======================================================
 
 const $ = (id) => document.getElementById(id);
 
 let servings = 2;
 let state = null;
-let owned = false;
 
 // -------------------------------
-// Normalization + roles
+// Roles & parsing
 // -------------------------------
 const ROLE_RULES = [
-  [/\bgreen beans\b/i,'veg'],
-  [/\b(salt|pepper|black pepper|kosher salt|sea salt|garlic powder|onion powder|paprika|smoked paprika|italian seasoning|oregano|basil|parsley|thyme|rosemary|cumin|chili flakes|red pepper flakes|herbs)\b/i,'seasoning'],
-  [/\b(olive oil|butter)\b/i,'fat'],
-  [/\b(lemon|lemon juice|vinegar)\b/i,'acid'],
-  [/\b(salmon|chicken|chicken breast|beef|ground beef|lean beef|turkey|pork|tofu|lentils|egg|eggs)\b/i,'protein'],
-  [/\bbeans\b/i,'protein'],
-  [/\b(rice|pasta|potato|potatoes|quinoa|sweet potato|sweet potatoes)\b/i,'starch'],
-  [/\b(onion|onions|green onion|scallion|scallions|shallot|garlic)\b/i,'aromatic']
+  [/\b(ground beef|beef|chicken|chicken breast|turkey|salmon|tofu|eggs|lentils|beans)\b/i, 'protein'],
+  [/\b(rice|pasta|potato|potatoes|quinoa)\b/i, 'starch'],
+  [/\b(onion|garlic|shallot|green onion)\b/i, 'aromatic'],
+  [/\b(broccoli|lettuce|spinach|zucchini|carrots|green beans)\b/i, 'veg'],
+  [/\b(olive oil|butter)\b/i, 'fat'],
+  [/\b(lemon|vinegar)\b/i, 'acid'],
+  [/\b(salt|pepper|seasoning|spice)\b/i, 'seasoning']
 ];
 
-function canonName(s){
-  const t = String(s||'').trim().toLowerCase();
-  if(!t) return '';
-  return t.replace(/\s+/g,' ');
-}
-
-function roleFor(n){
-  for(const [r,role] of ROLE_RULES) if(r.test(n)) return role;
+function roleFor(name){
+  for(const [r, role] of ROLE_RULES){
+    if(r.test(name)) return role;
+  }
   return 'veg';
 }
 
 function parseLines(s){
-  return (s||'').replace(/,+/g,'\n').split(/\n+/).map(x=>x.trim()).filter(Boolean);
+  return (s||'')
+    .split(/\n+/)
+    .map(x=>x.trim())
+    .filter(Boolean);
 }
 
 function pretty(s){
-  return (s||'').split(' ').map(w=>w? w[0].toUpperCase()+w.slice(1) : w).join(' ');
+  return s.split(' ').map(w=>w[0].toUpperCase()+w.slice(1)).join(' ');
 }
 
 // -------------------------------
-// Base quantities
+// Swap catalog (LOCKED)
 // -------------------------------
-const BASE_QTY = {
-  protein:{ v:1, u:'lb' },
-  veg:{ v:2, u:'cups' },
-  starch:{ v:2, u:'cups' },
-  aromatic:{ v:1, u:'medium' },
-  fat:{ v:1, u:'tbsp' },
-  acid:{ v:1, u:'tbsp' },
-  seasoning:{ v:0.5, u:'tsp' }
+const SWAP_CATALOG = {
+  protein: ['chicken breast','ground beef','turkey','salmon','tofu','eggs','beans'],
+  veg: ['broccoli','spinach','lettuce','zucchini','carrots','green beans'],
+  starch: ['rice','pasta','potatoes','quinoa'],
+  aromatic: ['onion','garlic','green onion','shallot'],
+  fat: ['olive oil','butter','skip it'],
+  acid: ['lemon','vinegar','skip it'],
+  seasoning: ['salt','pepper','italian seasoning','skip it']
 };
-
-// -------------------------------
-// Instructions (unchanged)
-// -------------------------------
-const INSTR = {
-  prep:'Wash and prep everything.',
-  cook_meat:'Cook protein until done.',
-  cook_veg:'Cook vegetables.',
-  season:'Season to taste.',
-  combine:'Combine and serve.'
-};
-
-function buildInstructions(){
-  return [
-    { text: INSTR.prep },
-    { text: INSTR.cook_meat },
-    { text: INSTR.cook_veg },
-    { text: INSTR.season },
-    { text: INSTR.combine }
-  ];
-}
 
 // -------------------------------
 // Normalize ingredients
 // -------------------------------
-function normalize(names){
-  return names.map(raw=>{
-    const name = canonName(raw);
-    const role = roleFor(name);
+function normalize(raw){
+  return raw.map(name=>{
+    const clean = name.toLowerCase();
     return {
       id: crypto.randomUUID(),
-      name,
-      role,
-      base: { ...(BASE_QTY[role] || BASE_QTY.veg) }
+      name: clean,
+      role: roleFor(clean)
     };
   });
 }
 
-function qtyStr(ing){
-  const m = servings / 2;
-  const val = ing.base.v * m;
-  if(!ing.base.u || val === 0) return '';
-  return `${val} ${ing.base.u}`;
-}
-
+// -------------------------------
+// Title
+// -------------------------------
 function titleFrom(ings){
   const protein = ings.find(i=>i.role==='protein');
   return `Simple ${protein ? pretty(protein.name) : 'Veggie'} Plate`;
@@ -114,12 +83,69 @@ function render(){
   $('recipeTitle').textContent = state.title;
   $('servingsVal').textContent = servings;
 
+  // Ingredients + swaps
   const ul = $('ingredientsList');
   ul.innerHTML = '';
+
   state.ingredients.forEach(ing=>{
     const li = document.createElement('li');
-    li.textContent = `${qtyStr(ing)} ${pretty(ing.name)}`;
+    li.className = 'ing-row';
+
+    const left = document.createElement('div');
+    left.className = 'ing-left';
+
+    const main = document.createElement('div');
+    main.className = 'ing-main';
+    main.textContent = pretty(ing.name);
+
+    const sub = document.createElement('div');
+    sub.className = 'ing-sub';
+    sub.textContent = ing.role.toUpperCase();
+
+    left.append(main, sub);
+
+    const sel = document.createElement('select');
+    sel.className = 'swap-select';
+    sel.innerHTML =
+      `<option value="">Swap</option>` +
+      `<option value="__custom__">➕ Enter your own…</option>` +
+      (SWAP_CATALOG[ing.role] || []).map(o =>
+        `<option value="${o}">${pretty(o)}</option>`
+      ).join('');
+
+    sel.onchange = ()=>{
+      if(!sel.value) return;
+
+      if(sel.value === '__custom__'){
+        const v = prompt('Enter ingredient');
+        if(v){
+          ing.name = v.toLowerCase();
+        }
+      } else {
+        ing.name = sel.value;
+      }
+
+      sel.value = '';
+      render();
+    };
+
+    li.append(left, sel);
     ul.appendChild(li);
+  });
+
+  // Instructions (simple locked)
+  const ol = $('instructionsList');
+  ol.innerHTML = '';
+  [
+    'Prep ingredients.',
+    'Cook protein.',
+    'Add vegetables.',
+    'Season to taste.',
+    'Serve and enjoy.'
+  ].forEach(t=>{
+    const li = document.createElement('li');
+    li.textContent = t;
+    ol.appendChild(li);
   });
 }
 
@@ -127,64 +153,47 @@ function render(){
 // Events
 // -------------------------------
 function wireEvents(){
-  const gen = $('generateBtn');
-  const inc = $('incServ');
-  const dec = $('decServ');
-  const saveBtn = $('saveBtn');
-  const backBtn = $('backBtn');
-
-  gen.onclick = ()=>{
+  $('generateBtn').onclick = ()=>{
     const raw = parseLines($('ingredientsInput').value);
     if(!raw.length) return alert('Add ingredients');
 
     const ingredients = normalize(raw);
+
     state = {
       ingredients,
-      title: titleFrom(ingredients),
-      steps: buildInstructions()
+      title: titleFrom(ingredients)
     };
-
-    // 🔑 STEP 1 FIX: SHOW SAVE IMMEDIATELY
-    const sr = $('saveRow');
-    if(sr) sr.classList.remove('hidden');
-    if(saveBtn) saveBtn.textContent = '⭐ Save to Favorites';
 
     $('inputCard').classList.add('hidden');
     $('resultCard').classList.remove('hidden');
 
+    // SHOW SAVE IMMEDIATELY
+    $('saveRow').classList.remove('hidden');
+    $('saveBtn').textContent = '⭐ Save to Favorites';
+
     render();
   };
 
-  inc.onclick = ()=>{
+  $('incServ').onclick = ()=>{
     servings = Math.min(8, servings+1);
     render();
   };
 
-  dec.onclick = ()=>{
+  $('decServ').onclick = ()=>{
     servings = Math.max(1, servings-1);
     render();
   };
 
-  saveBtn.onclick = ()=>{
-    if(!state) return;
-    saveBtn.textContent = '✓ Saved';
-  };
-
-  backBtn.onclick = ()=>{
+  $('backBtn').onclick = ()=>{
     servings = 2;
     state = null;
-    owned = false;
-
-    const sr = $('saveRow');
-    if(sr) sr.classList.add('hidden');
-
+    $('saveRow').classList.add('hidden');
     $('resultCard').classList.add('hidden');
     $('inputCard').classList.remove('hidden');
   };
 }
 
-if(document.readyState === 'loading'){
-  document.addEventListener('DOMContentLoaded', wireEvents);
-} else {
-  wireEvents();
-}
+// -------------------------------
+// Init
+// -------------------------------
+document.addEventListener('DOMContentLoaded', wireEvents);
