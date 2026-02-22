@@ -17,7 +17,7 @@ let owned = false;
 const ROLE_RULES = [
   // Specific phrases FIRST (prevents "green beans" matching "beans")
   [/\bgreen beans\b/i,'veg'],
-  [/\b(salt|pepper|black pepper|kosher salt|sea salt|garlic powder|onion powder|paprika|smoked paprika|italian seasoning|oregano|basil|parsley|thyme|rosemary|cumin|chili flakes|red pepper flakes|herbs)\b/i,'seasoning'],
+  [/(salt|pepper|black pepper|kosher salt|sea salt|garlic powder|onion powder|paprika|smoked paprika|italian seasoning|oregano|basil|parsley|thyme|rosemary|cumin|chili flakes|red pepper flakes|herbs)/i,'seasoning'],
   [/\b(olive oil|butter)\b/i,'fat'],
   [/\b(lemon|lemon juice|vinegar)\b/i,'acid'],
   [/\b(salmon|chicken|chicken breast|beef|ground beef|lean beef|turkey|pork|tofu|lentils|egg|eggs)\b/i,'protein'],
