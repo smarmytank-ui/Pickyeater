@@ -932,7 +932,10 @@ function wireEvents(){
       servings = Math.min(8, servings+1);
       setOwned();
       render();
-    };
+    };inc.onclick = ()=>{
+  servings = Math.min(8, servings+1);
+  render();
+};
   }
 
   if(dec && !dec.dataset.wired){
