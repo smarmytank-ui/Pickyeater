@@ -1,6 +1,5 @@
 // =======================================================
-// Picky Eater — STABLE CORE + JACKPOT MERGE
-// Generator + Amount Controls + Jackpot Swapper
+// Picky Eater — STABLE CORE + JACKPOT + MACROS + BREAD FIX
 // FULL FILE — replace app.js entirely
 // =======================================================
 
@@ -8,7 +7,6 @@ const $ = (id) => document.getElementById(id);
 
 let servings = 2;
 let state = null;
-let owned = false;
 
 // -------------------------------
 // Helpers
@@ -23,7 +21,7 @@ function pretty(s){
 // --- Fraction formatter ---
 function formatQty(value) {
   if (!value || value <= 0) return "";
-  const fractions = { 0.25:"1/4",0.5:"1/2",0.75:"3/4",0.33:"1/3",0.66:"2/3" };
+  const fractions = { 0.25:"1/4",0.5:"1/2",0.75:"3/4" };
   const whole = Math.floor(value);
   const rem = value - whole;
   const f = Object.keys(fractions).find(x=>Math.abs(x-rem)<0.01);
@@ -37,8 +35,8 @@ function formatQty(value) {
 // Roles + Base quantities (SERVES 2)
 // -------------------------------
 const ROLE_RULES = [
-  [/\b(taco|tortilla)\b/i,'bread'],
-  [/\b(cheese|cheddar|mozzarella|parmesan|sour cream|yogurt)\b/i,'dairy'],
+  [/\b(tortilla|bread|pita)\b/i,'bread'],
+  [/\b(cheese|cheddar|mozzarella|sour cream|yogurt)\b/i,'dairy'],
   [/\b(olive oil|butter)\b/i,'fat'],
   [/\b(lemon|vinegar)\b/i,'acid'],
   [/\b(chicken|beef|turkey|salmon|tofu|eggs|beans)\b/i,'protein'],
@@ -59,25 +57,40 @@ const BASE_QTY = {
   fat:{ v:1, u:'tbsp' },
   acid:{ v:1, u:'tbsp' },
   dairy:{ v:0.5, u:'cups' },
-  bread:{ v:4, u:'pieces' }
+  bread:{ v:4, u:'count' }
 };
+
+// -------------------------------
+// Nutrition (simple + reliable)
+// -------------------------------
+const NUTRITION = {
+  'chicken breast': { cal:165 },
+  'lean beef': { cal:176 },
+  'ground beef': { cal:176 },
+  'salmon': { cal:208 },
+  'eggs': { cal:72 },
+  'rice': { cal:130 },
+  'potatoes': { cal:87 },
+  'broccoli': { cal:34 },
+  'cheddar cheese': { cal:403 },
+  'sour cream': { cal:193 },
+  'tortillas': { cal:304 },
+  'olive oil': { cal:884 }
+};
+
+function caloriesFor(ing){
+  const base = NUTRITION[ing.name] || { cal:50 };
+  return base.cal;
+}
 
 // -------------------------------
 // Swap catalog
 // -------------------------------
 const SWAP_CATALOG = {
-  protein:[
-    {name:'chicken breast'},{name:'lean beef'},{name:'salmon'},{name:'tofu'}
-  ],
-  veg:[
-    {name:'broccoli'},{name:'green beans'},{name:'spinach'}
-  ],
-  dairy:[
-    {name:'cheddar cheese'},{name:'sour cream'}
-  ],
-  bread:[
-    {name:'tortillas'}
-  ]
+  protein:[{name:'chicken breast'},{name:'lean beef'},{name:'salmon'},{name:'tofu'}],
+  veg:[{name:'broccoli'},{name:'green beans'},{name:'spinach'}],
+  dairy:[{name:'cheddar cheese'},{name:'sour cream'}],
+  bread:[{name:'tortillas'}]
 };
 
 // -------------------------------
@@ -97,7 +110,7 @@ function normalize(names){
 }
 
 // -------------------------------
-// Apply swap (SAFE)
+// Apply swap
 // -------------------------------
 function applySwap(id, opt, cfg={}){
   const ing = state.ingredients.find(i=>i.id===id);
@@ -106,18 +119,19 @@ function applySwap(id, opt, cfg={}){
   ing.name = opt.name.toLowerCase();
   if(!cfg.keepRole) ing.role = roleFor(ing.name);
   if(!cfg.keepQty) ing.base = {...(BASE_QTY[ing.role]||BASE_QTY.veg)};
-
   render();
 }
 
 // -------------------------------
-// Render (MERGED)
+// Render
 // -------------------------------
 function render(){
   if(!state) return;
 
   $('servingsVal').textContent = servings;
   $('recipeTitle').textContent = state.title;
+
+  let totalCal = 0;
 
   const ul = $('ingredientsList');
   ul.innerHTML = '';
@@ -131,8 +145,13 @@ function render(){
 
     const main = document.createElement('div');
     main.className = 'ing-main';
-    const qty = formatQty(ing.base.v*(servings/2));
-    main.textContent = `${qty} ${ing.base.u||''} ${pretty(ing.name)}`.replace(/\s+/g,' ');
+
+    const qtyVal = ing.base.v*(servings/2);
+    const qty = ing.base.u === 'count'
+      ? `count ${Math.round(qtyVal)}`
+      : `${formatQty(qtyVal)} ${ing.base.u}`;
+
+    main.textContent = `${qty} ${pretty(ing.name)}`.replace(/\s+/g,' ');
 
     const sub = document.createElement('div');
     sub.className = 'ing-sub';
@@ -144,7 +163,7 @@ function render(){
     const ctrl = document.createElement('div');
     ctrl.className = 'amount-controls';
 
-    const step = (ing.base.u==='tbsp'||ing.base.u==='tsp')?0.5:1;
+    const step = ing.base.u === 'tbsp' ? 0.5 : 1;
 
     const dec = document.createElement('button');
     dec.className = 'btn ghost small';
@@ -159,7 +178,10 @@ function render(){
     ctrl.append(dec,inc);
     left.appendChild(ctrl);
 
-    // Swap select + JACKPOT
+    // Calories
+    totalCal += caloriesFor(ing) * (qtyVal/servings);
+
+    // Swap + Jackpot
     const sel = document.createElement('select');
     sel.className = 'swap-select';
     const opts = SWAP_CATALOG[ing.role]||[];
@@ -171,7 +193,6 @@ function render(){
     sel.onchange = ()=>{
       if(!sel.value) return;
 
-      // JACKPOT
       if(sel.value==='__custom__'){
         sel.value='';
         const existing = li.querySelector('.custom-swap');
@@ -181,7 +202,7 @@ function render(){
         wrap.className='custom-swap';
 
         const input = document.createElement('input');
-        input.placeholder='Enter ingredient (e.g. feta, soy sauce)';
+        input.placeholder='Enter ingredient';
         input.className='field';
 
         const apply = document.createElement('button');
@@ -206,7 +227,6 @@ function render(){
         return;
       }
 
-      // Normal catalog swap
       const opt = opts.find(o=>o.name===sel.value);
       if(opt) applySwap(ing.id,opt);
       sel.value='';
@@ -215,6 +235,8 @@ function render(){
     li.append(left,sel);
     ul.appendChild(li);
   });
+
+  $('calories').textContent = `≈ ${Math.round(totalCal)} cal/serv`;
 }
 
 // -------------------------------
@@ -223,8 +245,7 @@ function render(){
 $('generateBtn').onclick=()=>{
   const raw = parseLines($('ingredientsInput').value);
   if(!raw.length) return alert('Add ingredients');
-  const ingredients = normalize(raw);
-  state = { ingredients, title:'Simple Recipe' };
+  state = { ingredients: normalize(raw), title:'Simple Recipe' };
   $('inputCard').classList.add('hidden');
   $('resultCard').classList.remove('hidden');
   $('saveRow').classList.remove('hidden');
