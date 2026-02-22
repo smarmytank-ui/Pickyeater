@@ -972,9 +972,10 @@ function wireEvents(){
     backBtn.onclick = ()=>{
       servings = 2;
       state = null;
-      owned = false;
-      $('resultCard')?.classList.add('hidden');
-      $('inputCard')?.classList.remove('hidden');
+     owned = false;
+const sr = $('saveRow');
+if(sr) sr.classList.remove('hidden');
+if(saveBtn) saveBtn.textContent = '⭐ Save to Favorites';
     };
   }
 
