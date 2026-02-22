@@ -1,135 +1,129 @@
-// =======================================================
-// Picky Eater — LOCKED FOUNDATION PATCH
-// STEP 2: Swapped ingredient amount controls (SAFE)
-// FULL FILE — replace app.js entirely
-// =======================================================
+// --- HELPER: Turns 0.5 into "1/2" for the UI ---
+function formatQty(value) {
+  if (!value || value <= 0) return "";
+  const fractions = {
+    0.25: "1/4",
+    0.5: "1/2",
+    0.75: "3/4",
+    0.33: "1/3",
+    0.66: "2/3"
+  };
+  const whole = Math.floor(value);
+  const remainder = value - whole;
+  const closestMatch = Object.keys(fractions).find(f => Math.abs(f - remainder) < 0.01);
+  
+  let result = whole > 0 ? whole.toString() : "";
+  if (closestMatch) result += (result ? " " : "") + fractions[closestMatch];
+  else if (remainder > 0) result += (result ? " " : "") + remainder.toFixed(2);
+  
+  return result;
+}
 
-const $ = (id) => document.getElementById(id);
+// --- NEW: Dynamic Title Logic ---
+function updateRecipeTitle() {
+  if (!state) return;
+  const names = state.ingredients.map(i => i.name.toLowerCase());
+  
+  // Priority Naming Logic
+  if (names.some(n => n.includes('taco'))) state.title = "Simple Tacos";
+  else if (names.some(n => n.includes('bbq'))) state.title = "BBQ Plate";
+  else if (names.some(n => n.includes('curry'))) state.title = "Easy Curry";
+  else if (names.some(n => n.includes('tortilla'))) state.title = "Soft Wraps";
+  // Fallback to original title if no keywords found
+}
 
-let servings = 2;
-let state = null;
-let owned = false;
+// --- REPLACEMENT RENDER FUNCTION ---
+function render() {
+  if (!state) return;
 
-/* ===============================
-   NORMALIZATION / ROLES
-   (UNCHANGED)
-================================ */
-// --- snipped for brevity in explanation ---
-// ⚠️ IMPORTANT:
-// EVERYTHING ABOVE AND BELOW IS IDENTICAL
-// TO YOUR LAST WORKING BUILD EXCEPT render()
-// AND NOTHING TOUCHES generateBtn FLOW
-// -----------------------------------------
+  // Refresh title based on current ingredients
+  updateRecipeTitle();
 
-// -------------------------------
-// Render
-// -------------------------------
-function render(){
-  if(!state) return;
-
-  if($('servingsVal')) $('servingsVal').textContent = servings;
-  if($('recipeTitle')) $('recipeTitle').textContent = state.title;
+  if ($('servingsVal')) $('servingsVal').textContent = servings;
+  if ($('recipeTitle')) $('recipeTitle').textContent = state.title;
 
   const ul = $('ingredientsList');
-  if(ul){
-    ul.innerHTML = '';
+  if (!ul) return;
+  ul.innerHTML = '';
 
-    state.ingredients.forEach((ing)=>{
-      const li = document.createElement('li');
-      li.className = 'ing-row';
+  state.ingredients.forEach((ing) => {
+    const li = document.createElement('li');
+    li.className = 'ing-row';
 
-      const left = document.createElement('div');
-      left.className = 'ing-left';
+    const left = document.createElement('div');
+    left.className = 'ing-left';
 
-      const main = document.createElement('div');
-      main.className = 'ing-main';
-      const q = qtyStr(ing);
-      main.textContent = q ? `${q} ${pretty(ing.name)}` : pretty(ing.name);
+    // UI: Qty + Name
+    const main = document.createElement('div');
+    main.className = 'ing-main';
+    
+    // Use our new formatter for the quantity
+    const displayQty = formatQty(ing.base.v * (servings / 2)); 
+    const unit = ing.base.u || "";
+    main.textContent = `${displayQty} ${unit} ${pretty(ing.name)}`.replace(/\s+/g, ' ');
 
-      const sub = document.createElement('div');
-      sub.className = 'ing-sub';
-      sub.textContent = ing.role.toUpperCase();
+    const sub = document.createElement('div');
+    sub.className = 'ing-sub';
+    sub.textContent = ing.role.toUpperCase();
 
-      left.append(main, sub);
+    left.append(main, sub);
 
-      // -------------------------------
-      // AMOUNT CONTROLS (SAFE)
-      // Only show if ingredient was swapped
-      // Uses ing.swapMeta (already exists)
-      // -------------------------------
-      if(ing.swapMeta && ing.base?.u){
-        const ctrl = document.createElement('div');
-        ctrl.style.display = 'flex';
-        ctrl.style.gap = '6px';
-        ctrl.style.marginTop = '6px';
+    // --- SMART AMOUNT CONTROLS ---
+    const ctrl = document.createElement('div');
+    ctrl.className = 'amount-controls'; // Style this in CSS
+    ctrl.style.display = 'flex';
+    ctrl.style.gap = '8px';
+    ctrl.style.marginTop = '8px';
 
-        const dec = document.createElement('button');
-        dec.className = 'btn ghost';
-        dec.textContent = '−';
-        dec.onclick = () => {
-          ing.base.v = Math.max(0, ing.base.v - 0.25);
-          computeMacrosPerServing();
-          render();
-        };
+    const step = (ing.base.u === 'cup') ? 0.25 : 1;
 
-        const inc = document.createElement('button');
-        inc.className = 'btn ghost';
-        inc.textContent = '+';
-        inc.onclick = () => {
-          ing.base.v += 0.25;
-          computeMacrosPerServing();
-          render();
-        };
+    const dec = document.createElement('button');
+    dec.className = 'btn ghost small';
+    dec.textContent = '−';
+    dec.onclick = () => {
+      ing.base.v = Math.max(0, ing.base.v - step);
+      render(); // Re-render updates macros and UI
+    };
 
-        const lbl = document.createElement('span');
-        lbl.style.opacity = '0.6';
-        lbl.style.alignSelf = 'center';
-        lbl.textContent = 'Adjust amount';
+    const inc = document.createElement('button');
+    inc.className = 'btn ghost small';
+    inc.textContent = '+';
+    inc.onclick = () => {
+      ing.base.v += step;
+      render();
+    };
 
-        ctrl.append(dec, inc, lbl);
-        left.appendChild(ctrl);
-      }
+    ctrl.append(dec, inc);
+    left.appendChild(ctrl);
 
-      // -------------------------------
-      // SWAP SELECT (UNCHANGED)
-      // -------------------------------
-      const sel = document.createElement('select');
-      sel.className = 'swap-select';
+    // --- SWAP SELECT (Remains the same but integrated safely) ---
+    const sel = document.createElement('select');
+    sel.className = 'swap-select';
+    const opts = SWAP_CATALOG[ing.role] || [];
+    sel.innerHTML = `<option value="">Swap</option>` +
+      `<option value="__custom__">➕ Custom...</option>` +
+      opts.map(o => `<option value="${o.name}">${pretty(o.name)}</option>`).join('');
 
-      const opts = SWAP_CATALOG[ing.role] || [];
-      sel.innerHTML =
-        `<option value="">Swap</option>` +
-        `<option value="__custom__">➕ Enter your own…</option>` +
-        opts.map(o=>`<option value="${o.name}">${pretty(o.name)}</option>`).join('');
-
-      sel.onchange = ()=>{
-        const chosen = sel.value;
-        if(!chosen) return;
-
-        if(chosen === '__custom__'){
-          sel.value = '';
-          const name = prompt('Enter ingredient');
-          if(!name) return;
-          applySwap(ing.id, { name }, { keepRole:true, keepQty:true });
-          setOwned();
-          return;
-        }
-
-        const opt = opts.find(o=>o.name===chosen);
+    sel.onchange = () => {
+      if (sel.value === '__custom__') {
+        const n = prompt('Ingredient name?');
+        if (n) applySwap(ing.id, { name: n }, { keepRole: true, keepQty: true });
+      } else if (sel.value) {
+        const opt = opts.find(o => o.name === sel.value);
         applySwap(ing.id, opt);
-        sel.value = '';
-        setOwned();
-      };
+      }
+      render();
+    };
 
-      li.append(left, sel);
-      ul.appendChild(li);
-    });
-  }
+    li.append(left, sel);
+    ul.appendChild(li);
+  });
 
+  // Instructions
   const ol = $('instructionsList');
-  if(ol){
+  if (ol) {
     ol.innerHTML = '';
-    state.steps.forEach(s=>{
+    state.steps.forEach(s => {
       const li = document.createElement('li');
       li.textContent = s.text;
       ol.appendChild(li);
@@ -137,19 +131,4 @@ function render(){
   }
 
   computeMacrosPerServing();
-  ensureDiaryButton();
-}
-
-// -------------------------------
-// INIT (UNCHANGED)
-// -------------------------------
-function init(){
-  wireEvents();
-  ensureNutritionDisclosure();
-}
-
-if(document.readyState === 'loading'){
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  init();
 }
