@@ -21,7 +21,10 @@
       <div class="brand-sub">Make recipes your way</div>
     </div>
   </div>
-  <button id="openDiary" class="btn ghost topbar-btn">📓 Today</button>
+  <nav class="topbar-actions" aria-label="App sections">
+    <button id="openRecipeBook" class="btn ghost topbar-btn">📖 Recipe Book</button>
+    <button id="openDiary" class="btn ghost topbar-btn">📓 Today</button>
+  </nav>
 </header>
 
 <main class="content">
@@ -89,11 +92,45 @@
 
   <div class="save-row hidden" id="saveRow">
     <button id="saveBtn" class="btn primary full">⭐ Save to Favorites</button>
+    <button id="shareBtn" class="btn full">Share this recipe</button>
     <button id="addDiaryBtn" class="btn full">➕ Add to Diary</button>
   </div>
 
   <p class="ownership">This is your version now.</p>
   <button id="backBtn" class="btn ghost full">← Make another</button>
+</section>
+
+<!-- Recipe Book -->
+<section id="recipeBookCard" class="card hidden" aria-live="polite">
+  <div class="library-head">
+    <div>
+      <div class="diary-title">My Recipe Book</div>
+      <div class="diary-hint">The exact recipes you saved, including your swaps.</div>
+    </div>
+    <button id="closeRecipeBook" class="btn ghost">Close</button>
+  </div>
+  <label class="search-label" for="recipeSearch">Search saved recipes</label>
+  <input id="recipeSearch" class="field" type="search" placeholder="Search by recipe or ingredient" />
+  <div id="recipeBookList" class="recipe-grid"></div>
+</section>
+
+<!-- Shared recipe viewer -->
+<section id="sharedRecipeCard" class="card hidden" aria-live="polite">
+  <div class="library-head">
+    <div>
+      <div class="eyebrow">Shared from Picky Eater</div>
+      <div id="sharedRecipeTitle" class="recipe-title"></div>
+    </div>
+    <button id="closeSharedRecipe" class="btn ghost">Make my own</button>
+  </div>
+  <div id="sharedRecipeMeta" class="macro-row"></div>
+  <div class="divider"></div>
+  <div class="section-title">Ingredients</div>
+  <ul id="sharedIngredients" class="plain-list"></ul>
+  <div class="divider"></div>
+  <div class="section-title">Instructions</div>
+  <ol id="sharedInstructions" class="steps"></ol>
+  <button id="saveSharedRecipe" class="btn primary full">Save to my Recipe Book</button>
 </section>
 
 <!-- Diary -->
@@ -132,7 +169,7 @@
 
     <div class="divider"></div>
 
-    <div class="section-title">Today totals</div>
+    <div id="diaryTotalsTitle" class="section-title">Today totals</div>
     <div id="diaryTotals" class="macro-row"></div>
     <div class="macro-note">No judgment. Just awareness.</div>
   </div>

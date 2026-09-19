@@ -77,6 +77,7 @@ textarea{width:100%;min-height:120px;border:1px solid var(--border);border-radiu
 /* --- v1.9.0 additions: topbar button --- */
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .topbar-btn{white-space:nowrap}
+.topbar-actions{display:flex;gap:8px;align-items:center}
 
 /* --- Diary UI --- */
 .diary-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -100,6 +101,7 @@ textarea{width:100%;min-height:120px;border:1px solid var(--border);border-radiu
 }
 
 .quick-grid{display:flex;flex-direction:column;gap:10px}
+.quick-grid.hidden{display:none}
 .quick-macros{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .field{
   width:100%;
@@ -190,6 +192,29 @@ textarea{width:100%;min-height:120px;border:1px solid var(--border);border-radiu
 .btn.small{padding:6px 10px;font-size:12px}
 .btn.active{background:rgba(43,122,99,.12);border-color:rgba(43,122,99,.4)}
 .readonly-note{font-size:12px;color:var(--muted);margin:8px 0}
+
+/* v2 — Recipe Book + sharing */
+.library-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.search-label{margin-top:18px}
+.recipe-grid{display:grid;gap:12px;margin-top:14px}
+.recipe-card{border:1px solid var(--border);border-radius:16px;padding:16px;background:#fff}
+.recipe-card-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.recipe-card-title{font-size:18px;font-weight:900}
+.recipe-card-meta{font-size:12px;color:var(--muted);margin-top:5px}
+.recipe-card-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.recipe-card-actions .btn{padding:8px 12px;font-size:12px}
+.plain-list{margin:0;padding-left:20px}
+.plain-list li{margin:8px 0;line-height:1.45}
+.empty-state{padding:26px 14px;border:1px dashed var(--border);border-radius:14px;text-align:center;color:var(--muted)}
+.favorite-toggle{font-size:18px;line-height:1;padding:6px 9px}
+
+@media (max-width:560px){
+  .topbar{align-items:flex-start}
+  .topbar-actions{flex-direction:column;align-items:stretch}
+  .topbar-btn{padding:8px 12px;font-size:12px}
+  .library-head{flex-direction:column}
+  .library-head .btn{align-self:flex-end}
+}
 
 /* v1.9.5 — Trust & Delight */
 .support{opacity:.88}

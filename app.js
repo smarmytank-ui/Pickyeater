@@ -597,7 +597,7 @@ function ensureNutritionDisclosure(){
 }
 
 function computeMacrosPerServing(){
-  if(!state) return;
+  if(!state) return { cal:0, p:0, c:0, f:0 };
 
   let cal=0, p=0, c=0, f=0;
 
@@ -621,6 +621,7 @@ function computeMacrosPerServing(){
   if($('fat'))      $('fat').textContent      = `Fat ${Math.round(per.f)}g`;
 
   ensureNutritionDisclosure();
+  return per;
 }
 
 // -------------------------------
@@ -854,10 +855,279 @@ function render(){
 }
 
 // -------------------------------
+// Recipe Book + portable share links (local-first)
+// -------------------------------
+const RECIPE_BOOK_KEY = 'pickyRecipesV2';
+
+function safeClone(value){
+  return JSON.parse(JSON.stringify(value));
+}
+
+function recipeMacros(recipeState = state, recipeServings = servings){
+  if(!recipeState) return { calories:0, protein:0, carbs:0, fat:0 };
+  let cal=0, p=0, c=0, f=0;
+  recipeState.ingredients.forEach(ing=>{
+    const qty = ing.base.v * (recipeServings/2);
+    const grams = gramsFor(ing.name, ing.base.u, qty);
+    const n = nutrientFor(ing.name, ing.role);
+    cal += n.cal * (grams/100);
+    p += n.p * (grams/100);
+    c += n.c * (grams/100);
+    f += n.f * (grams/100);
+  });
+  return {
+    calories: Math.round(cal/recipeServings),
+    protein: Math.round(p/recipeServings),
+    carbs: Math.round(c/recipeServings),
+    fat: Math.round(f/recipeServings)
+  };
+}
+
+function snapshotCurrentRecipe(){
+  if(!state) return null;
+  return {
+    id: uid(),
+    version: 2,
+    title: state.title,
+    description: 'A simple, picky-eater-friendly recipe made with your chosen ingredients.',
+    servings,
+    prepMinutes: 10,
+    cookMinutes: 20,
+    ingredients: safeClone(state.ingredients),
+    steps: safeClone(state.steps),
+    nutrition: recipeMacros(state, servings),
+    favorite: true,
+    savedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+}
+
+function normalizeSavedRecipe(recipe){
+  if(!recipe || !Array.isArray(recipe.ingredients)) return null;
+  const recipeServings = Number(recipe.servings) || 2;
+  const recipeState = {
+    title: recipe.title || titleFrom(recipe.ingredients),
+    ingredients: safeClone(recipe.ingredients),
+    steps: Array.isArray(recipe.steps) ? safeClone(recipe.steps) : buildInstructions(recipe.ingredients)
+  };
+  return {
+    id: recipe.id || uid(),
+    version: 2,
+    title: recipeState.title,
+    description: recipe.description || 'A simple recipe saved in Picky Eater.',
+    servings: recipeServings,
+    prepMinutes: Number(recipe.prepMinutes) || 10,
+    cookMinutes: Number(recipe.cookMinutes) || 20,
+    ingredients: recipeState.ingredients,
+    steps: recipeState.steps,
+    nutrition: recipe.nutrition || recipeMacros(recipeState, recipeServings),
+    favorite: recipe.favorite !== false,
+    savedAt: recipe.savedAt || new Date().toISOString(),
+    updatedAt: recipe.updatedAt || recipe.savedAt || new Date().toISOString()
+  };
+}
+
+function getRecipeBook(){
+  const current = lsGet(RECIPE_BOOK_KEY, null);
+  if(Array.isArray(current)) return current.map(normalizeSavedRecipe).filter(Boolean);
+
+  const legacy = [
+    ...lsGet('pickyFavorites', []),
+    ...lsGet('picky_saved_recipes', [])
+  ].map(normalizeSavedRecipe).filter(Boolean);
+  if(legacy.length) lsSet(RECIPE_BOOK_KEY, legacy);
+  return legacy;
+}
+
+function setRecipeBook(recipes){
+  lsSet(RECIPE_BOOK_KEY, recipes);
+}
+
+function saveRecipe(recipe, options = {}){
+  const normalized = normalizeSavedRecipe(recipe);
+  if(!normalized) return null;
+  const recipes = getRecipeBook();
+  const existingIndex = options.replaceId
+    ? recipes.findIndex(item=>item.id === options.replaceId)
+    : -1;
+  if(existingIndex >= 0) recipes[existingIndex] = { ...normalized, id: options.replaceId };
+  else recipes.unshift(normalized);
+  setRecipeBook(recipes);
+  return normalized;
+}
+
+function openSavedRecipe(recipe){
+  const normalized = normalizeSavedRecipe(recipe);
+  if(!normalized) return;
+  servings = normalized.servings;
+  state = {
+    title: normalized.title,
+    ingredients: safeClone(normalized.ingredients),
+    steps: safeClone(normalized.steps)
+  };
+  owned = true;
+  $('recipeBookCard')?.classList.add('hidden');
+  $('inputCard')?.classList.add('hidden');
+  $('sharedRecipeCard')?.classList.add('hidden');
+  $('resultCard')?.classList.remove('hidden');
+  $('saveRow')?.classList.remove('hidden');
+  render();
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+function recipeSearchText(recipe){
+  return `${recipe.title} ${recipe.ingredients.map(i=>i.name).join(' ')}`.toLowerCase();
+}
+
+function renderRecipeBook(query = ''){
+  const host = $('recipeBookList');
+  if(!host) return;
+  host.replaceChildren();
+  const needle = query.trim().toLowerCase();
+  const recipes = getRecipeBook()
+    .filter(recipe=>!needle || recipeSearchText(recipe).includes(needle))
+    .sort((a,b)=>Number(b.favorite)-Number(a.favorite) || String(b.savedAt).localeCompare(String(a.savedAt)));
+
+  if(!recipes.length){
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.textContent = needle ? 'No saved recipes match that search.' : 'Your saved recipes will appear here.';
+    host.appendChild(empty);
+    return;
+  }
+
+  recipes.forEach(recipe=>{
+    const card = document.createElement('article');
+    card.className = 'recipe-card';
+    const head = document.createElement('div');
+    head.className = 'recipe-card-head';
+    const copy = document.createElement('div');
+    const title = document.createElement('div');
+    title.className = 'recipe-card-title';
+    title.textContent = recipe.title;
+    const meta = document.createElement('div');
+    meta.className = 'recipe-card-meta';
+    meta.textContent = `${recipe.servings} servings • ${recipe.ingredients.length} ingredients • ${recipe.nutrition.calories} cal/serv`;
+    copy.append(title, meta);
+
+    const favorite = document.createElement('button');
+    favorite.className = 'btn ghost favorite-toggle';
+    favorite.type = 'button';
+    favorite.setAttribute('aria-label', recipe.favorite ? 'Remove favorite' : 'Mark favorite');
+    favorite.textContent = recipe.favorite ? '★' : '☆';
+    favorite.onclick = ()=>{
+      const all = getRecipeBook();
+      const match = all.find(item=>item.id===recipe.id);
+      if(match) match.favorite = !match.favorite;
+      setRecipeBook(all);
+      renderRecipeBook($('recipeSearch')?.value || '');
+    };
+    head.append(copy, favorite);
+
+    const actions = document.createElement('div');
+    actions.className = 'recipe-card-actions';
+    const buttons = [
+      ['Open', ()=>openSavedRecipe(recipe), 'primary'],
+      ['Share', ()=>shareRecipe(recipe), ''],
+      ['Duplicate', ()=>{ const duplicate={...safeClone(recipe), id:uid(), title:`${recipe.title} Copy`, savedAt:new Date().toISOString()}; saveRecipe(duplicate); renderRecipeBook(); }, ''],
+      ['Delete', ()=>{ if(confirm(`Delete “${recipe.title}”?`)){ setRecipeBook(getRecipeBook().filter(item=>item.id!==recipe.id)); renderRecipeBook($('recipeSearch')?.value || ''); } }, 'ghost']
+    ];
+    buttons.forEach(([label, handler, style])=>{
+      const btn=document.createElement('button');
+      btn.type='button'; btn.className=`btn ${style}`.trim(); btn.textContent=label; btn.onclick=handler;
+      actions.appendChild(btn);
+    });
+    card.append(head, actions);
+    host.appendChild(card);
+  });
+}
+
+function openRecipeBook(){
+  $('recipeBookCard')?.classList.remove('hidden');
+  $('diaryCard')?.classList.add('hidden');
+  renderRecipeBook($('recipeSearch')?.value || '');
+  $('recipeBookCard')?.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function encodeSharedRecipe(recipe){
+  const portable = normalizeSavedRecipe(recipe);
+  const json = JSON.stringify(portable);
+  const bytes = new TextEncoder().encode(json);
+  let binary = '';
+  bytes.forEach(byte=>binary += String.fromCharCode(byte));
+  return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+
+function decodeSharedRecipe(value){
+  try{
+    const base64 = value.replace(/-/g,'+').replace(/_/g,'/');
+    const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
+    const binary = atob(padded);
+    const bytes = Uint8Array.from(binary, char=>char.charCodeAt(0));
+    return normalizeSavedRecipe(JSON.parse(new TextDecoder().decode(bytes)));
+  }catch(error){
+    return null;
+  }
+}
+
+async function shareRecipe(recipe){
+  const normalized = normalizeSavedRecipe(recipe);
+  if(!normalized) return;
+  const url = `${location.origin}${location.pathname}#recipe=${encodeSharedRecipe(normalized)}`;
+  try{
+    if(navigator.share) await navigator.share({ title:normalized.title, text:`${normalized.title} from Picky Eater`, url });
+    else if(navigator.clipboard) { await navigator.clipboard.writeText(url); alert('Share link copied.'); }
+    else prompt('Copy this share link:', url);
+  }catch(error){
+    if(error?.name !== 'AbortError') prompt('Copy this share link:', url);
+  }
+}
+
+function showSharedRecipe(recipe){
+  if(!recipe) return;
+  $('inputCard')?.classList.add('hidden');
+  $('resultCard')?.classList.add('hidden');
+  $('recipeBookCard')?.classList.add('hidden');
+  $('diaryCard')?.classList.add('hidden');
+  $('sharedRecipeCard')?.classList.remove('hidden');
+  $('sharedRecipeTitle').textContent = recipe.title;
+  $('sharedRecipeMeta').replaceChildren();
+  [`Serves ${recipe.servings}`, `${recipe.prepMinutes} min prep`, `${recipe.cookMinutes} min cook`, `${recipe.nutrition.calories} cal/serv`].forEach(text=>{
+    const span=document.createElement('span'); span.textContent=text; $('sharedRecipeMeta').appendChild(span);
+  });
+  $('sharedIngredients').replaceChildren();
+  recipe.ingredients.filter(i=>i.name!=='skip it').forEach(ing=>{
+    const li=document.createElement('li');
+    const quantity = qtyStrForServings(ing, recipe.servings);
+    li.textContent = `${quantity ? `${quantity} ` : ''}${pretty(ing.name)}`;
+    $('sharedIngredients').appendChild(li);
+  });
+  $('sharedInstructions').replaceChildren();
+  recipe.steps.forEach(step=>{ const li=document.createElement('li'); li.textContent=step.text || String(step); $('sharedInstructions').appendChild(li); });
+  $('saveSharedRecipe').onclick=()=>{ saveRecipe({ ...recipe, id:uid(), savedAt:new Date().toISOString() }); $('saveSharedRecipe').textContent='✓ Saved to Recipe Book'; };
+}
+
+function qtyStrForServings(ing, recipeServings){
+  const previous = servings;
+  servings = recipeServings;
+  const result = qtyStr(ing);
+  servings = previous;
+  return result;
+}
+
+function loadSharedRecipeFromUrl(){
+  const match = location.hash.match(/^#recipe=(.+)$/);
+  if(!match) return;
+  const recipe = decodeSharedRecipe(match[1]);
+  if(recipe) showSharedRecipe(recipe);
+}
+
+// -------------------------------
 // Diary (local-first)
 // -------------------------------
 const MEALS = ['breakfast','lunch','dinner','snacks'];
 let activeMeal = 'breakfast';
+let diaryDayOffset = 0;
 
 function lsGet(k, fallback){
   try { return JSON.parse(localStorage.getItem(k) || 'null') ?? fallback; }
@@ -866,7 +1136,16 @@ function lsGet(k, fallback){
 function lsSet(k, v){ localStorage.setItem(k, JSON.stringify(v)); }
 
 function todayKey(){
-  return new Date().toISOString().slice(0,10);
+  return dateKeyForOffset(0);
+}
+
+function dateKeyForOffset(offset){
+  const date = new Date();
+  date.setDate(date.getDate() + offset);
+  const year = date.getFullYear();
+  const month = String(date.getMonth()+1).padStart(2,'0');
+  const day = String(date.getDate()).padStart(2,'0');
+  return `${year}-${month}-${day}`;
 }
 
 function getAuth(){ return lsGet('pickyAuth', null); }
@@ -913,14 +1192,14 @@ function addEntryToDiary(meal, entry){
 
 function deleteEntry(meal, idx){
   const diary = getDiary();
-  const key = todayKey();
+  const key = dateKeyForOffset(diaryDayOffset);
   ensureDay(diary, key);
   diary[key][meal].splice(idx, 1);
   setDiary(diary);
 }
 
 function updateDiarySub(){
-  const key = todayKey();
+  const key = dateKeyForOffset(diaryDayOffset);
   const a = getAuth();
   const who = a?.email ? `Signed in as ${a.email}` : 'Saved on this device (create free account to sync later)';
   const el = document.getElementById('diarySub');
@@ -937,7 +1216,7 @@ function setActiveMeal(meal){
 
 function renderDiary(){
   const diary = getDiary();
-  const key = todayKey();
+  const key = dateKeyForOffset(diaryDayOffset);
   ensureDay(diary, key);
 
   const list = diary[key][activeMeal] || [];
@@ -950,8 +1229,12 @@ function renderDiary(){
     li.className = 'diary-item';
 
     const left = document.createElement('div');
-    left.innerHTML = `<strong>${item.title}</strong>
-      <div class="diary-meta">${item.source}${item.localOnly ? ' • local-only' : ''}</div>`;
+    const itemTitle = document.createElement('strong');
+    itemTitle.textContent = item.title;
+    const itemMeta = document.createElement('div');
+    itemMeta.className = 'diary-meta';
+    itemMeta.textContent = `${item.source}${item.localOnly ? ' • local-only' : ''}`;
+    left.append(itemTitle, itemMeta);
 
     const right = document.createElement('div');
     right.className = 'diary-right';
@@ -982,6 +1265,38 @@ function renderDiary(){
   }
 
   updateDiarySub();
+}
+
+function setDiaryDay(offset){
+  diaryDayOffset = offset;
+  document.getElementById('viewToday')?.classList.toggle('active', offset===0);
+  document.getElementById('viewYesterday')?.classList.toggle('active', offset===-1);
+  const title = document.querySelector('#diaryCard .diary-title');
+  if(title) title.textContent = offset===0 ? 'Today' : 'Yesterday';
+  const totalsTitle = document.getElementById('diaryTotalsTitle');
+  if(totalsTitle) totalsTitle.textContent = offset===0 ? 'Today totals' : 'Yesterday totals';
+  const quickAdd = document.querySelector('.quick-grid');
+  if(quickAdd) quickAdd.classList.toggle('hidden', offset!==0);
+  renderDiary();
+}
+
+function quickAddDiaryEntry(){
+  const name = document.getElementById('qaName')?.value.trim();
+  if(!name) return alert('Add a food name');
+  addEntryToDiary(activeMeal, {
+    title:name,
+    source:'Quick add',
+    macros:{
+      cal:Number(document.getElementById('qaCal')?.value)||0,
+      p:Number(document.getElementById('qaP')?.value)||0,
+      c:Number(document.getElementById('qaC')?.value)||0,
+      f:Number(document.getElementById('qaF')?.value)||0
+    },
+    localOnly:!authKnown(),
+    time:new Date().toISOString()
+  });
+  ['qaName','qaCal','qaP','qaC','qaF'].forEach(id=>{ const input=document.getElementById(id); if(input) input.value=''; });
+  renderDiary();
 }
 
 function openDiary(){
@@ -1058,6 +1373,7 @@ function wireEvents(){
   const inc = $('incServ');
   const dec = $('decServ');
   const saveBtn = $('saveBtn');
+  const shareBtn = $('shareBtn');
   const backBtn = $('backBtn');
 
   if(gen && !gen.dataset.wired){
@@ -1113,22 +1429,16 @@ function wireEvents(){
     saveBtn.dataset.wired='1';
     saveBtn.addEventListener('click', ()=>{
       if(!state) return;
-      const saved = JSON.parse(localStorage.getItem('pickyFavorites')||'[]');
-      saved.push({
-        title: state.title,
-        servings,
-        ingredients: state.ingredients,
-        steps: state.steps,
-        macros_per_serving: {
-          calories: $('calories')?.textContent || '',
-          protein: $('protein')?.textContent || '',
-          carbs: $('carbs')?.textContent || '',
-          fat: $('fat')?.textContent || ''
-        },
-        savedAt: new Date().toISOString()
-      });
-      localStorage.setItem('pickyFavorites', JSON.stringify(saved));
+      saveRecipe(snapshotCurrentRecipe());
       saveBtn.textContent = '✓ Saved';
+    });
+  }
+
+  if(shareBtn && !shareBtn.dataset.wired){
+    shareBtn.dataset.wired='1';
+    shareBtn.addEventListener('click', ()=>{
+      const recipe = snapshotCurrentRecipe();
+      if(recipe) shareRecipe(recipe);
     });
   }
 
@@ -1148,6 +1458,17 @@ function wireEvents(){
   // Diary wiring
   document.getElementById('openDiary')?.addEventListener('click', openDiary);
   document.getElementById('closeDiary')?.addEventListener('click', closeDiary);
+  document.getElementById('openRecipeBook')?.addEventListener('click', openRecipeBook);
+  document.getElementById('closeRecipeBook')?.addEventListener('click', ()=>$('recipeBookCard')?.classList.add('hidden'));
+  document.getElementById('recipeSearch')?.addEventListener('input', e=>renderRecipeBook(e.target.value));
+  document.getElementById('viewToday')?.addEventListener('click', ()=>setDiaryDay(0));
+  document.getElementById('viewYesterday')?.addEventListener('click', ()=>setDiaryDay(-1));
+  document.getElementById('qaAdd')?.addEventListener('click', quickAddDiaryEntry);
+  document.getElementById('closeSharedRecipe')?.addEventListener('click', ()=>{
+    history.replaceState(null, '', location.pathname + location.search);
+    $('sharedRecipeCard')?.classList.add('hidden');
+    $('inputCard')?.classList.remove('hidden');
+  });
 
   // Meal tabs + meal picker buttons
   document.addEventListener('click', (e) => {
@@ -1196,6 +1517,9 @@ function init(){
   wireEvents();
   ensureNutritionDisclosure();
   ensureDiaryButton();
+  getRecipeBook();
+  loadSharedRecipeFromUrl();
+  window.addEventListener('hashchange', loadSharedRecipeFromUrl);
 }
 
 if(document.readyState === 'loading'){
