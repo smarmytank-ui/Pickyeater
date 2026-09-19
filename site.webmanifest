@@ -1,6 +1,10 @@
 {
   "name": "Picky Eater",
   "short_name": "Picky Eater",
+  "description": "Simple recipes made from foods you actually like.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
   "icons": [
     {
       "src": "android-chrome-192x192.png",
@@ -13,7 +17,9 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
-  "display": "standalone"
+  "theme_color": "#2b7a63",
+  "background_color": "#f6f7fb",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "categories": ["food", "lifestyle", "health"]
 }

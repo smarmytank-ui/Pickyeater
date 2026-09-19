@@ -73,3 +73,7 @@ The next backend step should be additive:
 ## External inputs needed later
 
 None are required for this local-first Milestone 1. Cloud persistence will need a Supabase project URL and public anon key plus approved auth redirect URLs. AI generation will need an OpenAI project/API key stored only as an Edge Function secret. Production sharing will need the final hosting URL/domain. Stripe is not needed yet.
+
+## Domain direction
+
+Use `PickyEaterCookbook.com` as the primary public and canonical recipe-sharing domain because it communicates the product immediately and reinforces the Picky Eater name. Keep `foodmyway.app` as a short redirect/marketing domain or reserve it for a future installed-app landing page. The application currently derives share links from its active origin, so either domain can host it without code changes. DNS redirects and canonical metadata should be configured only after the production host is selected.

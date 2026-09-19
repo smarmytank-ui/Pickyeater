@@ -23,8 +23,8 @@ let owned = false;
 // Helpers
 // -------------------------------
 function uid(){
-  return (window.crypto?.randomUUID)
-    ? crypto.randomUUID()
+  return (globalThis.crypto?.randomUUID)
+    ? globalThis.crypto.randomUUID()
     : Math.random().toString(36).slice(2);
 }
 
@@ -32,6 +32,9 @@ function canonName(s){
   const t = String(s||'').trim().toLowerCase();
   if(!t) return '';
   const x = t
+    .replace(/\([^)]*\)/g,' ')
+    .replace(/^\s*(?:\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)\s*(?:lb|lbs|pound|pounds|oz|ounce|ounces|cup|cups|tbsp|tablespoons?|tsp|teaspoons?|cloves?|pieces?|slices?|cans?|packages?|medium|large|small)?\s+/i,'')
+    .replace(/\b(boneless|skinless|fresh|frozen|cooked|uncooked|raw|chopped|diced|minced|sliced|shredded|grated|lean|extra lean)\b/g,' ')
     .replace(/\bfillet\b/g,'')
     .replace(/\bfilet\b/g,'')
     .replace(/\s+/g,' ')
@@ -43,6 +46,12 @@ function canonName(s){
   if(x === 'scallion' || x === 'scallions') return 'green onion';
   if(x === 'salmon fillets' || x === 'salmon filet' || x === 'salmon filets') return 'salmon';
   if(x === 'chicken') return 'chicken breast';
+  if(x === 'chicken breasts') return 'chicken breast';
+  if(x === 'steaks' || x === 'steak') return 'steak';
+  if(x === 'pork chops' || x === 'pork chop') return 'pork';
+  if(x === 'eggs') return 'eggs';
+  if(x === 'cheddar' || x === 'cheddar cheese') return 'cheddar cheese';
+  if(x === 'bell peppers') return 'bell pepper';
   if(x === 'tortilla') return 'tortillas';
   if(x === 'tomato') return 'tomatoes';
   if(x === 'tacos') return 'taco';
@@ -51,6 +60,30 @@ function canonName(s){
 
 function parseLines(s){
   return (s||'').replace(/,+/g,'\n').split(/\n+/).map(x=>x.trim()).filter(Boolean);
+}
+
+function parseInputIngredient(raw){
+  const text = String(raw || '').trim();
+  const match = text.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)\s*(lb|lbs|pound|pounds|oz|ounce|ounces|cup|cups|tbsp|tablespoons?|tsp|teaspoons?|cloves?|pieces?|slices?|cans?|medium|large|small)\b/i);
+  if(!match) return { name:canonName(text), quantity:null, unit:null };
+  const numberText = match[1];
+  let quantity;
+  if(numberText.includes(' ')){
+    const [whole, fraction] = numberText.split(/\s+/);
+    const [top,bottom] = fraction.split('/').map(Number);
+    quantity = Number(whole) + top/bottom;
+  }else if(numberText.includes('/')){
+    const [top,bottom] = numberText.split('/').map(Number);
+    quantity = top/bottom;
+  }else quantity = Number(numberText);
+  const rawUnit = match[2].toLowerCase();
+  const unitMap = {
+    lbs:'lb', pound:'lb', pounds:'lb', ounce:'oz', ounces:'oz', cup:'cups',
+    tablespoon:'tbsp', tablespoons:'tbsp', teaspoon:'tsp', teaspoons:'tsp',
+    clove:'cloves', piece:'pieces', slice:'slices', can:'count', cans:'count',
+    large:'count', small:'count'
+  };
+  return { name:canonName(text), quantity, unit:unitMap[rawUnit] || rawUnit };
 }
 
 function pretty(s){
@@ -78,6 +111,7 @@ function formatQty(value) {
 const ROLE_RULES = [
   // Specific phrases FIRST (prevents "green beans" matching "beans")
   [/\bgreen beans\b/i,'veg'],
+  [/\b(bell pepper|broccoli|carrots?|zucchini|spinach|tomatoes?|corn|peas|cauliflower)\b/i,'veg'],
 
   // Theme / blends
   [/\btaco seasoning\b/i,'seasoning'],
@@ -92,7 +126,7 @@ const ROLE_RULES = [
 
   [/\b(olive oil|butter)\b/i,'fat'],
   [/\b(lemon|lemon juice|vinegar)\b/i,'acid'],
-  [/\b(salmon|chicken|chicken breast|beef|ground beef|lean beef|turkey|pork|tofu|lentils|egg|eggs)\b/i,'protein'],
+  [/\b(salmon|chicken|chicken breast|beef|ground beef|lean beef|steak|turkey|pork|tofu|lentils|egg|eggs)\b/i,'protein'],
   [/\bbeans\b/i,'protein'],
   [/\b(rice|pasta|potato|potatoes|quinoa|sweet potato|sweet potatoes)\b/i,'starch'],
   [/\b(onion|onions|green onion|scallion|scallions|shallot|garlic)\b/i,'aromatic']
@@ -211,6 +245,10 @@ const SWAP_CATALOG = {
     { name:'zucchini',    unitOverride:'cups', baseOverride:2,   instrPatchKey:'cook_veg' },
     { name:'spinach',     unitOverride:'cups', baseOverride:3,   instrPatchKey:'cook_veg' },
     { name:'tomatoes',    unitOverride:'cups', baseOverride:2,   instrPatchKey:'cook_veg' }
+    ,{ name:'corn',        unitOverride:'cups', baseOverride:1.5, instrPatchKey:'cook_veg' }
+    ,{ name:'peas',        unitOverride:'cups', baseOverride:1.5, instrPatchKey:'cook_veg' }
+    ,{ name:'cauliflower', unitOverride:'cups', baseOverride:2,   instrPatchKey:'cook_veg' }
+    ,{ name:'bell pepper', unitOverride:'cups', baseOverride:1.5, instrPatchKey:'cook_veg' }
   ],
   fat: [
     { name:'olive oil', unitOverride:'tbsp', baseOverride:1, instrPatchKey:'use_oil' },
@@ -262,6 +300,7 @@ const NUTRITION_PER_100G = {
   'lentils':       { cal:116, p:9.0,  c:20.1, f:0.4 },
   'eggs':          { cal:143, p:12.6, c:0.7,  f:9.5 },
   'salmon':        { cal:208, p:20.4, c:0.0,  f:13.4 },
+  'steak':         { cal:217, p:26.1, c:0.0,  f:11.8 },
 
   // starches
   'rice':          { cal:130, p:2.7,  c:28.2, f:0.3 },
@@ -277,6 +316,10 @@ const NUTRITION_PER_100G = {
   'carrots':       { cal:41,  p:0.9,  c:9.6,  f:0.2 },
   'spinach':       { cal:23,  p:2.9,  c:3.6,  f:0.4 },
   'tomatoes':      { cal:18,  p:0.9,  c:3.9,  f:0.2 },
+  'corn':          { cal:96,  p:3.4,  c:21.0, f:1.5 },
+  'peas':          { cal:81,  p:5.4,  c:14.5, f:0.4 },
+  'cauliflower':   { cal:25,  p:1.9,  c:5.0,  f:0.3 },
+  'bell pepper':   { cal:31,  p:1.0,  c:6.0,  f:0.3 },
 
   // aromatics
   'onion':         { cal:40,  p:1.1,  c:9.3,  f:0.1 },
@@ -369,6 +412,10 @@ const GRAMS_PER_UNIT = {
   'lentils': { cups: 198 },
   'green onion': { cups: 50 },
   'tomatoes': { cups: 180 },
+  'corn': { cups: 164 },
+  'peas': { cups: 160 },
+  'cauliflower': { cups: 107 },
+  'bell pepper': { cups: 149 },
   'cheddar cheese': { cups: 226 },
   'mozzarella': { cups: 112 },
 
@@ -436,49 +483,96 @@ const INSTR = {
 };
 
 function buildInstructions(ingredients){
+  const active = ingredients.filter(i=>i.name!=='skip it' && i.base.v>0);
+  const namesFor = role => active.filter(i=>i.role===role).map(i=>pretty(i.name));
+  const joinNames = names => names.length > 1
+    ? `${names.slice(0,-1).join(', ')} and ${names.at(-1)}`
+    : (names[0] || 'the ingredients');
   const steps = [];
-  steps.push({ key:'prep', text: INSTR.prep });
+  const prepNames = active.filter(i=>['protein','veg','aromatic'].includes(i.role) || /potato/.test(i.name)).map(i=>pretty(i.name));
+  steps.push({ key:'prep', text: prepNames.length
+    ? `Gather everything. Wash produce and prepare ${joinNames(prepNames)} as needed, keeping pieces even for predictable cooking.`
+    : 'Gather and measure all ingredients before you start cooking.' });
 
-  if(ingredients.some(i=>i.role==='fat' && i.name!=='skip it')){
-    steps.push({ key:'oil', text: INSTR.use_oil });
+  const fats = namesFor('fat');
+  if(fats.length){
+    steps.push({ key:'oil', text: `Heat a large pan over medium heat and add ${joinNames(fats)}.` });
   }
 
-  const aromatic = ingredients.find(i=>i.role==='aromatic');
-  if(aromatic){
-    if(aromatic.name === 'skip it') steps.push({ key:'aromatic', text: INSTR.skip_aromatic });
-    else if(aromatic.name === 'garlic') steps.push({ key:'aromatic', text: INSTR.add_garlic });
-    else steps.push({ key:'aromatic', text: INSTR.add_aromatic });
+  const aromatics = namesFor('aromatic');
+  if(aromatics.length){
+    const hasGarlic = aromatics.some(name=>name.toLowerCase()==='garlic');
+    steps.push({ key:'aromatic', text: `Add ${joinNames(aromatics)} and cook ${hasGarlic && aromatics.length===1 ? '30–45 seconds' : '2–3 minutes'}, stirring often.` });
   }
 
-  const protein = ingredients.find(i=>i.role==='protein' && i.name!=='skip it');
-  if(protein){
-    if(protein.name.includes('salmon')) steps.push({ key:'protein', text: INSTR.cook_fish });
-    else if(protein.name.includes('tofu')) steps.push({ key:'protein', text: INSTR.cook_tofu });
-    else if(protein.name.includes('bean') || protein.name.includes('lentil')) steps.push({ key:'protein', text: INSTR.warm_beans });
-    else if(protein.name.includes('egg')) steps.push({ key:'protein', text: INSTR.cook_eggs });
-    else steps.push({ key:'protein', text: INSTR.cook_meat });
+  const proteins = active.filter(i=>i.role==='protein');
+  proteins.forEach((protein,index)=>{
+    const name = pretty(protein.name);
+    let text = `Add ${name} and cook until done.`;
+    if(protein.name.includes('salmon')) text = `Cook ${name} for 3–4 minutes per side, until it flakes easily and reaches a safe internal temperature.`;
+    else if(protein.name.includes('tofu')) text = `Pat ${name} dry, cube it, and cook for 6–8 minutes until lightly browned.`;
+    else if(protein.name.includes('bean') || protein.name.includes('lentil')) text = `Rinse ${name}, then add and warm gently for 2–3 minutes.`;
+    else if(protein.name.includes('egg')) text = `Whisk ${name} with a pinch of salt, then cook gently until set.`;
+    else text = `Add ${name}. Cook, stirring or turning as needed, until browned and safely cooked through.`;
+    steps.push({ key:`protein-${index}`, text });
+  });
+
+  const starches = active.filter(i=>i.role==='starch');
+  starches.forEach((starch,index)=>{
+    const name = pretty(starch.name);
+    let text;
+    if(starch.name.includes('rice')) text = `Cook ${name} according to the package directions, then fluff.`;
+    else if(starch.name.includes('pasta')) text = `Boil ${name} according to the package directions, then drain.`;
+    else if(starch.name.includes('quinoa')) text = `Rinse ${name}, simmer until the liquid is absorbed, then rest 5 minutes and fluff.`;
+    else text = `Cook ${name} until fork-tender; roast, boil, or microwave based on your preferred texture.`;
+    steps.push({ key:`starch-${index}`, text });
+  });
+
+  const vegetables = namesFor('veg');
+  if(vegetables.length){
+    const quick = vegetables.every(name=>/spinach|tomato/i.test(name));
+    steps.push({ key:'veg', text:`Add ${joinNames(vegetables)} and cook until ${quick ? 'just softened, 2–3 minutes' : 'tender-crisp, about 4–6 minutes'}.` });
   }
 
-  const starch = ingredients.find(i=>i.role==='starch' && i.name!=='skip it');
-  if(starch){
-    if(starch.name.includes('rice')) steps.push({ key:'starch', text: INSTR.cook_rice });
-    else if(starch.name.includes('pasta')) steps.push({ key:'starch', text: INSTR.cook_pasta });
-    else if(starch.name.includes('quinoa')) steps.push({ key:'starch', text: INSTR.cook_quinoa });
-    else steps.push({ key:'starch', text: INSTR.cook_potato });
+  const dairy = namesFor('dairy');
+  if(dairy.length){
+    steps.push({ key:'dairy', text:`Lower the heat and add ${joinNames(dairy)}. Stir just until creamy or melted.` });
   }
 
-  steps.push({ key:'veg', text: INSTR.cook_veg });
-
-  if(ingredients.some(i=>i.role==='acid' && i.name!=='skip it')){
-    steps.push({ key:'acid', text: INSTR.finish_acid });
+  const bread = namesFor('bread');
+  if(bread.length){
+    steps.push({ key:'bread', text:`Warm ${joinNames(bread)} and use it to wrap, scoop, or serve the filling.` });
   }
 
-  if(ingredients.some(i=>i.role==='seasoning' && i.name!=='skip it')){
-    steps.push({ key:'seasoning', text: INSTR.season });
+  const acids = namesFor('acid');
+  if(acids.length){
+    steps.push({ key:'acid', text:`Take the pan off the heat and finish with ${joinNames(acids)}.` });
   }
 
-  steps.push({ key:'combine', text: INSTR.combine });
+  const seasonings = namesFor('seasoning');
+  if(seasonings.length){
+    steps.push({ key:'seasoning', text:`Taste and season with ${joinNames(seasonings)}. Add a little at a time.` });
+  }
+
+  steps.push({ key:'combine', text:'Combine everything, divide between plates, and serve warm.' });
   return steps;
+}
+
+function recipeDetails(ingredients){
+  const active = ingredients.filter(i=>i.name!=='skip it' && i.base.v>0);
+  const protein = active.find(i=>i.role==='protein');
+  const starch = active.find(i=>i.role==='starch');
+  const vegetables = active.filter(i=>i.role==='veg');
+  const prepMinutes = Math.min(20, 5 + Math.ceil(active.length/3)*5);
+  let cookMinutes = 15;
+  if(starch?.name.includes('potato')) cookMinutes = 25;
+  else if(starch) cookMinutes = 20;
+  if(protein?.name.includes('salmon')) cookMinutes = Math.max(cookMinutes, 12);
+  const focus = [protein?.name, starch?.name, vegetables[0]?.name].filter(Boolean).map(pretty);
+  const description = focus.length
+    ? `A straightforward ${focus.join(', ')} recipe with familiar flavors and flexible swaps.`
+    : 'A simple, flexible recipe made from foods you chose.';
+  return { description, prepMinutes, cookMinutes };
 }
 
 // -------------------------------
@@ -502,8 +596,10 @@ function titleFrom(ings){
 // State normalization
 // -------------------------------
 function normalize(names){
+  const seen = new Set();
   return names.map(raw=>{
-    const name = canonName(raw);
+    const parsed = parseInputIngredient(raw);
+    const name = parsed.name;
     const role = roleFor(name);
     const intent = intentForRole(role);
     const base = { ...(BASE_QTY[role] || BASE_QTY.veg) };
@@ -512,6 +608,10 @@ function normalize(names){
     if(override){
       base.v = override.v;
       base.u = override.u;
+    }
+    if(parsed.quantity != null && parsed.unit){
+      base.v = parsed.quantity;
+      base.u = parsed.unit;
     }
 
     return {
@@ -522,7 +622,7 @@ function normalize(names){
       base,
       swapMeta: null
     };
-  });
+  }).filter(ingredient=>ingredient.name && !seen.has(ingredient.name) && seen.add(ingredient.name));
 }
 
 // -------------------------------
@@ -537,7 +637,7 @@ function qtyStr(ing){
   // display formats
   if(ing.base.u === 'cups'){
     const nice = formatQty(val) || String(val.toFixed(2));
-    return `${nice} cups`;
+    return `${nice} ${val<=1 ? 'cup' : 'cups'}`;
   }
   if(ing.base.u === 'tbsp'){
     const nice = formatQty(val) || String(val.toFixed(2));
@@ -698,9 +798,16 @@ function render(){
 
   // Keep naming current (swaps/amount edits)
   state.title = titleFrom(state.ingredients);
+  const details = recipeDetails(state.ingredients);
+  state.description = details.description;
+  state.prepMinutes = details.prepMinutes;
+  state.cookMinutes = details.cookMinutes;
 
   if($('servingsVal')) $('servingsVal').textContent = servings;
   if($('recipeTitle')) $('recipeTitle').textContent = state.title;
+  if($('recipeDescription')) $('recipeDescription').textContent = details.description;
+  if($('prepTime')) $('prepTime').textContent = `${details.prepMinutes} min prep`;
+  if($('cookTime')) $('cookTime').textContent = `${details.cookMinutes} min cook`;
 
   const ul = $('ingredientsList');
   if(ul){
@@ -885,14 +992,15 @@ function recipeMacros(recipeState = state, recipeServings = servings){
 
 function snapshotCurrentRecipe(){
   if(!state) return null;
+  const details = recipeDetails(state.ingredients);
   return {
     id: uid(),
     version: 2,
     title: state.title,
-    description: 'A simple, picky-eater-friendly recipe made with your chosen ingredients.',
+    description: details.description,
     servings,
-    prepMinutes: 10,
-    cookMinutes: 20,
+    prepMinutes: details.prepMinutes,
+    cookMinutes: details.cookMinutes,
     ingredients: safeClone(state.ingredients),
     steps: safeClone(state.steps),
     nutrition: recipeMacros(state, servings),
@@ -910,14 +1018,15 @@ function normalizeSavedRecipe(recipe){
     ingredients: safeClone(recipe.ingredients),
     steps: Array.isArray(recipe.steps) ? safeClone(recipe.steps) : buildInstructions(recipe.ingredients)
   };
+  const details = recipeDetails(recipeState.ingredients);
   return {
     id: recipe.id || uid(),
     version: 2,
     title: recipeState.title,
-    description: recipe.description || 'A simple recipe saved in Picky Eater.',
+    description: recipe.description || details.description,
     servings: recipeServings,
-    prepMinutes: Number(recipe.prepMinutes) || 10,
-    cookMinutes: Number(recipe.cookMinutes) || 20,
+    prepMinutes: Number(recipe.prepMinutes) || details.prepMinutes,
+    cookMinutes: Number(recipe.cookMinutes) || details.cookMinutes,
     ingredients: recipeState.ingredients,
     steps: recipeState.steps,
     nutrition: recipe.nutrition || recipeMacros(recipeState, recipeServings),
@@ -1520,18 +1629,43 @@ function init(){
   getRecipeBook();
   loadSharedRecipeFromUrl();
   window.addEventListener('hashchange', loadSharedRecipeFromUrl);
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./service-worker.js').catch(error=>{
+      console.warn('Offline support could not start.', error);
+    });
+  }
 }
 
-if(document.readyState === 'loading'){
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  init();
+if(typeof document !== 'undefined'){
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 }
 
 // Compatibility toggle for older hero "Details" UI (if present)
-window.toggleTruth = function () {
-  const el = document.querySelector(".truth-detail") || document.getElementById("truthText");
-  if (!el) return;
-  const cur = getComputedStyle(el).display;
-  el.style.display = (cur === "none") ? "block" : "none";
-};
+if(typeof window !== 'undefined'){
+  window.toggleTruth = function () {
+    const el = document.querySelector(".truth-detail") || document.getElementById("truthText");
+    if (!el) return;
+    const cur = getComputedStyle(el).display;
+    el.style.display = (cur === "none") ? "block" : "none";
+  };
+}
+
+if(typeof module !== 'undefined' && module.exports){
+  module.exports = {
+    canonName,
+    parseInputIngredient,
+    roleFor,
+    normalize,
+    buildInstructions,
+    recipeDetails,
+    titleFrom,
+    gramsFor,
+    recipeMacros,
+    encodeSharedRecipe,
+    decodeSharedRecipe
+  };
+}

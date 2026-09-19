@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2b7a63" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Picky Eater" />
   <title>Picky Eater — Make recipes your way</title>
 <link rel="icon" href="./favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
@@ -53,9 +57,12 @@
   <div class="result-header">
     <div>
       <div id="recipeTitle" class="recipe-title"></div>
+      <p id="recipeDescription" class="recipe-description"></p>
 
       <div class="pill-row">
         <span class="pill">Editable with swaps</span>
+        <span id="prepTime" class="pill"></span>
+        <span id="cookTime" class="pill"></span>
         <span class="pill servings">
           Serves
           <button class="step" id="decServ" aria-label="Decrease servings">–</button>
