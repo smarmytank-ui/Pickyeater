@@ -1,4 +1,4 @@
-const CACHE_NAME = 'picky-eater-v2-1';
+const CACHE_NAME = 'picky-eater-v2-2';
 const APP_SHELL = [
   './',
   './index.html',

@@ -26,17 +26,24 @@
     </div>
   </div>
   <nav class="topbar-actions" aria-label="App sections">
-    <button id="openRecipeBook" class="btn ghost topbar-btn">📖 Recipe Book</button>
-    <button id="openDiary" class="btn ghost topbar-btn">📓 Today</button>
+    <button id="openRecipeBook" class="btn ghost topbar-btn" aria-label="Open Recipe Book"><span class="nav-icon" aria-hidden="true">📖</span><span class="nav-label">Recipe Book</span></button>
+    <button id="openDiary" class="btn ghost topbar-btn" aria-label="Open food diary"><span class="nav-icon" aria-hidden="true">📓</span><span class="nav-label">Today</span></button>
   </nav>
 </header>
 
 <main class="content">
 
 <section class="hero card hero-tint">
-  <div class="eyebrow">For picky eaters</div>
-  <h1>Make recipes your way.</h1>
-  <p>Start with ingredients you like. Swap what you don’t. Keep it simple.</p>
+  <div class="hero-copy">
+    <div class="eyebrow"><span class="eyebrow-dot"></span> Built for picky eaters</div>
+    <h1>Food you’ll actually <span>look forward to.</span></h1>
+    <p>Tell us what sounds good. We’ll turn it into a simple recipe you can swap, save, and make your own.</p>
+    <div class="hero-promises" aria-label="Picky Eater benefits">
+      <span>✓ Familiar ingredients</span>
+      <span>✓ Easy swaps</span>
+      <span>✓ No judgment</span>
+    </div>
+  </div>
 <div class="truth-label" id="truthLabel">
   Estimates based on standard nutrition references.
   <span onclick="toggleTruth()">Details</span>
@@ -48,9 +55,29 @@
 </section>
 
 <section id="inputCard" class="card">
-  <label>Ingredients (one per line)</label>
-  <textarea id="ingredientsInput" placeholder="ground beef&#10;broccoli&#10;potatoes&#10;onion"></textarea>
-  <button id="generateBtn" class="btn primary full">Generate recipe</button>
+  <div class="card-heading">
+    <div>
+      <div class="step-label">Step 1</div>
+      <h2>What sounds good?</h2>
+      <p>Type a few foods you like. Quantities are optional.</p>
+    </div>
+    <button id="surpriseBtn" class="btn ghost compact" type="button">Surprise me</button>
+  </div>
+  <label for="ingredientsInput">Ingredients <span>(one per line)</span></label>
+  <div class="textarea-shell">
+    <textarea id="ingredientsInput" placeholder="Chicken&#10;Potatoes&#10;Cheddar cheese&#10;Broccoli"></textarea>
+    <div class="input-count"><span id="ingredientCount">0</span> ingredients</div>
+  </div>
+  <div id="inputError" class="input-error hidden" role="alert">Add at least one ingredient to get started.</div>
+  <div class="quick-pick-label">Or start with a favorite</div>
+  <div class="quick-picks" aria-label="Recipe starters">
+    <button class="starter-chip" type="button" data-starter="chicken breast&#10;potatoes&#10;cheddar cheese&#10;broccoli">Chicken dinner</button>
+    <button class="starter-chip" type="button" data-starter="ground beef&#10;tortillas&#10;cheddar cheese&#10;corn&#10;taco seasoning">Taco night</button>
+    <button class="starter-chip" type="button" data-starter="pasta&#10;chicken breast&#10;parmesan&#10;spinach&#10;garlic">Easy pasta</button>
+    <button class="starter-chip" type="button" data-starter="eggs&#10;potatoes&#10;cheddar cheese&#10;bread">Breakfast</button>
+  </div>
+  <button id="generateBtn" class="btn primary full generate-cta"><span>Make my recipe</span><span aria-hidden="true">→</span></button>
+  <div class="privacy-note">Your recipes stay on this device unless you choose to share them.</div>
 </section>
 
 <section id="resultCard" class="card hidden" aria-live="polite">
@@ -77,7 +104,6 @@
         <span id="carbs">Carbs 0g</span>
         <span id="fat">Fat 0g</span>
       </div>
-      <div class="macro-note">≈ estimates per serving (based on standard nutrition references). Updates when you swap or change servings.</div>
     </div>
   </div>
 

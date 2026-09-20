@@ -1065,6 +1065,31 @@ function saveRecipe(recipe, options = {}){
   return normalized;
 }
 
+let toastTimer = null;
+function showToast(message){
+  let toast = $('appToast');
+  if(!toast){
+    toast = document.createElement('div');
+    toast.id = 'appToast';
+    toast.className = 'toast hidden';
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.classList.remove('hidden');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>toast.classList.add('hidden'), 2400);
+}
+
+function showCreateView(){
+  $('recipeBookCard')?.classList.add('hidden');
+  $('diaryCard')?.classList.add('hidden');
+  $('sharedRecipeCard')?.classList.add('hidden');
+  if(state) $('resultCard')?.classList.remove('hidden');
+  else $('inputCard')?.classList.remove('hidden');
+}
+
 function openSavedRecipe(recipe){
   const normalized = normalizeSavedRecipe(recipe);
   if(!normalized) return;
@@ -1152,6 +1177,9 @@ function renderRecipeBook(query = ''){
 }
 
 function openRecipeBook(){
+  $('inputCard')?.classList.add('hidden');
+  $('resultCard')?.classList.add('hidden');
+  $('sharedRecipeCard')?.classList.add('hidden');
   $('recipeBookCard')?.classList.remove('hidden');
   $('diaryCard')?.classList.add('hidden');
   renderRecipeBook($('recipeSearch')?.value || '');
@@ -1410,13 +1438,19 @@ function quickAddDiaryEntry(){
 
 function openDiary(){
   const card = $('diaryCard');
+  $('inputCard')?.classList.add('hidden');
+  $('resultCard')?.classList.add('hidden');
+  $('recipeBookCard')?.classList.add('hidden');
+  $('sharedRecipeCard')?.classList.add('hidden');
   if(card) card.classList.remove('hidden');
   updateDiarySub();
   renderDiary();
+  card?.scrollIntoView({ behavior:'smooth', block:'start' });
 }
 function closeDiary(){
   const card = $('diaryCard');
   if(card) card.classList.add('hidden');
+  showCreateView();
 }
 
 // Overlay helpers
@@ -1484,12 +1518,59 @@ function wireEvents(){
   const saveBtn = $('saveBtn');
   const shareBtn = $('shareBtn');
   const backBtn = $('backBtn');
+  const ingredientsInput = $('ingredientsInput');
+
+  const updateIngredientCount = ()=>{
+    const count = parseLines(ingredientsInput?.value).length;
+    if($('ingredientCount')) $('ingredientCount').textContent = String(count);
+    if(count) $('inputError')?.classList.add('hidden');
+  };
+
+  if(ingredientsInput && !ingredientsInput.dataset.wired){
+    ingredientsInput.dataset.wired = '1';
+    ingredientsInput.addEventListener('input', updateIngredientCount);
+    updateIngredientCount();
+  }
+
+  document.querySelectorAll('.starter-chip').forEach(chip=>{
+    if(chip.dataset.wired) return;
+    chip.dataset.wired = '1';
+    chip.addEventListener('click', ()=>{
+      if(!ingredientsInput) return;
+      ingredientsInput.value = chip.dataset.starter || '';
+      updateIngredientCount();
+      ingredientsInput.focus();
+      showToast(`${chip.textContent} loaded — make it yours.`);
+    });
+  });
+
+  const surpriseBtn = $('surpriseBtn');
+  if(surpriseBtn && !surpriseBtn.dataset.wired){
+    surpriseBtn.dataset.wired = '1';
+    surpriseBtn.addEventListener('click', ()=>{
+      const ideas = [
+        'chicken breast\nrice\ncheddar cheese\nbroccoli',
+        'ground beef\npotatoes\ncarrots\ngarlic',
+        'pasta\nmozzarella\ntomato sauce\nspinach',
+        'eggs\nbread\ncheddar cheese\nbacon'
+      ];
+      if(!ingredientsInput) return;
+      ingredientsInput.value = ideas[Math.floor(Math.random() * ideas.length)];
+      updateIngredientCount();
+      ingredientsInput.focus();
+      showToast('A comfort-food combo is ready.');
+    });
+  }
 
   if(gen && !gen.dataset.wired){
     gen.dataset.wired = '1';
     gen.addEventListener('click', ()=>{
       const raw = parseLines($('ingredientsInput')?.value);
-      if(!raw || !raw.length) return alert('Add ingredients');
+      if(!raw || !raw.length){
+        $('inputError')?.classList.remove('hidden');
+        ingredientsInput?.focus();
+        return;
+      }
 
       const ingredients = normalize(raw);
 
@@ -1515,6 +1596,7 @@ function wireEvents(){
       if(saveBtn) saveBtn.textContent = '⭐ Save to Favorites';
 
       render();
+      $('resultCard')?.scrollIntoView({ behavior:'smooth', block:'start' });
     });
   }
 
@@ -1540,6 +1622,7 @@ function wireEvents(){
       if(!state) return;
       saveRecipe(snapshotCurrentRecipe());
       saveBtn.textContent = '✓ Saved';
+      showToast('Saved to your Recipe Book.');
     });
   }
 
@@ -1568,7 +1651,10 @@ function wireEvents(){
   document.getElementById('openDiary')?.addEventListener('click', openDiary);
   document.getElementById('closeDiary')?.addEventListener('click', closeDiary);
   document.getElementById('openRecipeBook')?.addEventListener('click', openRecipeBook);
-  document.getElementById('closeRecipeBook')?.addEventListener('click', ()=>$('recipeBookCard')?.classList.add('hidden'));
+  document.getElementById('closeRecipeBook')?.addEventListener('click', ()=>{
+    $('recipeBookCard')?.classList.add('hidden');
+    showCreateView();
+  });
   document.getElementById('recipeSearch')?.addEventListener('input', e=>renderRecipeBook(e.target.value));
   document.getElementById('viewToday')?.addEventListener('click', ()=>setDiaryDay(0));
   document.getElementById('viewYesterday')?.addEventListener('click', ()=>setDiaryDay(-1));
