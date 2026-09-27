@@ -296,6 +296,7 @@ textarea:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 5px r
 .privacy-note{text-align:center;color:var(--muted);font-size:11px;margin-top:12px}
 .btn{transition:transform .15s,box-shadow .15s,border-color .15s}
 .btn:hover{transform:translateY(-1px)}
+.btn:disabled{opacity:.62;cursor:not-allowed;transform:none;box-shadow:none}
 .btn.primary{background:linear-gradient(145deg,#318b6c,var(--accent-dark));border-color:transparent}
 .recipe-title{font-size:32px;letter-spacing:-.04em}
 .pill{background:#f5f8f5;border-color:var(--border);font-size:12px}

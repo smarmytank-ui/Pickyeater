@@ -245,6 +245,20 @@ function restoreCloudSnapshot(snapshot){
   return true;
 }
 
+async function withBusyButton(button,busyLabel,work){
+  if(!button || button.disabled) return;
+  const originalLabel=button.textContent;
+  button.disabled=true;
+  button.textContent=busyLabel;
+  try{ return await work(); }
+  finally{
+    if(button.isConnected){
+      button.disabled=false;
+      button.textContent=originalLabel;
+    }
+  }
+}
+
 async function setupAccounts(){
   if(!getPublicConfig().accountsEnabled) return;
   $('openAccount')?.classList.remove('hidden');
@@ -271,53 +285,63 @@ async function setupAccounts(){
     }catch(error){ showAccountError(error.message); }
     finally{ if(button){ button.disabled=false; button.textContent='Email me a sign-in link'; } }
   });
-  $('accountBackup')?.addEventListener('click',async()=>{
+  $('accountBackup')?.addEventListener('click',async event=>{
     showAccountError();
-    try{
-      const cloud=await accountApi('./api/account/data');
-      await accountApi('./api/account/data',{method:'PUT',body:JSON.stringify({data:betaDataSnapshot().data,baseRevision:cloud.revision})});
-      showToast('This device is backed up to your cloud account.');
-      track('cloud_backup_completed',{founding:true});
-    }catch(error){
-      if(error.code==='SYNC_CONFLICT') showAccountError('Cloud data changed on another device. Restore it or try the backup again.');
-      else if(error.code==='PREMIUM_REQUIRED') showAccountError('Cloud backup is included with Founding membership.');
-      else showAccountError(error.message);
-    }
+    await withBusyButton(event.currentTarget,'Backing up…',async()=>{
+      try{
+        const cloud=await accountApi('./api/account/data');
+        await accountApi('./api/account/data',{method:'PUT',body:JSON.stringify({data:betaDataSnapshot().data,baseRevision:cloud.revision})});
+        showToast('This device is backed up to your cloud account.');
+        track('cloud_backup_completed',{founding:true});
+      }catch(error){
+        if(error.code==='SYNC_CONFLICT') showAccountError('Cloud data changed on another device. Restore it or try the backup again.');
+        else if(error.code==='PREMIUM_REQUIRED') showAccountError('Cloud backup is included with Founding membership.');
+        else showAccountError(error.message);
+      }
+    });
   });
-  $('accountRestore')?.addEventListener('click',async()=>{
+  $('accountRestore')?.addEventListener('click',async event=>{
     showAccountError();
-    try{
-      const cloud=await accountApi('./api/account/data');
-      const count=Object.keys(cloud.snapshot?.data || {}).length;
-      if(!count){ showAccountError('There is no cloud backup to restore yet.'); return; }
-      if(!confirm('Replace this device’s Food My Way recipes, plans, diary, and preferences with the cloud backup? Export local data first if you may need it.')) return;
-      restoreCloudSnapshot(cloud.snapshot);
-      location.reload();
-    }catch(error){ showAccountError(error.message); }
+    await withBusyButton(event.currentTarget,'Loading backup…',async()=>{
+      try{
+        const cloud=await accountApi('./api/account/data');
+        const count=Object.keys(cloud.snapshot?.data || {}).length;
+        if(!count){ showAccountError('There is no cloud backup to restore yet.'); return; }
+        if(!confirm('Replace this device’s Food My Way recipes, plans, diary, and preferences with the cloud backup? Export local data first if you may need it.')) return;
+        restoreCloudSnapshot(cloud.snapshot);
+        location.reload();
+      }catch(error){ showAccountError(error.message); }
+    });
   });
-  $('accountExport')?.addEventListener('click',async()=>{
+  $('accountExport')?.addEventListener('click',async event=>{
     showAccountError();
-    try{ downloadCloudExport(await accountApi('./api/account/data')); }
-    catch(error){ showAccountError(error.message); }
+    await withBusyButton(event.currentTarget,'Preparing export…',async()=>{
+      try{ downloadCloudExport(await accountApi('./api/account/data')); }
+      catch(error){ showAccountError(error.message); }
+    });
   });
-  $('accountSignOut')?.addEventListener('click',async()=>{
+  $('accountSignOut')?.addEventListener('click',async event=>{
     showAccountError();
-    try{
-      await accountApi('./api/auth/session',{method:'POST',body:'{}'});
-      accountSession={authenticated:false,configured:true,email:'',entitlement:null};
-      renderAccountState();
-      showToast('Signed out. Local data stays on this device.');
-    }
-    catch(error){ showAccountError(error.message); }
+    await withBusyButton(event.currentTarget,'Signing out…',async()=>{
+      try{
+        await accountApi('./api/auth/session',{method:'POST',body:'{}'});
+        accountSession={authenticated:false,configured:true,email:'',entitlement:null};
+        renderAccountState();
+        showToast('Signed out. Local data stays on this device.');
+      }
+      catch(error){ showAccountError(error.message); }
+    });
   });
-  $('accountDelete')?.addEventListener('click',async()=>{
+  $('accountDelete')?.addEventListener('click',async event=>{
     showAccountError();
     if(!confirm('Permanently delete your Food My Way cloud account and cloud backup? Local data on this device will remain.')) return;
-    try{
-      await accountApi('./api/account/data',{method:'DELETE',headers:{'x-confirm-delete':'DELETE'},body:'{}'});
-      accountSession={authenticated:false,configured:true,email:'',entitlement:null}; renderAccountState();
-      showToast('Cloud account deleted. Local data remains on this device.');
-    }catch(error){ showAccountError(error.message); }
+    await withBusyButton(event.currentTarget,'Deleting account…',async()=>{
+      try{
+        await accountApi('./api/account/data',{method:'DELETE',headers:{'x-confirm-delete':'DELETE'},body:'{}'});
+        accountSession={authenticated:false,configured:true,email:'',entitlement:null}; renderAccountState();
+        showToast('Cloud account deleted. Local data remains on this device.');
+      }catch(error){ showAccountError(error.message); }
+    });
   });
   await refreshAccountSession();
   const loginResult=new URLSearchParams(location.search).get('login');

@@ -329,6 +329,17 @@ test('account outages preserve the last known session and surface an error',asyn
   assert.match(script,/refreshAccountSession\(\{reportError:true\}\)\.then\(session=>\{\s*if\(!session\) return;/);
 });
 
+test('cloud account actions prevent duplicate requests while busy',async()=>{
+  const [script,styles]=await Promise.all([read('app.js'),read('styles.css')]);
+  assert.match(script,/async function withBusyButton\(button,busyLabel,work\)/);
+  assert.match(script,/if\(!button \|\| button\.disabled\) return;/);
+  for(const label of ['Backing up…','Loading backup…','Preparing export…','Signing out…','Deleting account…']){
+    assert.match(script,new RegExp(label));
+  }
+  assert.match(script,/finally\{\s*if\(button\.isConnected\)\{/);
+  assert.match(styles,/\.btn:disabled\{[^}]*cursor:not-allowed/);
+});
+
 test('membership outages preserve account access and paid-customer recovery',async()=>{
   const [script,sessionEndpoint]=await Promise.all([
     readFile(path.join(root,'app.js'),'utf8'),
