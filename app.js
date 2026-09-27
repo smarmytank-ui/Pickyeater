@@ -442,7 +442,20 @@ function parseInputIngredient(raw){
     ? 'cooked'
     : (/\bfrozen\b/i.test(text) ? 'frozen' : null);
   const match = text.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)\s*(lb|lbs|pound|pounds|oz|ounce|ounces|cup|cups|tbsp|tablespoons?|tsp|teaspoons?|cloves?|pieces?|slices?|cans?|packages?|medium|large|small)\b/i);
-  if(!match) return { name:canonName(text), quantity:null, unit:null, preparation };
+  if(!match){
+    const counted=text.match(/^(\d+(?:\.\d+)?)\s+(.+)$/);
+    if(counted){
+      const name=canonName(counted[2]);
+      const countUnits=new Map([
+        ['eggs','eggs'],['potatoes','medium'],['sweet potatoes','medium'],
+        ['tortillas','count'],['chicken nuggets','count'],['fish sticks','count'],
+        ['hot dogs','count'],['meatballs','count'],['bagels','count'],['bananas','count'],
+        ['apples','count'],['buns','count'],['chicken breast','count']
+      ]);
+      if(countUnits.has(name)) return {name,quantity:Number(counted[1]),unit:countUnits.get(name),preparation};
+    }
+    return { name:canonName(text), quantity:null, unit:null, preparation };
+  }
   const numberText = match[1];
   let quantity;
   if(numberText.includes(' ')){
@@ -488,7 +501,7 @@ function formatQty(value) {
 // -------------------------------
 const ROLE_RULES = [
   // Prepared safe foods need package/preferred-method guidance, not raw-ingredient cooking steps.
-  [/\b(chicken nuggets?|fish sticks?|french fries|fries|pizza|mac(?:aroni)? and cheese|cereal|sandwich(?:es)?|crackers?)\b/i,'other'],
+  [/\b(chicken nuggets?|fish sticks?|hot dogs?|meatballs?|bagels?|pancakes?|waffles?|french fries|fries|pizza|mac(?:aroni)? and cheese|cereal|sandwich(?:es)?|crackers?)\b/i,'other'],
   // Specific phrases FIRST (prevents "green beans" matching "beans")
   [/\bgreen beans\b/i,'veg'],
   [/\b(bell pepper|broccoli|carrots?|zucchini|spinach|tomatoes?|corn|peas|cauliflower)\b/i,'veg'],
@@ -816,6 +829,15 @@ const GRAMS_PER_UNIT = {
   'tortillas': { count: 30, pieces: 30 },
   'bread': { count: 25, slices: 25 },
   'pita': { count: 60, pieces: 60 },
+  'chicken breast': { count: 170 },
+  'chicken nuggets': { count: 18 },
+  'fish sticks': { count: 28 },
+  'hot dogs': { count: 45 },
+  'meatballs': { count: 28 },
+  'bagels': { count: 95 },
+  'bananas': { count: 118 },
+  'apples': { count: 182 },
+  'buns': { count: 50 },
 
   // medium
   'onion': { medium: 110 },

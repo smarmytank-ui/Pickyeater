@@ -77,6 +77,24 @@ test('preserves explicit quantities and normalizes units', () => {
   assert.deepEqual(ingredients.map(item=>item.base), [{v:2,u:'lb'}, {v:1,u:'cups'}]);
 });
 
+test('understands natural counts for common safe foods', () => {
+  const cases=[
+    ['4 eggs','eggs',4,'eggs'],
+    ['2 potatoes','potatoes',2,'medium'],
+    ['8 tortillas','tortillas',8,'count'],
+    ['6 frozen chicken nuggets','chicken nuggets',6,'count'],
+    ['2 chicken breasts','chicken breast',2,'count'],
+    ['4 bagels','bagels',4,'count']
+  ];
+  for(const [input,name,quantity,unit] of cases){
+    const parsed=parseInputIngredient(input);
+    assert.equal(parsed.name,name,input);
+    assert.equal(parsed.quantity,quantity,input);
+    assert.equal(parsed.unit,unit,input);
+  }
+  assert.equal(parseInputIngredient('6 frozen chicken nuggets').preparation,'frozen');
+});
+
 test('recipe input stays within a practical and recognizable boundary', () => {
   assert.equal(MAX_RECIPE_INGREDIENTS,12);
   assert.deepEqual(validateRecipeInput('chicken\nrice'),{ok:true,error:'',lines:['chicken','rice']});
