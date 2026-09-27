@@ -4,7 +4,7 @@ Everything below requires your personal account authentication, legal identity, 
 
 ## 1. Cloudflare and domains
 
-- Sign in to Cloudflare and Namecheap when prompted and complete any personal authentication or one-time-code challenge.
+- Cloudflare authentication is complete. Sign in to Namecheap when prompted and complete any personal authentication or one-time-code challenge so the deployment operator can replace the registrar nameservers.
 - Approve a registrar or DNS ownership confirmation if either provider explicitly requires the domain owner to do so.
 
 ## 2. Seller and support identity

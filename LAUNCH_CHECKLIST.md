@@ -38,9 +38,11 @@
 - [ ] Stripe account and verified business identity
 - [ ] Stripe $29 founding product and Payment Link
 - [ ] Refund and cancellation policy finalized
-- [ ] Cloudflare D1 `LEADS` binding and live founding-interest verification
+- [x] Cloudflare D1 `LEADS` database, schema, and preview binding
+- [ ] Live founding-interest verification
 - [ ] `LEADS_UNSUBSCRIBE_SECRET` and live unsubscribe verification
-- [ ] Production webhook secret, D1 `PURCHASES` binding, and test-mode fulfillment verification
+- [x] Cloudflare D1 `PURCHASES` database, schema, and preview binding
+- [ ] Production webhook secret and test-mode fulfillment verification
 - [ ] End-to-end founding purchase, login, premium-access, and refund test
 
 ## Trust and operations
@@ -69,7 +71,8 @@
 - [ ] PickyEaterCookbook.com redirect configured
 - [x] Production social-share image
 - [x] Privacy-minimized first-party analytics and generic client-error endpoint
-- [ ] Cloudflare D1 `TELEMETRY` binding, live event verification, and production confirmation of transactional 90-day cleanup
+- [x] Cloudflare D1 `TELEMETRY` database, schema, and preview binding
+- [ ] Live event verification and production confirmation of transactional 90-day cleanup
 - [ ] Search-engine verification and sitemap submission
 - [ ] TikTok, Instagram, and YouTube handles reserved
 - [ ] Apple/Google store packaging decision after web retention proof
@@ -120,7 +123,17 @@ The authorized September 27 deployment then passed that comparison at pushed com
 - the deployed configuration kept checkout, commerce, telemetry, accounts, and premium enforcement disabled pending their live external bindings;
 - the live app generated a four-ingredient chicken recipe with six steps and 165°F thermometer guidance, saved it, reopened it from the Recipe Book, and displayed the weekly-planner entry point.
 
-This proves the current private preview shell and local-first core flow. It does not satisfy the separately listed production-domain, D1, Resend, Stripe, or live paid-flow gates.
+This proves the current private preview shell and local-first core flow. It does not satisfy the separately listed production-domain, Resend, Stripe, or live paid-flow gates.
+
+Later on September 27, 2026, Cloudflare infrastructure was advanced at pushed commit `67b71a7`:
+
+- created `food-my-way-leads`, `food-my-way-purchases`, `food-my-way-telemetry`, and `food-my-way-accounts` on the Cloudflare free tier;
+- applied migrations `0001` through `0006` to their documented databases;
+- committed the four binding IDs in `wrangler.toml`, deployed the commit through the existing Git integration, and verified `LEADS`, `PURCHASES`, `TELEMETRY`, and `ACCOUNTS` on the preview environment;
+- added `foodmyway.app` to Cloudflare DNS while preserving the discovered Namecheap email-forwarding MX and SPF records;
+- received the assigned nameservers `alex.ns.cloudflare.com` and `lilyana.ns.cloudflare.com`; registrar activation remains pending the owner's Namecheap authentication.
+
+Database presence and binding do not by themselves enable customer-facing accounts, telemetry, payments, or email. Keep those public flags off until their separately listed secrets and end-to-end checks pass.
 
 On September 26, 2026, release `2.47.0` passed the automated suite and a rendered in-app-browser smoke test against the local HTTP build:
 
