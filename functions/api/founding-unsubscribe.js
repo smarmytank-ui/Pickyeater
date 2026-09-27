@@ -28,16 +28,17 @@ async function validCredentials(request,env){
   const token=tokenFrom(request);
   if(!/^[A-Za-z0-9_-]{43}$/.test(token)) return {error:'This unsubscribe link is invalid or expired.',status:400};
   try{
-    const lead=await env.LEADS.prepare("SELECT email FROM founding_leads WHERE unsubscribe_token=?1 AND status='active' LIMIT 1")
+    const lead=await env.LEADS.prepare("SELECT email,status FROM founding_leads WHERE unsubscribe_token=?1 LIMIT 1")
       .bind(token).first();
     if(!lead?.email) return {error:'This unsubscribe link is invalid or expired.',status:400};
-    return {email:String(lead.email),token};
+    return {email:String(lead.email),token,unsubscribed:lead.status==='unsubscribed'};
   }catch{return {error:'Email preferences are temporarily unavailable.',status:503};}
 }
 
 export async function onRequestGet({request,env}){
   const result=await validCredentials(request,env);
   if(result.error) return error(result.error,result.status);
+  if(result.unsubscribed) return page('Already unsubscribed','This address is already unsubscribed from founding-access and product-update emails.');
   const action=`/api/founding-unsubscribe?token=${encodeURIComponent(result.token)}`;
   return page('Confirm unsubscribe','Use the button below to stop founding-access and product-update emails.',{formAction:action,email:result.email});
 }
@@ -45,8 +46,9 @@ export async function onRequestGet({request,env}){
 export async function onRequestPost({request,env}){
   const result=await validCredentials(request,env);
   if(result.error) return error(result.error,result.status);
+  if(result.unsubscribed) return page('You are unsubscribed','Food My Way will not send further founding-access or product-update emails to this address.');
   try{
-    await env.LEADS.prepare("UPDATE founding_leads SET consent=0,status='unsubscribed',updated_at=?1 WHERE email=?2")
+    await env.LEADS.prepare("UPDATE founding_leads SET consent=0,status='unsubscribed',updated_at=?1 WHERE email=?2 AND status='active'")
       .bind(new Date().toISOString(),result.email).run();
   }catch{return error('Email preferences are temporarily unavailable.',503);}
   return page('You are unsubscribed','Food My Way will not send further founding-access or product-update emails to this address.');

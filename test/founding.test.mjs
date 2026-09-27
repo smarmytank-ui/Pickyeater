@@ -29,12 +29,13 @@ test('unsubscribe confirmation is read-only until a signed POST updates consent'
   const token=await createFoundingUnsubscribeToken(email,secret);
   const url=`https://foodmyway.app/api/founding-unsubscribe?token=${token}`;
   let writes=0;
-  let bound=[];
+  let status='active';
+  let updateValues=[];
   const env={LEADS:{prepare:sql=>({bind:(...values)=>{
-    bound=values;
+    if(sql.startsWith('UPDATE')) updateValues=values;
     return {
-      first:async()=>sql.startsWith('SELECT') ? {email} : null,
-      run:async()=>{writes+=1;}
+      first:async()=>sql.startsWith('SELECT') ? {email,status} : null,
+      run:async()=>{writes+=1; status='unsubscribed';}
     };
   }})}};
   const getResponse=await showUnsubscribe({request:new Request(url),env});
@@ -45,6 +46,13 @@ test('unsubscribe confirmation is read-only until a signed POST updates consent'
   assert.equal(postResponse.status,200);
   assert.match(await postResponse.text(),/You are unsubscribed/);
   assert.equal(writes,1);
-  assert.equal(bound[1],email);
+  assert.equal(updateValues[1],email);
+  const repeatedPost=await confirmUnsubscribe({request:new Request(url,{method:'POST'}),env});
+  assert.equal(repeatedPost.status,200);
+  assert.match(await repeatedPost.text(),/You are unsubscribed/);
+  assert.equal(writes,1);
+  const repeatedGet=await showUnsubscribe({request:new Request(url),env});
+  assert.equal(repeatedGet.status,200);
+  assert.match(await repeatedGet.text(),/Already unsubscribed/);
   assert.doesNotMatch(url,/person%40|person@/);
 });

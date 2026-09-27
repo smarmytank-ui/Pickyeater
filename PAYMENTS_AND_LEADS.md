@@ -52,7 +52,7 @@ Cloudflare setup:
 7. Run `migrations/0005_founding_unsubscribe.sql`. For pre-existing active leads, generate the recipient token with `createFoundingUnsubscribeToken(email, secret)` and backfill `unsubscribe_token` before any campaign.
 8. For every outgoing marketing message, use the row's opaque token in `https://foodmyway.app/api/founding-unsubscribe?token=TOKEN`.
 9. Configure the email provider's `List-Unsubscribe` and `List-Unsubscribe-Post: List-Unsubscribe=One-Click` headers to POST to that same signed URL.
-10. Test both the confirmation page and one-click POST. Either path must set `consent=0` and `status='unsubscribed'` before the first broadcast.
+10. Test the confirmation page, one-click POST, and a repeated provider POST. The first POST must set `consent=0` and `status='unsubscribed'`; retries must return a successful already-unsubscribed confirmation without another write.
 
 Unsubscribe links use opaque HMAC tokens bound to normalized email addresses. The email itself never appears in the URL. The secret stays server-side; never put it in `config.js`, a client bundle, or a campaign export.
 
