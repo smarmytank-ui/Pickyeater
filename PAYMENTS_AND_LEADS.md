@@ -56,6 +56,8 @@ Cloudflare setup:
 
 Unsubscribe links use opaque HMAC tokens bound to normalized email addresses. The email itself never appears in the URL. The secret stays server-side; never put it in `config.js`, a client bundle, or a campaign export.
 
+Production status, September 27, 2026: `LEADS` is bound and `LEADS_UNSUBSCRIBE_SECRET` is stored as an encrypted Cloudflare Pages production secret. A deployment after this secret was added is required before the live consent and unsubscribe lifecycle can be verified.
+
 ## Required owner actions
 
 The owner must personally complete Stripe onboarding because it involves legal identity, banking, tax information, and acceptance of financial terms. The owner must also approve the final refund language and identify the legal seller displayed on receipts.
