@@ -97,7 +97,7 @@ function applyFoodIdea(text){
 }
 
 function betaDataSnapshot(){
-  const keys = [RECIPE_BOOK_KEY, WEEKLY_PLAN_KEY, GROCERY_CHECKS_KEY, TASTE_PROFILE_KEY, 'pickyDiaryMeals', 'pickyAuth', 'foodMyWayFounderInterest'];
+  const keys = [RECIPE_BOOK_KEY, WEEKLY_PLAN_KEY, GROCERY_CHECKS_KEY, TASTE_PROFILE_KEY, 'pickyDiaryMeals', 'foodMyWayFounderInterest'];
   return {
     product:'Food My Way',
     exportedAt:new Date().toISOString(),
@@ -1489,10 +1489,6 @@ function dateKeyForOffset(offset){
   return `${year}-${month}-${day}`;
 }
 
-function getAuth(){ return lsGet('pickyAuth', null); }
-function setAuthEmail(email){ lsSet('pickyAuth', { email, createdAt: new Date().toISOString() }); }
-function authKnown(){ const a = getAuth(); return !!(a && a.email); }
-
 function getDiary(){ return lsGet('pickyDiaryMeals', {}); }
 function setDiary(d){ lsSet('pickyDiaryMeals', d); }
 
@@ -1541,10 +1537,8 @@ function deleteEntry(meal, idx){
 
 function updateDiarySub(){
   const key = dateKeyForOffset(diaryDayOffset);
-  const a = getAuth();
-  const who = a?.email ? `Signed in as ${a.email}` : 'Saved on this device (create free account to sync later)';
   const el = document.getElementById('diarySub');
-  if(el) el.textContent = `${key} • ${who}`;
+  if(el) el.textContent = `${key} • Saved on this device only`;
 }
 
 function setActiveMeal(meal){
@@ -1633,7 +1627,7 @@ function quickAddDiaryEntry(){
       c:Number(document.getElementById('qaC')?.value)||0,
       f:Number(document.getElementById('qaF')?.value)||0
     },
-    localOnly:!authKnown(),
+    localOnly:true,
     time:new Date().toISOString()
   });
   ['qaName','qaCal','qaP','qaC','qaF'].forEach(id=>{ const input=document.getElementById(id); if(input) input.value=''; });
@@ -1662,10 +1656,6 @@ function closeDiary(){
 function show(el){ el && el.classList.remove('hidden'); }
 function hide(el){ el && el.classList.add('hidden'); }
 
-function showAuthGate(){ show(document.getElementById('authOverlay')); }
-function hideAuthGate(){ hide(document.getElementById('authOverlay')); }
-function showEmailCapture(){ show(document.getElementById('emailOverlay')); document.getElementById('authEmail')?.focus(); }
-function hideEmailCapture(){ hide(document.getElementById('emailOverlay')); }
 function showMealPicker(){ show(document.getElementById('mealOverlay')); }
 function hideMealPicker(){ hide(document.getElementById('mealOverlay')); }
 
@@ -1681,7 +1671,7 @@ function addCurrentRecipeToMeal(meal){
     title: state.title,
     source: 'Picky recipe',
     macros: { cal, p, c, f },
-    localOnly: !authKnown(),
+    localOnly:true,
     time: new Date().toISOString()
   });
 
@@ -1885,30 +1875,6 @@ function wireEvents(){
     }
   });
 
-  // Soft auth buttons
-  document.getElementById('authLater')?.addEventListener('click', () => {
-    hideAuthGate();
-    showMealPicker();
-  });
-
-  document.getElementById('authCreate')?.addEventListener('click', () => {
-    hideAuthGate();
-    showEmailCapture();
-  });
-
-  document.getElementById('authCancelEmail')?.addEventListener('click', () => {
-    hideEmailCapture();
-    showMealPicker();
-  });
-
-  document.getElementById('authSaveEmail')?.addEventListener('click', () => {
-    const email = document.getElementById('authEmail')?.value?.trim() || '';
-    if(!email || !email.includes('@')) return alert('Enter a valid email');
-    setAuthEmail(email);
-    hideEmailCapture();
-    showMealPicker();
-  });
-
   document.getElementById('mealCancel')?.addEventListener('click', hideMealPicker);
 
   const founderOverlay = $('founderOverlay');
@@ -2022,7 +1988,7 @@ function wireEvents(){
 
   document.addEventListener('keydown', event=>{
     if(event.key!=='Escape') return;
-    closeFounder(); closeProfile(); hideAuthGate(); hideEmailCapture(); hideMealPicker();
+    closeFounder(); closeProfile(); hideMealPicker();
   });
 
   if($('footerYear')) $('footerYear').textContent = String(new Date().getFullYear());
