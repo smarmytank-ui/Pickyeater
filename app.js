@@ -168,9 +168,13 @@ function renderAccountState(){
   }
 }
 
-async function refreshAccountSession(){
+async function refreshAccountSession({reportError=false}={}){
   try{ accountSession=await accountApi('./api/auth/session'); }
-  catch{ accountSession={authenticated:false,configured:false,email:'',entitlement:null}; }
+  catch(error){
+    renderAccountState();
+    if(reportError) showAccountError(error.message);
+    return null;
+  }
   renderAccountState();
   return accountSession;
 }
@@ -212,8 +216,9 @@ async function setupAccounts(){
   const close=()=>{ closeDialog(overlay); showAccountError(); };
   $('openAccount')?.addEventListener('click',async()=>{
     openDialog(overlay);
+    showAccountError();
     if($('accountStatus')) $('accountStatus').textContent='Checking account…';
-    await refreshAccountSession();
+    await refreshAccountSession({reportError:true});
   });
   $('accountClose')?.addEventListener('click',close);
   overlay?.addEventListener('click',event=>{ if(event.target===overlay) close(); });
@@ -261,7 +266,12 @@ async function setupAccounts(){
   });
   $('accountSignOut')?.addEventListener('click',async()=>{
     showAccountError();
-    try{ await accountApi('./api/auth/session',{method:'POST',body:'{}'}); await refreshAccountSession(); showToast('Signed out. Local data stays on this device.'); }
+    try{
+      await accountApi('./api/auth/session',{method:'POST',body:'{}'});
+      accountSession={authenticated:false,configured:true,email:'',entitlement:null};
+      renderAccountState();
+      showToast('Signed out. Local data stays on this device.');
+    }
     catch(error){ showAccountError(error.message); }
   });
   $('accountDelete')?.addEventListener('click',async()=>{
@@ -277,7 +287,7 @@ async function setupAccounts(){
   const loginResult=new URLSearchParams(location.search).get('login');
   if(loginResult){
     if(loginResult==='success'){
-      await refreshAccountSession();
+      await refreshAccountSession({reportError:true});
       openDialog(overlay);
       showToast('Signed in to Food My Way.');
       track('account_signed_in',{founding:accountSession.entitlement?.plan==='founding' && accountSession.entitlement?.status==='active'});
@@ -301,7 +311,8 @@ function requirePremium(feature){
     const overlay=$('accountOverlay');
     openDialog(overlay);
     showAccountError('Checking your Founding membership…');
-    refreshAccountSession().then(session=>{
+    refreshAccountSession({reportError:true}).then(session=>{
+      if(!session) return;
       const refreshed=session.entitlement?.plan==='founding' && session.entitlement?.status==='active';
       if(refreshed){
         showAccountError();

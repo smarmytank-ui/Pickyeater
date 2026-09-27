@@ -222,7 +222,8 @@ test('paid sensory preferences are visible and applied to recipe results',async(
 test('a denied premium action refreshes delayed Stripe entitlement state',async()=>{
   const script=await read('app.js');
   assert.match(script,/showAccountError\('Checking your Founding membership…'\)/);
-  assert.match(script,/refreshAccountSession\(\)\.then\(session=>/);
+  assert.match(script,/refreshAccountSession\(\{reportError:true\}\)\.then\(session=>\{/);
+  assert.match(script,/if\(!session\) return;/);
   assert.match(script,/session\.entitlement\?\.plan==='founding' && session\.entitlement\?\.status==='active'/);
   assert.match(script,/are unlocked\. Try that action again\./);
 });
@@ -307,6 +308,14 @@ test('customer-facing network actions have bounded wait times',async()=>{
   assert.match(script,/response=await fetchWithTimeout\(path/);
   assert.match(authRequest,/signal:AbortSignal\.timeout\(12000\)/);
   assert.match(shop,/signal:AbortSignal\.timeout\(12000\)/);
+});
+
+test('account outages preserve the last known session and surface an error',async()=>{
+  const script=await readFile(path.join(root,'app.js'),'utf8');
+  assert.match(script,/async function refreshAccountSession\(\{reportError=false\}=\{\}\)/);
+  assert.match(script,/catch\(error\)\{\s*renderAccountState\(\);\s*if\(reportError\) showAccountError\(error\.message\);\s*return null;/);
+  assert.doesNotMatch(script,/catch\{ accountSession=\{authenticated:false,configured:false,email:'',entitlement:null\}; \}/);
+  assert.match(script,/refreshAccountSession\(\{reportError:true\}\)\.then\(session=>\{\s*if\(!session\) return;/);
 });
 
 test('privacy disclosures cover enabled processors, cloud controls, and retention',async()=>{
