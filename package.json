@@ -1,6 +1,6 @@
 {
   "name": "picky-eater",
-  "version": "2.22.1",
+  "version": "2.23.0",
   "private": true,
   "scripts": {
     "test": "node --test",

@@ -86,11 +86,19 @@ test('Cloudflare headers protect dynamic and sensitive responses',async()=>{
     assert.match(headers,new RegExp(directive));
   }
   assert.doesNotMatch(headers,/script-src[^;]*'unsafe-inline'/);
+  assert.doesNotMatch(headers,/style-src[^;]*'unsafe-inline'/);
   const structuredData=html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
   assert.ok(structuredData,'homepage needs structured data');
   const structuredDataHash=createHash('sha256').update(structuredData).digest('base64');
   assert.match(headers,new RegExp(`script-src 'self' 'sha256-${structuredDataHash.replaceAll('+','\\+')}'`));
   assert.match(headers,/\/api\/\*[\s\S]*Cache-Control: no-store/);
+});
+
+test('homepage uses no inline script handlers or presentation styles',async()=>{
+  const [html,script]=await Promise.all([read('index.html'),read('app.js')]);
+  assert.doesNotMatch(html,/\sonclick=/i);
+  assert.doesNotMatch(html,/\sstyle=/i);
+  assert.doesNotMatch(script,/\.style\./);
 });
 
 test('deployment verifier covers the complete public funnel',async()=>{

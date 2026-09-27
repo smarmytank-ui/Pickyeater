@@ -921,17 +921,14 @@ function ensureNutritionDisclosure(){
 
   const wrap = document.createElement('div');
   wrap.id = 'nutritionDisclosure';
-  wrap.style.marginTop = '8px';
-  wrap.style.fontSize = '12px';
-  wrap.style.opacity = '0.85';
-  wrap.style.color = 'var(--muted, #6b7280)';
+  wrap.className = 'nutrition-disclosure';
 
   wrap.innerHTML = `
     <div>
       ≈ Nutrition is an estimate per serving based on standard references.
-      <span id="ndToggle" style="text-decoration:underline; cursor:pointer; margin-left:6px;">Details</span>
+      <button id="ndToggle" class="inline-detail-toggle" type="button" aria-expanded="false" aria-controls="ndDetails">Details</button>
     </div>
-    <div id="ndDetails" style="display:none; margin-top:6px; font-size:11px; line-height:1.35;">
+    <div id="ndDetails" class="nutrition-detail hidden">
       Values can vary by brand, prep method, and exact portioning. Use this as guidance, not a medical claim.
     </div>
   `;
@@ -942,7 +939,8 @@ function ensureNutritionDisclosure(){
   const details = document.getElementById('ndDetails');
   if(toggle && details){
     toggle.onclick = () => {
-      details.style.display = (details.style.display === 'none') ? 'block' : 'none';
+      const expanded=details.classList.toggle('hidden')===false;
+      toggle.setAttribute('aria-expanded',String(expanded));
     };
   }
 }
@@ -1141,32 +1139,21 @@ function render(){
 
           const wrap = document.createElement('div');
           wrap.className = 'custom-swap';
-          wrap.style.marginTop = '8px';
-          wrap.style.display = 'flex';
-          wrap.style.gap = '8px';
-          wrap.style.alignItems = 'center';
 
           const input = document.createElement('input');
           input.type = 'text';
           input.placeholder = 'Enter ingredient (e.g., feta, soy sauce, oregano)';
-          input.style.flex = '1';
-          input.style.padding = '10px';
-          input.style.borderRadius = '10px';
-          input.style.border = '1px solid rgba(0,0,0,0.12)';
+          input.className = 'custom-swap-input';
 
           const add = document.createElement('button');
           add.type = 'button';
-          add.className = 'btn primary';
+          add.className = 'btn primary custom-swap-action';
           add.textContent = 'Apply';
-          add.style.padding = '10px 12px';
-          add.style.borderRadius = '12px';
 
           const cancel = document.createElement('button');
           cancel.type = 'button';
-          cancel.className = 'btn ghost';
+          cancel.className = 'btn ghost custom-swap-action';
           cancel.textContent = 'Cancel';
-          cancel.style.padding = '10px 12px';
-          cancel.style.borderRadius = '12px';
 
           cancel.onclick = ()=> wrap.remove();
 
@@ -2054,6 +2041,12 @@ function wireEvents(){
     $('recipeBookCard')?.classList.add('hidden');
     showCreateView();
   });
+  wireClick('truthToggle',()=>{
+    const label=$('truthLabel');
+    const toggle=$('truthToggle');
+    const expanded=Boolean(label?.classList.toggle('open'));
+    toggle?.setAttribute('aria-expanded',String(expanded));
+  });
   document.getElementById('recipeSearch')?.addEventListener('input', e=>renderRecipeBook(e.target.value));
   $('openPlanner')?.addEventListener('click', ()=>{ if(requirePremium('weekly_planning')) showPlannerView(); });
   $('closePlanner')?.addEventListener('click', ()=>{
@@ -2234,16 +2227,6 @@ if(typeof document !== 'undefined'){
   } else {
     init();
   }
-}
-
-// Compatibility toggle for older hero "Details" UI (if present)
-if(typeof window !== 'undefined'){
-  window.toggleTruth = function () {
-    const el = document.querySelector(".truth-detail") || document.getElementById("truthText");
-    if (!el) return;
-    const cur = getComputedStyle(el).display;
-    el.style.display = (cur === "none") ? "block" : "none";
-  };
 }
 
 if(typeof module !== 'undefined' && module.exports){

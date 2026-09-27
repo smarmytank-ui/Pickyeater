@@ -371,10 +371,8 @@ textarea:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 5px r
   color: var(--muted);
   margin-top: 6px;
 }
-.truth-label span {
-  cursor: pointer;
-  text-decoration: underline;
-}
+.truth-toggle,.inline-detail-toggle{border:0;background:transparent;color:inherit;font:inherit;padding:0;text-decoration:underline;cursor:pointer}
+.truth-toggle{margin-left:3px}
 .truth-detail {
   display: none;
   font-size: 11px;
@@ -384,3 +382,10 @@ textarea:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 5px r
 .truth-label.open .truth-detail {
   display: block;
 }
+.nutrition-disclosure{margin-top:8px;font-size:12px;opacity:.85;color:var(--muted,#6b7280)}
+.inline-detail-toggle{margin-left:6px}
+.nutrition-detail{margin-top:6px;font-size:11px;line-height:1.35}
+.custom-swap{margin-top:8px;display:flex;gap:8px;align-items:center;width:100%}
+.custom-swap-input{flex:1;min-width:0;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,.12)}
+.custom-swap-action{padding:10px 12px;border-radius:12px}
+@media(max-width:560px){.custom-swap{flex-wrap:wrap}.custom-swap-input{flex-basis:100%}}
