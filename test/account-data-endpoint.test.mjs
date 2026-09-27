@@ -91,7 +91,31 @@ test('cloud backup writes require founding access while export and deletion rema
   const deleted=await onRequestDelete({request:request('DELETE',cookie,{}, {'x-confirm-delete':'DELETE'}),env});
   assert.equal(deleted.status,200);
   assert.match(deleted.headers.get('set-cookie'),/Max-Age=0/);
+  assert.equal(accounts.prepare('SELECT COUNT(*) AS count FROM account_data').get().count,0);
+  assert.equal(accounts.prepare('SELECT COUNT(*) AS count FROM sessions').get().count,0);
+  assert.equal(accounts.prepare('SELECT COUNT(*) AS count FROM login_challenges').get().count,0);
   assert.equal(accounts.prepare('SELECT COUNT(*) AS count FROM users').get().count,0);
+  const retainedPurchase=purchases.prepare('SELECT email,plan,status FROM entitlements').get();
+  assert.deepEqual({...retainedPurchase},{email:'buyer@example.com',plan:'founding',status:'refunded'});
+
+  accounts.close(); purchases.close();
+});
+
+test('failed account deletion keeps the account and browser session intact',async()=>{
+  const {accounts,purchases,env,cookie}=await setup();
+  const originalBatch=env.ACCOUNTS.batch.bind(env.ACCOUNTS);
+  env.ACCOUNTS.batch=async statements=>{
+    const failing=[...statements,env.ACCOUNTS.prepare('DELETE FROM table_that_does_not_exist')];
+    return originalBatch(failing);
+  };
+
+  const response=await onRequestDelete({request:request('DELETE',cookie,{}, {'x-confirm-delete':'DELETE'}),env});
+  assert.equal(response.status,503);
+  assert.equal(response.headers.get('set-cookie'),null);
+  assert.deepEqual(await response.json(),{error:'Account deletion is temporarily unavailable. No data was deleted.'});
+  assert.equal(accounts.prepare('SELECT COUNT(*) AS count FROM users').get().count,1);
+  assert.equal(accounts.prepare('SELECT COUNT(*) AS count FROM sessions').get().count,1);
+  assert.equal(accounts.prepare('SELECT COUNT(*) AS count FROM login_challenges').get().count,1);
 
   accounts.close(); purchases.close();
 });

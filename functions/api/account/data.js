@@ -50,11 +50,15 @@ export async function onRequestPut({request,env}){
 export async function onRequestDelete({request,env}){
   const auth=await requireAccount(request,env); if(auth.error) return auth.error;
   if(request.headers.get('x-confirm-delete')!=='DELETE') return json({error:'Deletion confirmation required.'},400);
-  await env.ACCOUNTS.batch([
-    env.ACCOUNTS.prepare('DELETE FROM account_data WHERE user_id=?1').bind(auth.account.user_id),
-    env.ACCOUNTS.prepare('DELETE FROM sessions WHERE user_id=?1').bind(auth.account.user_id),
-    env.ACCOUNTS.prepare('DELETE FROM login_challenges WHERE email=?1').bind(auth.account.email),
-    env.ACCOUNTS.prepare('DELETE FROM users WHERE id=?1').bind(auth.account.user_id)
-  ]);
+  try{
+    await env.ACCOUNTS.batch([
+      env.ACCOUNTS.prepare('DELETE FROM account_data WHERE user_id=?1').bind(auth.account.user_id),
+      env.ACCOUNTS.prepare('DELETE FROM sessions WHERE user_id=?1').bind(auth.account.user_id),
+      env.ACCOUNTS.prepare('DELETE FROM login_challenges WHERE email=?1').bind(auth.account.email),
+      env.ACCOUNTS.prepare('DELETE FROM users WHERE id=?1').bind(auth.account.user_id)
+    ]);
+  }catch{
+    return json({error:'Account deletion is temporarily unavailable. No data was deleted.'},503);
+  }
   return json({ok:true},200,{'set-cookie':clearSessionCookie()});
 }
