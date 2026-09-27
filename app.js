@@ -1145,6 +1145,16 @@ function render(){
   if($('recipeDescription')) $('recipeDescription').textContent = details.description;
   if($('prepTime')) $('prepTime').textContent = `${details.prepMinutes} min prep`;
   if($('cookTime')) $('cookTime').textContent = `${details.cookMinutes} min cook`;
+  const profile=getTasteProfile();
+  const appliedPreferences=[];
+  if(profile.texture==='crisp') appliedPreferences.push('Crisp texture');
+  if(profile.texture==='soft') appliedPreferences.push('Soft texture');
+  if(profile.servingStyle==='separate') appliedPreferences.push('Foods separate');
+  const preferencePill=$('preferencePill');
+  if(preferencePill){
+    preferencePill.textContent=appliedPreferences.join(' · ');
+    preferencePill.classList.toggle('hidden',!appliedPreferences.length);
+  }
 
   const ul = $('ingredientsList');
   if(ul){
@@ -2264,7 +2274,7 @@ function wireEvents(){
     });
     lsSet(TASTE_PROFILE_KEY, profile);
     closeProfile();
-    showToast(profile.avoids.length ? `Saved ${profile.avoids.length} foods to leave out.` : 'Taste profile saved.');
+    showToast('Preferences saved.');
     track('taste_profile_saved', { avoid_count:profile.avoids.length });
     if(state){
       state.steps=buildInstructions(state.ingredients,profile);

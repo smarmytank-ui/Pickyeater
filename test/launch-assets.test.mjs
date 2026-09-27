@@ -131,6 +131,17 @@ test('pricing copy matches the enforced free save allowance',async()=>{
   assert.doesNotMatch(plan,/Free: limited creations/);
 });
 
+test('paid sensory preferences are visible and applied to recipe results',async()=>{
+  const [html,script]=await Promise.all([read('index.html'),read('app.js')]);
+  assert.match(html,/Texture and separate-plating preferences/);
+  assert.match(html,/id="preferredTexture"/);
+  assert.match(html,/id="servingStyle"/);
+  assert.match(html,/id="preferencePill" class="pill hidden"/);
+  assert.match(script,/Soft texture/);
+  assert.match(script,/Foods separate/);
+  assert.match(script,/state\.steps=buildInstructions\(state\.ingredients,profile\)/);
+});
+
 test('a successful recipe save exposes a useful conversion next step',async()=>{
   const [html,script,styles]=await Promise.all([
     readFile(path.join(root,'index.html'),'utf8'),
