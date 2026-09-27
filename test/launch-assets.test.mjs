@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { access, readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -63,11 +64,22 @@ test('audience landing pages have unique search metadata and sitemap entries',as
 });
 
 test('Cloudflare headers protect dynamic and sensitive responses',async()=>{
-  const headers=await read('_headers');
+  const [headers,html]=await Promise.all([read('_headers'),read('index.html')]);
   for(const directive of ['Strict-Transport-Security','X-Content-Type-Options','Content-Security-Policy','Permissions-Policy']){
     assert.match(headers,new RegExp(directive));
   }
+  assert.doesNotMatch(headers,/script-src[^;]*'unsafe-inline'/);
+  const structuredData=html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
+  assert.ok(structuredData,'homepage needs structured data');
+  const structuredDataHash=createHash('sha256').update(structuredData).digest('base64');
+  assert.match(headers,new RegExp(`script-src 'self' 'sha256-${structuredDataHash.replaceAll('+','\\+')}'`));
   assert.match(headers,/\/api\/\*[\s\S]*Cache-Control: no-store/);
+});
+
+test('deployment verifier covers the complete public funnel',async()=>{
+  const verifier=await read('scripts/verify-deployment.mjs');
+  for(const page of audiencePages) assert.match(verifier,new RegExp(`/${page.replaceAll('.','\\.')}`));
+  assert.match(verifier,/\/service-worker\.js/);
 });
 
 test('unverified paid and account integrations stay disabled by default',async()=>{

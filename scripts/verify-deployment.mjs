@@ -36,7 +36,21 @@ await checkPath('/',{
     'content-security-policy':/frame-ancestors 'none'/i
   }
 });
-for(const path of ['/app.js','/config.js','/site.webmanifest','/privacy.html','/terms.html','/support.html','/robots.txt','/sitemap.xml']){
+for(const path of [
+  '/app.js',
+  '/config.js',
+  '/service-worker.js',
+  '/site.webmanifest',
+  '/privacy.html',
+  '/terms.html',
+  '/support.html',
+  '/picky-adults.html',
+  '/picky-kids.html',
+  '/sensory-friendly-meals.html',
+  '/easy-weeknight-meals.html',
+  '/robots.txt',
+  '/sitemap.xml'
+]){
   await checkPath(path);
 }
 
