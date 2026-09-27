@@ -1973,9 +1973,27 @@ function updateDiarySub(){
 function setActiveMeal(meal){
   activeMeal = meal;
   document.querySelectorAll('.tab').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.meal === meal);
+    const selected=btn.dataset.meal === meal;
+    btn.classList.toggle('active',selected);
+    btn.setAttribute('aria-selected',String(selected));
+    btn.tabIndex=selected ? 0 : -1;
+    if(selected) $('diaryPane')?.setAttribute('aria-labelledby',btn.id);
   });
   renderDiary();
+}
+
+function handleMealTabKeydown(event){
+  if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+  const tabs=[...document.querySelectorAll('.diary-tabs [role="tab"]')];
+  const current=tabs.indexOf(event.currentTarget);
+  if(current<0 || !tabs.length) return;
+  event.preventDefault();
+  const nextIndex=event.key==='Home' ? 0
+    : event.key==='End' ? tabs.length-1
+    : (current+(event.key==='ArrowRight' ? 1 : -1)+tabs.length)%tabs.length;
+  const next=tabs[nextIndex];
+  setActiveMeal(next.dataset.meal);
+  next.focus();
 }
 
 function renderDiary(){
@@ -2379,6 +2397,7 @@ function wireEvents(){
     if(getPublicConfig().accountsEnabled) $('openAccount')?.click();
     else showToast('Account sign-in is temporarily unavailable. Your payment is recorded; contact support if this continues.');
   });
+  document.querySelectorAll('.diary-tabs [role="tab"]').forEach(tab=>tab.addEventListener('keydown',handleMealTabKeydown));
   if(founderCta && validCheckoutUrl(checkoutUrl)) founderCta.textContent='Become a founding member — $29';
   const closeFounder = ()=>{
     closeDialog(founderOverlay);

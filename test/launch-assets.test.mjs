@@ -119,6 +119,15 @@ test('modal dialogs trap keyboard focus and restore it when closed',async()=>{
   assert.match(script,/closeDialog\(\$\('accountOverlay'\)\)/);
 });
 
+test('diary meal tabs expose state and support arrow-key navigation',async()=>{
+  const [html,script]=await Promise.all([read('index.html'),read('app.js')]);
+  assert.match(html,/role="tab" aria-selected="true" aria-controls="diaryPane" tabindex="0"/);
+  assert.match(html,/id="diaryPane"[^>]*role="tabpanel"/);
+  assert.match(script,/function handleMealTabKeydown\(event\)/);
+  assert.match(script,/\['ArrowLeft','ArrowRight','Home','End'\]/);
+  assert.match(script,/setAttribute\('aria-selected',String\(selected\)\)/);
+});
+
 test('deployment verifier covers the complete public funnel',async()=>{
   const verifier=await read('scripts/verify-deployment.mjs');
   for(const page of audiencePages) assert.match(verifier,new RegExp(`/${page.replaceAll('.','\\.')}`));

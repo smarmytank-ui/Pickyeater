@@ -25,7 +25,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="manifest" href="./site.webmanifest">
-  <link rel="stylesheet" href="./styles.css?v=2.42.0" />
+  <link rel="stylesheet" href="./styles.css?v=2.43.0" />
 </head>
 <body>
 <div class="page">
@@ -234,13 +234,13 @@
   </div>
 
   <div class="diary-tabs" role="tablist" aria-label="Meals">
-    <button class="tab active" data-meal="breakfast" role="tab">Breakfast</button>
-    <button class="tab" data-meal="lunch" role="tab">Lunch</button>
-    <button class="tab" data-meal="dinner" role="tab">Dinner</button>
-    <button class="tab" data-meal="snacks" role="tab">Snacks</button>
+    <button id="mealTabBreakfast" class="tab active" data-meal="breakfast" role="tab" aria-selected="true" aria-controls="diaryPane" tabindex="0">Breakfast</button>
+    <button id="mealTabLunch" class="tab" data-meal="lunch" role="tab" aria-selected="false" aria-controls="diaryPane" tabindex="-1">Lunch</button>
+    <button id="mealTabDinner" class="tab" data-meal="dinner" role="tab" aria-selected="false" aria-controls="diaryPane" tabindex="-1">Dinner</button>
+    <button id="mealTabSnacks" class="tab" data-meal="snacks" role="tab" aria-selected="false" aria-controls="diaryPane" tabindex="-1">Snacks</button>
   </div>
 
-  <div class="diary-pane">
+  <div id="diaryPane" class="diary-pane" role="tabpanel" aria-labelledby="mealTabBreakfast">
     <ul id="diaryList" class="list"></ul>
 
     <div class="divider"></div>
@@ -417,6 +417,6 @@
 </script>
 
 <script src="./config.js"></script>
-<script src="./app.js?v=2.42.0"></script>
+<script src="./app.js?v=2.43.0"></script>
 </body>
 </html>
