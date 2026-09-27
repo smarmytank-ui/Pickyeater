@@ -60,11 +60,18 @@ function setupTelemetry(){
 
 function handleCheckoutReturn(){
   const result=new URLSearchParams(location.search).get('founding');
-  if(!['success','cancel'].includes(result)) return;
-  if(result==='success') showToast('Payment received. Your founding access is being confirmed.');
-  else showToast('Checkout canceled. You were not charged.');
-  track('founder_checkout_returned',{result});
-  history.replaceState({},'',`${location.pathname}${location.hash}`);
+  let pending=false;
+  try{ pending=sessionStorage.getItem('foodMyWayCheckoutPending')==='1'; }catch{}
+  if(result==='success'){
+    try{ sessionStorage.setItem('foodMyWayCheckoutPending','1'); }catch{}
+    pending=true;
+    showToast('Payment received. Sign in to unlock founding access.');
+  }else if(result==='cancel') showToast('Checkout canceled. You were not charged.');
+  if(pending) $('checkoutStatus')?.classList.remove('hidden');
+  if(['success','cancel'].includes(result)){
+    track('founder_checkout_returned',{result});
+    history.replaceState({},'',`${location.pathname}${location.hash}`);
+  }
 }
 
 let accountSession={authenticated:false,configured:false,email:'',entitlement:null};
@@ -93,9 +100,29 @@ function renderAccountState(){
   $('accountSignedOut')?.classList.toggle('hidden',signedIn);
   const founding=accountSession.entitlement?.plan==='founding' && accountSession.entitlement?.status==='active';
   if($('accountStatus')) $('accountStatus').textContent=signedIn ? `Signed in as ${accountSession.email}${founding ? ' · Founding member' : ''}` : 'Sign in to back up and restore your Food My Way data across devices.';
-  if(founding && $('founderCta')){
-    $('founderCta').textContent='Founding member ✓';
-    $('founderCta').disabled=true;
+  const founderCta=$('founderCta');
+  const savedFounderCta=$('savedFounderCta');
+  if(founding){
+    if(founderCta){ founderCta.textContent='Founding member ✓'; founderCta.disabled=true; }
+    if(savedFounderCta){ savedFounderCta.textContent='Founding access active ✓'; savedFounderCta.disabled=true; }
+  }else{
+    if(founderCta){ founderCta.textContent=validCheckoutUrl(getPublicConfig().founderCheckoutUrl) ? 'Become a founding member — $29' : 'Join the founding list'; founderCta.disabled=false; }
+    if(savedFounderCta){ savedFounderCta.textContent='Get founding updates'; savedFounderCta.disabled=false; }
+  }
+  if(founding && $('checkoutStatus')){
+    $('checkoutStatusTitle').textContent='Founding access is active.';
+    $('checkoutStatusMessage').textContent='Your premium Food My Way features are unlocked on this account.';
+    $('checkoutSignIn')?.classList.add('hidden');
+    $('checkoutStatus').dataset.entitlementActive='1';
+    try{ sessionStorage.removeItem('foodMyWayCheckoutPending'); }catch{}
+  }else if(signedIn && !$('checkoutStatus')?.classList.contains('hidden')){
+    $('checkoutStatusTitle').textContent='Payment confirmation is processing.';
+    $('checkoutStatusMessage').textContent='You are signed in with no active founding entitlement yet. Reopen Account shortly, or contact support if this continues.';
+    if($('checkoutSignIn')){ $('checkoutSignIn').textContent='Check account again'; $('checkoutSignIn').classList.remove('hidden'); }
+    delete $('checkoutStatus').dataset.entitlementActive;
+  }else if($('checkoutStatus')?.dataset.entitlementActive==='1'){
+    $('checkoutStatus').classList.add('hidden');
+    delete $('checkoutStatus').dataset.entitlementActive;
   }
 }
 
@@ -2105,6 +2132,10 @@ function wireEvents(){
   const founderCta = $('founderCta');
   const savedFounderCta = $('savedFounderCta');
   const checkoutUrl = getPublicConfig().founderCheckoutUrl;
+  $('checkoutSignIn')?.addEventListener('click',()=>{
+    if(getPublicConfig().accountsEnabled) $('openAccount')?.click();
+    else showToast('Account sign-in is temporarily unavailable. Your payment is recorded; contact support if this continues.');
+  });
   if(founderCta && validCheckoutUrl(checkoutUrl)) founderCta.textContent='Become a founding member — $29';
   const closeFounder = ()=>{
     founderOverlay?.classList.add('hidden');

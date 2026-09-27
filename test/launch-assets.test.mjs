@@ -138,6 +138,22 @@ test('a successful recipe save exposes a useful conversion next step',async()=>{
   assert.match(styles,/\.saved-next-step\.hidden\s*\{display:none\}/);
 });
 
+test('a successful checkout has a durable account-unlock path',async()=>{
+  const [html,script,styles]=await Promise.all([
+    readFile(path.join(root,'index.html'),'utf8'),
+    readFile(path.join(root,'app.js'),'utf8'),
+    readFile(path.join(root,'styles.css'),'utf8')
+  ]);
+  assert.match(html,/id="checkoutStatus"[^>]*class="checkout-status hidden"/);
+  assert.match(html,/id="checkoutSignIn"/);
+  assert.match(script,/foodMyWayCheckoutPending/);
+  assert.match(script,/Founding access is active\./);
+  assert.match(script,/\$\('checkoutSignIn'\)\?\.addEventListener\('click'/);
+  assert.match(script,/Your payment is recorded; contact support if this continues\./);
+  assert.match(script,/founderCta\.disabled=false/);
+  assert.match(styles,/\.checkout-status\.hidden\s*\{display:none\}/);
+});
+
 test('founding-list consent includes a secure unsubscribe path',async()=>{
   const [privacy,support,pkg]=await Promise.all([read('privacy.html'),read('support.html'),read('package.json')]);
   await access(path.join(root,'functions/api/founding-unsubscribe.js'));

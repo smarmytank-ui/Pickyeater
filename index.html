@@ -25,7 +25,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="manifest" href="./site.webmanifest">
-  <link rel="stylesheet" href="./styles.css?v=2.26.1" />
+  <link rel="stylesheet" href="./styles.css?v=2.27.0" />
 </head>
 <body>
 <div class="page">
@@ -70,6 +70,17 @@
     Actual values may vary based on brand, prep, and portioning.
   </div>
 </div>
+</section>
+
+<section id="checkoutStatus" class="checkout-status hidden" aria-live="polite">
+  <div>
+    <strong id="checkoutStatusTitle">Payment received.</strong>
+    <span id="checkoutStatusMessage">Sign in with the email used at checkout to unlock your founding access.</span>
+  </div>
+  <div class="checkout-status-actions">
+    <button id="checkoutSignIn" class="btn primary small" type="button">Unlock founding access</button>
+    <a class="btn ghost small" href="./support.html">Get help</a>
+  </div>
 </section>
 
 <section id="inputCard" class="card">
@@ -381,6 +392,6 @@
 </script>
 
 <script src="./config.js"></script>
-<script src="./app.js?v=2.26.1"></script>
+<script src="./app.js?v=2.27.0"></script>
 </body>
 </html>
