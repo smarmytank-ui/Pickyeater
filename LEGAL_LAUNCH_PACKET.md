@@ -24,7 +24,7 @@ Food My Way offers a full refund when the purchaser requests one within 14 calen
 
 ## Terms language to publish before checkout
 
-Replace the existing beta notice and paid-services section with language that:
+`PAID_TERMS_DRAFT.md` now contains the complete recommended publication draft. Counsel should edit that draft rather than reconstructing the terms from this checklist. Before replacing `terms.html`, confirm that it:
 
 1. names `[[LEGAL_OPERATOR_NAME]]` as the seller and identifies its address;
 2. incorporates the founding-offer definition above;
@@ -33,6 +33,8 @@ Replace the existing beta notice and paid-services section with language that:
 5. preserves non-waivable consumer rights;
 6. identifies `[[JURISDICTION]]` and any dispute process reviewed by counsel;
 7. avoids claiming that all future products are included.
+
+The paid-launch deployment verifier intentionally fails while the public beta terms remain in place. It passes only after the published page names the Food My Way Founding Member offer, $29 price, and 14-calendar-day refund window and removes the beta-only notice.
 
 ## Privacy language to publish when accounts are enabled
 

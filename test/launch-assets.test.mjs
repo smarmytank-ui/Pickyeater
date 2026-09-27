@@ -290,6 +290,20 @@ test('privacy disclosures cover enabled processors, cloud controls, and retentio
   assert.doesNotMatch(privacy,/Once cloud accounts are introduced/i);
 });
 
+test('paid terms draft matches the actual founding offer and launch gates',async()=>{
+  const [draft,packet,verifier]=await Promise.all([
+    read('PAID_TERMS_DRAFT.md'),read('LEGAL_LAUNCH_PACKET.md'),read('scripts/verify-deployment.mjs')
+  ]);
+  for(const phrase of ['USD $29','first 250 paid members','14 calendar days','Stripe','third-party grocery provider','commercial lifetime of the Food My Way premium product']){
+    assert.match(draft,new RegExp(phrase.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i'));
+  }
+  for(const field of ['LEGAL_OPERATOR_NAME','MAILING_ADDRESS','JURISDICTION','EFFECTIVE_DATE','COUNSEL_APPROVED_DISPUTE_LANGUAGE']) assert.match(draft,new RegExp(`\\[\\[${field}\\]\\]`));
+  assert.match(draft,/does not sell, prepare, deliver, or guarantee groceries/i);
+  assert.match(draft,/does not mean the purchaser’s lifetime/i);
+  assert.match(packet,/PAID_TERMS_DRAFT\.md/);
+  assert.match(verifier,/14 calendar days/);
+});
+
 test('payment fulfillment preserves refunds delivered before checkout completion',async()=>{
   const [endpoint,migration,docs]=await Promise.all([
     readFile(path.join(root,'functions/api/stripe-webhook.js'),'utf8'),

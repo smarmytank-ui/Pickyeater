@@ -45,6 +45,7 @@
 
 - [x] Privacy draft
 - [x] Terms draft
+- [x] Complete paid-launch terms draft with owner/counsel placeholders
 - [x] Support page
 - [x] Nutrition and medical disclaimers
 - [ ] Legal operator name/address inserted
