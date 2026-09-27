@@ -36,7 +36,8 @@
 - [x] Out-of-order refund protection with payment-intent tombstones
 - [x] Tax-tolerant $29 subtotal validation and discount rejection
 - [x] Signed-in email entitlement lookup and feature-flagged premium gates
-- [ ] Stripe account and verified business identity
+- [x] Stripe account activated and verified to accept live payments
+- [ ] Stripe payout bank account and payout tax details completed by the owner
 - [x] Stripe $29 founding product and Payment Link
 - [x] Stripe checkout links published Terms/Privacy and requires Terms acceptance
 - [x] Refund and cancellation policy finalized and owner-approved
@@ -44,8 +45,9 @@
 - [x] Live founding-interest verification
 - [x] `LEADS_UNSUBSCRIBE_SECRET` and live unsubscribe verification
 - [x] Cloudflare D1 `PURCHASES` database, schema, and preview binding
-- [ ] Production webhook secret and test-mode fulfillment verification
-- [ ] End-to-end founding purchase, login, premium-access, and refund test
+- [x] Production webhook secret and live signed fulfillment verification
+- [x] End-to-end founding purchase, login, and premium-access verification
+- [ ] Full-refund webhook and automatic entitlement-revocation verification
 
 ## Trust and operations
 
@@ -108,7 +110,9 @@ See `OWNER_LAUNCH_ACTIONS.md` for the minimal owner-only sequence and `LEGAL_LAU
 
 ## Latest local browser evidence
 
-Release `2.63.0` passes all 114 automated tests plus direct syntax checks across the browser application, service worker, and every Cloudflare Function. Coverage includes transaction-level account deletion, payment-record retention, multi-device sign-out isolation, corrupted-backup handling, account and entitlement outages, cross-tab checkout recovery, tax-tolerant one-time Founding pricing, grocery handoff authorization, legacy-route cleanup, canonical SEO signals, and the privacy-minimized telemetry contract. These checks prove the local implementation; live email and payment flows still require the end-to-end verification listed above.
+Release `2.64.0` passes all 114 automated tests plus direct syntax checks across the browser application, service worker, and every Cloudflare Function. Coverage includes transaction-level account deletion, payment-record retention, multi-device sign-out isolation, corrupted-backup handling, account and entitlement outages, cross-tab checkout recovery, tax-tolerant one-time Founding pricing, grocery handoff authorization, legacy-route cleanup, canonical SEO signals, and the privacy-minimized telemetry contract. These checks prove the local implementation; the live full-refund revocation flow still requires the action-time owner approval listed above.
+
+On September 27, 2026, the first live USD $29 Founding purchase completed through Stripe with the approved Terms accepted and the exact `food_my_way_founding` offer metadata. The initial signed webhook attempts correctly failed closed because Cloudflare held an obsolete destination secret. After the production secret was replaced and release `2.64.0` was deployed at commit `d96a099`, a manual resend returned `200 OK` and Stripe marked the event recovered. A fresh passwordless login using the checkout email then showed `Founding access is active`, the disabled `Founding member ✓` state, and all premium account controls on `foodmyway.app`. The core production verifier passes all 26 checks and the paid-launch verifier passes 42 of 43; `premiumEnforced` remains intentionally false until an owner-approved full refund proves automatic entitlement revocation. Stripe separately requests a payout bank account before collected revenue can be transferred to the owner.
 
 On September 27, 2026, the protected Cloudflare preview was revalidated before the pending source push:
 
