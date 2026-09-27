@@ -219,6 +219,14 @@ test('paid sensory preferences are visible and applied to recipe results',async(
   assert.match(script,/state\.steps=buildInstructions\(state\.ingredients,state\.preferences\)/);
 });
 
+test('a denied premium action refreshes delayed Stripe entitlement state',async()=>{
+  const script=await read('app.js');
+  assert.match(script,/showAccountError\('Checking your Founding membership…'\)/);
+  assert.match(script,/refreshAccountSession\(\)\.then\(session=>/);
+  assert.match(script,/session\.entitlement\?\.plan==='founding' && session\.entitlement\?\.status==='active'/);
+  assert.match(script,/are unlocked\. Try that action again\./);
+});
+
 test('a successful recipe save exposes a useful conversion next step',async()=>{
   const [html,script,styles]=await Promise.all([
     readFile(path.join(root,'index.html'),'utf8'),

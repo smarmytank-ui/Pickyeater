@@ -298,8 +298,19 @@ function requirePremium(feature){
   const label=labels[feature] || 'This feature';
   track('premium_gate_viewed',{feature});
   if(getPublicConfig().accountsEnabled){
-    openDialog($('accountOverlay'));
-    showAccountError(`${label} are included with Founding membership. Sign in with the email used at checkout.`);
+    const overlay=$('accountOverlay');
+    openDialog(overlay);
+    showAccountError('Checking your Founding membership…');
+    refreshAccountSession().then(session=>{
+      const refreshed=session.entitlement?.plan==='founding' && session.entitlement?.status==='active';
+      if(refreshed){
+        showAccountError();
+        closeDialog(overlay);
+        showToast(`${label} are unlocked. Try that action again.`);
+      }else if(session.authenticated){
+        showAccountError(`No active Founding membership was found for ${session.email}. Sign out and use the checkout email, or contact support.`);
+      }else showAccountError(`${label} are included with Founding membership. Sign in with the email used at checkout.`);
+    });
   }else{
     document.querySelector('#pricing')?.scrollIntoView({behavior:'smooth',block:'start'});
     showToast(`${label} are included with Founding membership.`);
