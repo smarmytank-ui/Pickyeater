@@ -356,6 +356,8 @@ function formatQty(value) {
 // Roles
 // -------------------------------
 const ROLE_RULES = [
+  // Prepared safe foods need package/preferred-method guidance, not raw-ingredient cooking steps.
+  [/\b(chicken nuggets?|fish sticks?|french fries|fries|pizza|mac(?:aroni)? and cheese|cereal|sandwich(?:es)?|crackers?)\b/i,'other'],
   // Specific phrases FIRST (prevents "green beans" matching "beans")
   [/\bgreen beans\b/i,'veg'],
   [/\b(bell pepper|broccoli|carrots?|zucchini|spinach|tomatoes?|corn|peas|cauliflower)\b/i,'veg'],
@@ -381,7 +383,7 @@ const ROLE_RULES = [
 
 function roleFor(n){
   for(const [r,role] of ROLE_RULES) if(r.test(n)) return role;
-  return 'veg';
+  return 'other';
 }
 
 // -------------------------------
@@ -403,7 +405,8 @@ const ROLE_TO_INTENT = {
   fat:      'support',
   seasoning:'flavor',
   acid:     'finish',
-  aromatic: 'support'
+  aromatic: 'support',
+  other:    'bulk'
 };
 
 function intentForRole(role){
@@ -442,7 +445,8 @@ const BASE_QTY = {
   acid:{ v:1,      u:'tbsp' },
   seasoning:{ v:0.5,u:'tsp' },
   dairy:{ v:0.5,   u:'cups' },    // cheese default
-  bread:{ v:4,     u:'count' }    // tortillas/bread pieces
+  bread:{ v:4,     u:'count' },   // tortillas/bread pieces
+  other:{ v:1,     u:'serving' }
 };
 
 // Ingredient-specific default quantities (SERVES 2 baseline)
@@ -620,7 +624,8 @@ const ROLE_FALLBACK_100G = {
   acid:     { cal:20,  p:0.0,  c:1.0,  f:0.0 },
   seasoning:{ cal:0,   p:0.0,  c:0.0,  f:0.0 },
   dairy:    { cal:300, p:18.0, c:3.0,  f:22.0 },
-  bread:    { cal:265, p:9.0,  c:49.0, f:3.2 }
+  bread:    { cal:265, p:9.0,  c:49.0, f:3.2 },
+  other:    { cal:150, p:4.0,  c:20.0, f:6.0 }
 };
 
 function nutrientFor(name, role){
@@ -641,7 +646,8 @@ const UNIT_TO_GRAMS = {
   pieces: 30,
   slices: 25,
   count: 30,   // fallback if not overridden by ingredient map
-  medium: 110  // generic fallback
+  medium: 110, // generic fallback
+  serving: 100
 };
 
 const GRAMS_PER_UNIT = {
@@ -795,6 +801,11 @@ function buildInstructions(ingredients){
     steps.push({ key:'bread', text:`Warm ${joinNames(bread)} and use it to wrap, scoop, or serve the filling.` });
   }
 
+  active.filter(i=>i.role==='other').forEach((item,index)=>{
+    const name=pretty(item.name);
+    steps.push({key:`other-${index}`,text:`Prepare ${name} according to its package directions or the method and texture you prefer.`});
+  });
+
   const acids = namesFor('acid');
   if(acids.length){
     steps.push({ key:'acid', text:`Take the pan off the heat and finish with ${joinNames(acids)}.` });
@@ -814,12 +825,13 @@ function recipeDetails(ingredients){
   const protein = active.find(i=>i.role==='protein');
   const starch = active.find(i=>i.role==='starch');
   const vegetables = active.filter(i=>i.role==='veg');
+  const other = active.find(i=>i.role==='other');
   const prepMinutes = Math.min(20, 5 + Math.ceil(active.length/3)*5);
   let cookMinutes = 15;
   if(starch?.name.includes('potato')) cookMinutes = 25;
   else if(starch) cookMinutes = 20;
   if(protein?.name.includes('salmon')) cookMinutes = Math.max(cookMinutes, 12);
-  const focus = [protein?.name, starch?.name, vegetables[0]?.name].filter(Boolean).map(pretty);
+  const focus = [protein?.name, starch?.name, vegetables[0]?.name, other?.name].filter(Boolean).slice(0,3).map(pretty);
   const description = focus.length
     ? `A straightforward ${focus.join(', ')} recipe with familiar flavors and flexible swaps.`
     : 'A simple, flexible recipe made from foods you chose.';
@@ -831,11 +843,12 @@ function recipeDetails(ingredients){
 // -------------------------------
 function titleFrom(ings){
   const protein = ings.find(i=>i.role==='protein' && i.name!=='skip it');
-  const main = protein ? pretty(protein.name) : 'Veggie';
+  const primary = protein || ings.find(i=>i.name!=='skip it' && i.base?.v>0 && !['fat','acid','seasoning','aromatic'].includes(i.role));
+  const main = primary ? pretty(primary.name) : 'Familiar Food';
   const all = ings.map(i=>i.name).join(' ').toLowerCase();
 
-  if(all.includes('taco') || all.includes('tortilla')) return `${main} Tacos`;
-  if(all.includes('pizza')) return `${main} Pizza`;
+  if(all.includes('taco') || all.includes('tortilla')) return protein ? `${main} Tacos` : 'Flexible Tacos';
+  if(all.includes('pizza')) return protein ? `${main} Pizza` : 'Simple Pizza';
   if(all.includes('bbq') || all.includes('barbecue')) return `BBQ ${main}`;
 
   const hasStarch = ings.some(i=>i.role==='starch' && i.name!=='skip it');
@@ -853,7 +866,7 @@ function normalize(names){
     const name = parsed.name;
     const role = roleFor(name);
     const intent = intentForRole(role);
-    const base = { ...(BASE_QTY[role] || BASE_QTY.veg) };
+    const base = { ...(BASE_QTY[role] || BASE_QTY.other) };
 
     const override = CANON_DEFAULT_BASE[name];
     if(override){

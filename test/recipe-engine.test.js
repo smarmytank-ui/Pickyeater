@@ -55,6 +55,18 @@ test('classifies familiar proteins and vegetables', () => {
   assert.equal(roleFor('bell pepper'), 'veg');
 });
 
+test('unknown and prepared safe foods get neutral guidance instead of vegetable instructions', () => {
+  assert.equal(roleFor('chicken nuggets'),'other');
+  assert.equal(roleFor('cereal'),'other');
+  assert.equal(roleFor('favorite crunchy bites'),'other');
+  const ingredients=normalize(['cereal','favorite crunchy bites']);
+  assert.deepEqual(ingredients.map(item=>item.base),[{v:1,u:'serving'},{v:1,u:'serving'}]);
+  const instructions=buildInstructions(ingredients).map(step=>step.text).join(' ');
+  assert.match(instructions,/package directions or the method and texture you prefer/);
+  assert.doesNotMatch(instructions,/tender-crisp/);
+  assert.equal(titleFrom(ingredients),'Simple Cereal Plate');
+});
+
 test('normalization removes duplicate ingredients after cleanup', () => {
   const ingredients = normalize(['chicken', 'chicken breasts', 'broccoli']);
   assert.deepEqual(ingredients.map(item => item.name), ['chicken breast', 'broccoli']);
