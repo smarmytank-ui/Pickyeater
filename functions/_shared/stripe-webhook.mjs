@@ -31,7 +31,12 @@ export function foundingEntitlementFromEvent(event){
   const session=event.data?.object;
   if(session?.metadata?.offer!=='food_my_way_founding') return null;
   if(session.mode!=='payment' || session.payment_status!=='paid') return null;
-  if(session.currency!=='usd' || session.amount_total!==2900) throw new Error('Founding payment amount does not match the configured offer.');
+  const subtotal=Number(session.amount_subtotal);
+  const total=Number(session.amount_total);
+  const discount=Number(session.total_details?.amount_discount || 0);
+  if(session.currency!=='usd' || subtotal!==2900 || !Number.isInteger(total) || total<subtotal || discount!==0){
+    throw new Error('Founding payment amount does not match the configured offer.');
+  }
   const email=String(session.customer_details?.email || session.customer_email || '').trim().toLowerCase();
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Paid checkout is missing a valid customer email.');
   const stripeSessionId=String(session.id || '').trim();
@@ -42,7 +47,7 @@ export function foundingEntitlementFromEvent(event){
     stripeCustomerId:String(session.customer || ''),
     stripeSessionId,
     stripePaymentIntentId,
-    amount:session.amount_total,
+    amount:total,
     currency:session.currency,
     status:'active'
   };

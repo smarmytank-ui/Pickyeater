@@ -34,6 +34,7 @@
 - [x] Signed founding-list unsubscribe endpoint and consent-state update
 - [x] Signed, idempotent Stripe fulfillment endpoint and entitlement schema
 - [x] Out-of-order refund protection with payment-intent tombstones
+- [x] Tax-tolerant $29 subtotal validation and discount rejection
 - [x] Signed-in email entitlement lookup and feature-flagged premium gates
 - [ ] Stripe account and verified business identity
 - [ ] Stripe $29 founding product and Payment Link

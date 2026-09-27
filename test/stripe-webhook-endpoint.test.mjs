@@ -50,7 +50,7 @@ async function deliver(event,env){
 
 function purchaseEvent(created=100){
   return {id:`evt_purchase_${created}`,created,type:'checkout.session.completed',data:{object:{
-    id:'cs_ordered',mode:'payment',payment_status:'paid',currency:'usd',amount_total:2900,
+    id:'cs_ordered',mode:'payment',payment_status:'paid',currency:'usd',amount_subtotal:2900,amount_total:2900,
     customer:'cus_ordered',payment_intent:'pi_ordered',customer_details:{email:'Buyer@Example.com'},
     metadata:{offer:'food_my_way_founding'}
   }}};

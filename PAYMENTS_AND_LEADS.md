@@ -9,12 +9,13 @@ Food My Way is prepared for a Stripe Payment Link priced at **$29 one time**. No
 After the owner completes Stripe identity, banking, tax, refund, and business-profile setup:
 
 1. Create a one-time product named `Food My Way Founding Member` for USD $29.
-2. Limit public availability to the first 250 purchases operationally or with Stripe inventory/automation.
+2. Set the Payment Link restriction `completed_sessions.limit` to `250`. Stripe reports the completed-session count on the link and stops further completions when the restriction is met.
 3. Collect the customer email in Checkout.
 4. Link Stripe’s privacy and terms fields to `https://foodmyway.app/privacy.html` and `https://foodmyway.app/terms.html`.
 5. Set the success URL to `https://foodmyway.app/?founding=success` and the cancel URL to `https://foodmyway.app/#pricing`.
 6. Put the resulting `https://buy.stripe.com/...` URL in `config.js` as `founderCheckoutUrl`.
 7. Set Payment Link metadata `offer=food_my_way_founding`. The webhook intentionally ignores any checkout without this exact marker.
+8. Keep promotion codes and adjustable quantities disabled. Automatic tax may be enabled: fulfillment validates the USD $29 subtotal and accepts tax added above it.
 
 Stripe documents that metadata on a Payment Link is copied to the Checkout Sessions it creates: https://docs.stripe.com/api/payment-link/object
 
@@ -22,7 +23,7 @@ The app accepts only `buy.stripe.com` or `checkout.stripe.com` HTTPS URLs, preve
 
 ## Payment fulfillment
 
-`POST /api/stripe-webhook` verifies Stripe's signed raw request before recording access. It accepts only a paid, one-time USD $29 Checkout Session carrying the founding-offer metadata above. Duplicate events are safe to replay.
+`POST /api/stripe-webhook` verifies Stripe's signed raw request before recording access. It accepts only a paid, one-time USD $29 subtotal carrying the founding-offer metadata above. Tax may increase the final total; discounts, a different subtotal, or a total below the subtotal fail closed. Duplicate events are safe to replay.
 
 1. Create a D1 database and run `migrations/0002_purchase_entitlements.sql` and `migrations/0006_refund_tombstones.sql` in order.
 2. Bind it to the Pages project as `PURCHASES` in production.
