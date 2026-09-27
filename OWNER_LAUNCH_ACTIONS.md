@@ -4,8 +4,11 @@ Everything below requires your personal account authentication, legal identity, 
 
 ## 1. Cloudflare and domains
 
-- Cloudflare authentication is complete. Sign in to Namecheap when prompted and complete any personal authentication or one-time-code challenge so the deployment operator can replace the registrar nameservers.
-- Approve a registrar or DNS ownership confirmation if either provider explicitly requires the domain owner to do so.
+- [x] Cloudflare and Namecheap authentication completed.
+- [x] `foodmyway.app` connected to the production deployment.
+- [x] `pickyeatercookbook.com` and its `www` hostname configured as canonical redirects to `https://foodmyway.app`.
+
+No additional domain action is currently required from the owner.
 
 ## 2. Seller and support identity
 

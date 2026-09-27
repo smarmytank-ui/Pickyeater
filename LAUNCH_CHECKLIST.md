@@ -67,8 +67,8 @@
 - [x] Production security and cache headers
 - [x] Continuous integration and public-deployment verification script
 - [x] Non-mutating paid-launch API readiness gate
-- [ ] foodmyway.app connected to production
-- [ ] PickyEaterCookbook.com redirect configured
+- [x] foodmyway.app connected to production
+- [x] PickyEaterCookbook.com canonical redirect configured
 - [x] Production social-share image
 - [x] Privacy-minimized first-party analytics and generic client-error endpoint
 - [x] Cloudflare D1 `TELEMETRY` database, schema, and preview binding
@@ -131,7 +131,16 @@ Later on September 27, 2026, Cloudflare infrastructure was advanced at pushed co
 - applied migrations `0001` through `0006` to their documented databases;
 - committed the four binding IDs in `wrangler.toml`, deployed the commit through the existing Git integration, and verified `LEADS`, `PURCHASES`, `TELEMETRY`, and `ACCOUNTS` on the preview environment;
 - added `foodmyway.app` to Cloudflare DNS while preserving the discovered Namecheap email-forwarding MX and SPF records;
-- received the assigned nameservers `alex.ns.cloudflare.com` and `lilyana.ns.cloudflare.com`; registrar activation remains pending the owner's Namecheap authentication.
+- received the assigned nameservers `alex.ns.cloudflare.com` and `lilyana.ns.cloudflare.com`.
+
+The same day, the public domain rollout was completed and independently verified:
+
+- Namecheap now delegates both `foodmyway.app` and `pickyeatercookbook.com` to the assigned Cloudflare nameservers;
+- `https://foodmyway.app` serves production release `2.61.0` from commit `1329299`, and the deployment verifier passed all 26 checks;
+- Cloudflare reports active Universal SSL for `pickyeatercookbook.com` and `*.pickyeatercookbook.com`;
+- the imported Private Email MX, SPF, DMARC, SRV, and mail-discovery records were preserved, with mail-related CNAME records corrected to DNS-only;
+- apex and `www` requests for `pickyeatercookbook.com`, over both HTTP and HTTPS, return permanent redirects to `https://foodmyway.app` while preserving the path and query string;
+- `www.foodmyway.app` also permanently redirects to the canonical apex while preserving the path and query string.
 
 Database presence and binding do not by themselves enable customer-facing accounts, telemetry, payments, or email. Keep those public flags off until their separately listed secrets and end-to-end checks pass.
 
