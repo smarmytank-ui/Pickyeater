@@ -106,3 +106,25 @@ test('auth cleanup preserves the expired challenge behind an active session',asy
     assert.equal(database.prepare('SELECT count(*) AS count FROM login_challenges WHERE id=?').get('stale_challenge').count,0);
   }finally{ globalThis.fetch=originalFetch; database.close(); }
 });
+
+test('account storage failure returns a controlled error without sending email',async()=>{
+  const originalFetch=globalThis.fetch;
+  let sends=0;
+  globalThis.fetch=async()=>{ sends+=1; return new Response('{}',{status:200}); };
+  const unavailableAccounts={
+    async batch(){ throw new Error('unavailable'); },
+    prepare(){ throw new Error('unavailable'); }
+  };
+  const env={
+    ACCOUNTS:unavailableAccounts,
+    RESEND_API_KEY:'test-key',
+    AUTH_FROM_EMAIL:'Food My Way <login@foodmyway.app>',
+    AUTH_ORIGIN:'https://foodmyway.app'
+  };
+  try{
+    const response=await onRequestPost({request:request('person@example.com'),env});
+    assert.equal(response.status,503);
+    assert.deepEqual(await response.json(),{error:'Cloud account storage is temporarily unavailable.'});
+    assert.equal(sends,0);
+  }finally{ globalThis.fetch=originalFetch; }
+});

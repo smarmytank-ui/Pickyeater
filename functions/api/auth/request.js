@@ -14,15 +14,21 @@ export async function onRequestPost({request,env}){
   let email;
   try{ email=normalizeAccountEmail(input?.email); }catch(error){ return json({error:error.message},400); }
   const now=Math.floor(Date.now()/1000);
-  await env.ACCOUNTS.batch([
-    env.ACCOUNTS.prepare('DELETE FROM sessions WHERE expires_epoch<=?1').bind(now),
-    env.ACCOUNTS.prepare(`DELETE FROM login_challenges WHERE expires_epoch<=?1
-      AND NOT EXISTS (SELECT 1 FROM sessions WHERE sessions.challenge_id=login_challenges.id)`).bind(now)
-  ]).catch(()=>{});
-  const recent=await env.ACCOUNTS.prepare('SELECT count(*) AS count, max(created_epoch) AS latest FROM login_challenges WHERE email=?1 AND created_epoch>?2')
-    .bind(email,now-3600).first();
-  const globalRecent=await env.ACCOUNTS.prepare('SELECT count(*) AS count FROM login_challenges WHERE created_epoch>?1')
-    .bind(now-3600).first();
+  try{
+    await env.ACCOUNTS.batch([
+      env.ACCOUNTS.prepare('DELETE FROM sessions WHERE expires_epoch<=?1').bind(now),
+      env.ACCOUNTS.prepare(`DELETE FROM login_challenges WHERE expires_epoch<=?1
+        AND NOT EXISTS (SELECT 1 FROM sessions WHERE sessions.challenge_id=login_challenges.id)`).bind(now)
+    ]);
+  }catch{}
+  let recent;
+  let globalRecent;
+  try{
+    recent=await env.ACCOUNTS.prepare('SELECT count(*) AS count, max(created_epoch) AS latest FROM login_challenges WHERE email=?1 AND created_epoch>?2')
+      .bind(email,now-3600).first();
+    globalRecent=await env.ACCOUNTS.prepare('SELECT count(*) AS count FROM login_challenges WHERE created_epoch>?1')
+      .bind(now-3600).first();
+  }catch{ return json({error:'Cloud account storage is temporarily unavailable.'},503); }
   if(Number(recent?.count || 0)>=EMAIL_REQUESTS_PER_HOUR || now-Number(recent?.latest || 0)<EMAIL_COOLDOWN_SECONDS || Number(globalRecent?.count || 0)>=GLOBAL_REQUESTS_PER_HOUR){
     return json({error:'Too many sign-in requests. Try again later.'},429);
   }
@@ -30,8 +36,10 @@ export async function onRequestPost({request,env}){
   const token=randomToken();
   const tokenHash=await sha256Hex(token);
   const id=crypto.randomUUID();
-  await env.ACCOUNTS.prepare('INSERT INTO login_challenges (id,email,token_hash,created_epoch,expires_epoch) VALUES (?1,?2,?3,?4,?5)')
-    .bind(id,email,tokenHash,now,now+900).run();
+  try{
+    await env.ACCOUNTS.prepare('INSERT INTO login_challenges (id,email,token_hash,created_epoch,expires_epoch) VALUES (?1,?2,?3,?4,?5)')
+      .bind(id,email,tokenHash,now,now+900).run();
+  }catch{ return json({error:'Cloud account storage is temporarily unavailable.'},503); }
   let link;
   try{
     const origin=new URL(env.AUTH_ORIGIN);
