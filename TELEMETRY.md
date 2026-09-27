@@ -4,11 +4,15 @@ Food My Way can measure its launch funnel without sending recipes or customer co
 
 ## Deployment
 
-1. Create a Cloudflare D1 database and run `migrations/0003_product_telemetry.sql`.
-2. Bind it to the Pages project as `TELEMETRY` in preview and production.
-3. Change `telemetryEnabled` to `true` in `config.js` and deploy.
-4. Generate and save a test recipe, then confirm only allowlisted events and fields appear in `product_events`.
-5. Verify the endpoint's transactional 90-day cleanup in production. The documented deletion query remains an operational backstop.
+Completed September 27, 2026:
+
+1. Created the Cloudflare D1 database and applied `migrations/0003_product_telemetry.sql`.
+2. Bound it to the Pages project as `TELEMETRY` in preview and production.
+3. Enabled `telemetryEnabled` in release `2.62.0` and deployed commit `1273d9e`.
+4. Confirmed production accepted allowlisted events and stored only the normalized event, UUID-style session identifier, path, empty allowlisted details object, and timestamp.
+5. Seeded a disposable event older than 90 days, submitted another production event, and confirmed the expired row was deleted within the same ingestion transaction.
+
+The documented deletion query remains an operational backstop.
 
 ## Data minimization
 

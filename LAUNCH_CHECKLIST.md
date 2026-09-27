@@ -72,7 +72,7 @@
 - [x] Production social-share image
 - [x] Privacy-minimized first-party analytics and generic client-error endpoint
 - [x] Cloudflare D1 `TELEMETRY` database, schema, and preview binding
-- [ ] Live event verification and production confirmation of transactional 90-day cleanup
+- [x] Live event verification and production confirmation of transactional 90-day cleanup
 - [ ] Search-engine verification and sitemap submission
 - [ ] TikTok, Instagram, and YouTube handles reserved
 - [ ] Apple/Google store packaging decision after web retention proof
@@ -104,7 +104,7 @@ See `OWNER_LAUNCH_ACTIONS.md` for the minimal owner-only sequence and `LEGAL_LAU
 
 ## Latest local browser evidence
 
-Release `2.61.0` passes all 112 automated tests plus direct syntax checks across the browser application, service worker, and every Cloudflare Function. Coverage includes transaction-level account deletion, payment-record retention, multi-device sign-out isolation, corrupted-backup handling, account and entitlement outages, cross-tab checkout recovery, one-time Founding pricing, grocery handoff authorization, legacy-route cleanup, and canonical SEO signals. These checks prove the local implementation; production Cloudflare bindings and live email/payment flows still require the end-to-end verification listed above.
+Release `2.62.0` passes all 112 automated tests plus direct syntax checks across the browser application, service worker, and every Cloudflare Function. Coverage includes transaction-level account deletion, payment-record retention, multi-device sign-out isolation, corrupted-backup handling, account and entitlement outages, cross-tab checkout recovery, one-time Founding pricing, grocery handoff authorization, legacy-route cleanup, canonical SEO signals, and the privacy-minimized telemetry contract. These checks prove the local implementation; live email and payment flows still require the end-to-end verification listed above.
 
 On September 27, 2026, the protected Cloudflare preview was revalidated before the pending source push:
 
@@ -142,7 +142,9 @@ The same day, the public domain rollout was completed and independently verified
 - apex and `www` requests for `pickyeatercookbook.com`, over both HTTP and HTTPS, return permanent redirects to `https://foodmyway.app` while preserving the path and query string;
 - `www.foodmyway.app` also permanently redirects to the canonical apex while preserving the path and query string.
 
-Database presence and binding do not by themselves enable customer-facing accounts, telemetry, payments, or email. Keep those public flags off until their separately listed secrets and end-to-end checks pass.
+Database presence and binding do not by themselves enable customer-facing accounts, payments, commerce, or email. Keep those public flags off until their separately listed secrets and end-to-end checks pass; telemetry is the only production feature enabled independently after its privacy and retention checks passed.
+
+Production telemetry was enabled in release `2.62.0` at commit `1273d9e` after its binding and privacy controls were verified. Two allowlisted `page_view` events returned `201 Created` from `https://foodmyway.app/api/events` and were visible in the production `food-my-way-telemetry` database. A disposable event dated January 1, 2025 was inserted before the second request; the following database query returned only the two current verification paths and no expired test path, proving the production transaction performed its 90-day cleanup. The production verifier then passed all 26 core checks.
 
 On September 26, 2026, release `2.47.0` passed the automated suite and a rendered in-app-browser smoke test against the local HTTP build:
 
