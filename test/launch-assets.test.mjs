@@ -187,6 +187,18 @@ test('cloud backup writes are authorized on the server, not only hidden in the U
   assert.match(docs,/independently repeats that authorization server-side/);
 });
 
+test('magic-link GET is read-only and explicit POST creates the session',async()=>{
+  const [endpoint,docs]=await Promise.all([
+    readFile(path.join(root,'functions/api/auth/consume.js'),'utf8'),
+    readFile(path.join(root,'CLOUD_ACCOUNTS.md'),'utf8')
+  ]);
+  assert.match(endpoint,/export async function onRequestGet/);
+  assert.match(endpoint,/export async function onRequestPost/);
+  assert.match(endpoint,/form method="post" action="\/api\/auth\/consume"/);
+  assert.match(endpoint,/referrer-policy':'no-referrer'/);
+  assert.match(docs,/email-security scanners do not consume access/);
+});
+
 test('customer-facing product chrome consistently uses Food My Way',async()=>{
   const [html,script,legacy]=await Promise.all([read('index.html'),read('app.js'),read('generator.html')]);
   assert.doesNotMatch(html,/Shared from Picky Eater|apple-mobile-web-app-title" content="Picky Eater"/);

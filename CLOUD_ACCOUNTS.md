@@ -4,7 +4,7 @@ The account backend uses passwordless email links, Cloudflare D1, and Resend. It
 
 ## Security model
 
-- Login links expire after 15 minutes and can be consumed once.
+- Login links expire after 15 minutes. Their initial GET is read-only so email-security scanners do not consume access; the customer must confirm sign-in with an explicit POST, which can succeed only once.
 - Raw login and session tokens are never stored; D1 receives SHA-256 hashes.
 - Sessions use `HttpOnly`, `Secure`, `SameSite=Lax` cookies and expire after 30 days.
 - A unique database constraint prevents concurrent reuse of one login challenge.
@@ -29,7 +29,8 @@ The account backend uses passwordless email links, Cloudflare D1, and Resend. It
 ## API surface
 
 - `POST /api/auth/request` — send a one-time sign-in link.
-- `GET /api/auth/consume?token=...` — consume the link, set the session cookie, and redirect home.
+- `GET /api/auth/consume?token=...` — validate the link and show the no-store confirmation page without consuming it.
+- `POST /api/auth/consume` — consume the confirmed link once, set the session cookie, and redirect home.
 - `GET /api/auth/session` — return current authentication state.
 - `POST /api/auth/session` — sign out and clear the cookie.
 - `GET /api/account/data` — export the signed-in user's cloud snapshot.

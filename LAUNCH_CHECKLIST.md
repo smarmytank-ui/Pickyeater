@@ -17,6 +17,7 @@
 - [ ] Real cloud accounts and synchronization
 - [ ] Account export and deletion
 - [x] Passwordless account/session backend and bounded cloud-data API
+- [x] Scanner-resistant, explicit-confirmation magic-link consumption
 - [x] Feature-flagged account UI and conflict-safe explicit backup/restore
 - [x] Server-enforced founding entitlement for cloud backup writes
 - [ ] Account email delivery and end-to-end preview verification
