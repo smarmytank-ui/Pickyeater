@@ -135,3 +135,13 @@ test('corrupted cloud data returns a controlled error instead of an empty backup
 
   accounts.close(); purchases.close();
 });
+
+test('account storage outage returns a controlled retryable response',async()=>{
+  const unavailableAccounts={prepare(){ throw new Error('unavailable'); }};
+  const response=await onRequestGet({
+    request:request('GET',sessionCookie('unavailable-token')),
+    env:{ACCOUNTS:unavailableAccounts}
+  });
+  assert.equal(response.status,503);
+  assert.deepEqual(await response.json(),{error:'Cloud accounts are temporarily unavailable.'});
+});

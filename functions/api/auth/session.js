@@ -4,7 +4,9 @@ const json=(body,status=200,headers={})=>new Response(JSON.stringify(body),{stat
 
 export async function onRequestGet({request,env}){
   if(!env.ACCOUNTS) return json({authenticated:false,configured:false});
-  const account=await currentAccount(request,env.ACCOUNTS);
+  let account;
+  try{ account=await currentAccount(request,env.ACCOUNTS); }
+  catch{ return json({error:'Cloud accounts are temporarily unavailable.'},503); }
   if(!account) return json({authenticated:false,configured:true});
   let entitlement=null;
   let entitlementUnavailable=false;
@@ -20,8 +22,11 @@ export async function onRequestGet({request,env}){
 
 export async function onRequestPost({request,env}){
   if(env.ACCOUNTS){
-    const account=await currentAccount(request,env.ACCOUNTS);
-    if(account) await env.ACCOUNTS.prepare('DELETE FROM sessions WHERE id=?1').bind(account.session_id).run();
+    let account;
+    try{
+      account=await currentAccount(request,env.ACCOUNTS);
+      if(account) await env.ACCOUNTS.prepare('DELETE FROM sessions WHERE id=?1').bind(account.session_id).run();
+    }catch{ return json({error:'Sign-out is temporarily unavailable. Your session is still active.'},503); }
   }
   return json({ok:true},200,{'set-cookie':clearSessionCookie()});
 }

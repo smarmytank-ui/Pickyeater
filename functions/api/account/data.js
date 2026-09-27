@@ -3,7 +3,9 @@ import { clearSessionCookie, currentAccount, normalizeCloudSnapshot } from '../.
 const json=(body,status=200,headers={})=>new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store',...headers}});
 async function requireAccount(request,env){
   if(!env.ACCOUNTS) return {error:json({error:'Cloud accounts are not configured.'},503)};
-  const account=await currentAccount(request,env.ACCOUNTS);
+  let account;
+  try{ account=await currentAccount(request,env.ACCOUNTS); }
+  catch{ return {error:json({error:'Cloud accounts are temporarily unavailable.'},503)}; }
   return account ? {account} : {error:json({error:'Sign in required.'},401)};
 }
 

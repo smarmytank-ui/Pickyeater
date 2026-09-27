@@ -87,3 +87,21 @@ test('an entitlement outage keeps the customer signed in',async()=>{
 
   accounts.close();
 });
+
+test('account storage outage does not falsely sign out the browser',async()=>{
+  const token='outage-session-token';
+  const unavailableAccounts={prepare(){ throw new Error('unavailable'); }};
+  const request=new Request('https://foodmyway.app/api/auth/session',{method:'POST',headers:{cookie:sessionCookie(token)}});
+
+  const response=await onRequestPost({request,env:{ACCOUNTS:unavailableAccounts}});
+  assert.equal(response.status,503);
+  assert.equal(response.headers.get('set-cookie'),null);
+  assert.deepEqual(await response.json(),{error:'Sign-out is temporarily unavailable. Your session is still active.'});
+
+  const status=await onRequestGet({
+    request:new Request('https://foodmyway.app/api/auth/session',{headers:{cookie:sessionCookie(token)}}),
+    env:{ACCOUNTS:unavailableAccounts}
+  });
+  assert.equal(status.status,503);
+  assert.deepEqual(await status.json(),{error:'Cloud accounts are temporarily unavailable.'});
+});
