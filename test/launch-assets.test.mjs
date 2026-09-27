@@ -16,7 +16,7 @@ const audiencePages=[
 
 test('HTML references required local launch assets that exist',async()=>{
   const html=await read('index.html');
-  const references=[...html.matchAll(/(?:href|src)="\.\/([^"?#]+)"/g)].map(match=>match[1]);
+  const references=[...html.matchAll(/(?:href|src)="\.\/([^"?#]+)(?:[?#][^"]*)?"/g)].map(match=>match[1]);
   assert.ok(references.includes('config.js'));
   assert.ok(references.includes('site.webmanifest'));
   for(const reference of new Set(references)) await access(path.join(root,reference));
