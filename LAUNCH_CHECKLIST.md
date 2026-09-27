@@ -83,3 +83,6 @@ These steps require the owner because they involve legal identity, banking, taxe
 3. Approve the final refund policy and legal documents.
 4. Confirm the inbox that should receive support@foodmyway.app mail.
 5. Approve public testimonials and creator partnerships before publication.
+6. Approve Resend enrollment, sending-domain verification, and credential creation.
+
+See `OWNER_LAUNCH_ACTIONS.md` for the minimal owner-only sequence and `LEGAL_LAUNCH_PACKET.md` for recommended approval-ready language.

@@ -1,5 +1,7 @@
 # Picky Eater technical audit
 
+> Historical baseline: this document records the September 19 starting point. Current launch state and remaining gates are maintained in `LAUNCH_CHECKLIST.md`; later architecture intentionally supersedes several recommendations below.
+
 Audit date: 2026-09-19  
 Baseline: `main` at `9f29f81`  
 Development branch: `picky-v2`
@@ -56,13 +58,13 @@ There are no backend, API, OpenAI, Supabase, Stripe, analytics, or other remote 
 
 Preserve the visual identity, mobile-first layout, no-build deployment, deterministic generator, swap catalog, quantity controls, nutrition disclaimer, and local-first behavior while the product is validated.
 
-Replace incrementally: consolidate persistence behind a versioned data layer; split domain/UI modules when a build system becomes justified; replace fake auth with Supabase Auth; move durable recipes and public shares to Supabase; and put OpenAI calls behind a server-side Edge Function so API keys never reach the browser.
+Replace incrementally: consolidate persistence behind a versioned data layer and split domain/UI modules when a build system becomes justified. The implemented backend direction is now Cloudflare Pages Functions plus D1 with passwordless email delivery through Resend; secrets remain server-side.
 
 ## Minimum Milestone 1 architecture
 
 Milestone 1 stays static and adds one versioned recipe schema, a Recipe Book interface, and portable public share links. This avoids a premature backend while completing Generate → Swap → Save → Recipe Book → Share.
 
-The next backend step should be additive:
+The original proposed backend step was:
 
 1. Supabase Auth with email magic links.
 2. `recipes` and `shared_recipes` tables protected by row-level security.
@@ -72,8 +74,8 @@ The next backend step should be additive:
 
 ## External inputs needed later
 
-None are required for this local-first Milestone 1. Cloud persistence will need a Supabase project URL and public anon key plus approved auth redirect URLs. AI generation will need an OpenAI project/API key stored only as an Edge Function secret. Production sharing will need the final hosting URL/domain. Stripe is not needed yet.
+The current release needs Cloudflare D1 bindings, Resend email credentials, Stripe onboarding and webhook credentials, verified domain DNS, and an approved legal operator/refund policy. AI generation is not required for the first paid release.
 
 ## Domain direction
 
-Use `PickyEaterCookbook.com` as the primary public and canonical recipe-sharing domain because it communicates the product immediately and reinforces the Picky Eater name. Keep `foodmyway.app` as a short redirect/marketing domain or reserve it for a future installed-app landing page. The application currently derives share links from its active origin, so either domain can host it without code changes. DNS redirects and canonical metadata should be configured only after the production host is selected.
+The final domain decision is **foodmyway.app** as the primary and canonical application domain. **PickyEaterCookbook.com** is the acquisition domain and should redirect to the primary site (or a dedicated picky-eater landing path on it). The application metadata, sitemap, and launch materials follow this decision.
