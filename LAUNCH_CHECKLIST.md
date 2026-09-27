@@ -48,6 +48,7 @@
 - [x] Web manifest and offline shell
 - [x] Search metadata and structured data
 - [x] robots.txt and sitemap.xml
+- [x] Production security and cache headers
 - [ ] foodmyway.app connected to production
 - [ ] PickyEaterCookbook.com redirect configured
 - [x] Production social-share image
