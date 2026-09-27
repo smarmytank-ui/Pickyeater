@@ -356,6 +356,24 @@ function parseLines(s){
   return (s||'').replace(/,+/g,'\n').split(/\n+/).map(x=>x.trim()).filter(Boolean);
 }
 
+const MAX_RECIPE_INGREDIENTS=12;
+const MAX_INGREDIENT_NAME_LENGTH=80;
+
+function validateRecipeInput(value){
+  const lines=parseLines(value);
+  if(!lines.length) return {ok:false,error:'Add at least one ingredient to get started.',lines:[]};
+  if(lines.length>MAX_RECIPE_INGREDIENTS){
+    return {ok:false,error:`Use ${MAX_RECIPE_INGREDIENTS} ingredients or fewer so the recipe stays practical.`,lines};
+  }
+  if(lines.some(line=>line.length>MAX_INGREDIENT_NAME_LENGTH)){
+    return {ok:false,error:`Keep each ingredient under ${MAX_INGREDIENT_NAME_LENGTH} characters.`,lines};
+  }
+  if(lines.some(line=>!/[\p{L}\p{N}]/u.test(line))){
+    return {ok:false,error:'Each line needs a recognizable food or ingredient name.',lines};
+  }
+  return {ok:true,error:'',lines};
+}
+
 function parseInputIngredient(raw){
   const text = String(raw || '').trim();
   const preparation = /\b(?:pre[ -]?cooked|cooked|rotisserie|leftovers?)\b/i.test(text)
@@ -2008,8 +2026,20 @@ function wireEvents(){
 
   const updateIngredientCount = ()=>{
     const count = parseLines(ingredientsInput?.value).length;
-    if($('ingredientCount')) $('ingredientCount').textContent = String(count);
-    if(count) $('inputError')?.classList.add('hidden');
+    if($('ingredientCount')) $('ingredientCount').textContent = `${count} / ${MAX_RECIPE_INGREDIENTS}`;
+    const error=$('inputError');
+    if(count>MAX_RECIPE_INGREDIENTS){
+      if(error){
+        error.textContent=`Use ${MAX_RECIPE_INGREDIENTS} ingredients or fewer so the recipe stays practical.`;
+        error.classList.remove('hidden');
+      }
+    }else error?.classList.add('hidden');
+  };
+
+  const showInputError=message=>{
+    const error=$('inputError');
+    if(error){ error.textContent=message; error.classList.remove('hidden'); }
+    ingredientsInput?.focus();
   };
 
   if(ingredientsInput && !ingredientsInput.dataset.wired){
@@ -2047,12 +2077,9 @@ function wireEvents(){
   if(gen && !gen.dataset.wired){
     gen.dataset.wired = '1';
     gen.addEventListener('click', ()=>{
-      const raw = parseLines($('ingredientsInput')?.value);
-      if(!raw || !raw.length){
-        $('inputError')?.classList.remove('hidden');
-        ingredientsInput?.focus();
-        return;
-      }
+      const validation=validateRecipeInput($('ingredientsInput')?.value);
+      if(!validation.ok) return showInputError(validation.error);
+      const raw=validation.lines;
 
       const ingredients = normalize(raw);
 
@@ -2350,6 +2377,8 @@ if(typeof module !== 'undefined' && module.exports){
   module.exports = {
     canonName,
     parseInputIngredient,
+    validateRecipeInput,
+    MAX_RECIPE_INGREDIENTS,
     sanitizeTasteProfile,
     roleFor,
     normalize,

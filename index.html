@@ -25,7 +25,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="manifest" href="./site.webmanifest">
-  <link rel="stylesheet" href="./styles.css?v=2.33.0" />
+  <link rel="stylesheet" href="./styles.css?v=2.35.0" />
 </head>
 <body>
 <div class="page">
@@ -94,8 +94,8 @@
   </div>
   <label for="ingredientsInput">Ingredients <span>(one per line)</span></label>
   <div class="textarea-shell">
-    <textarea id="ingredientsInput" placeholder="Chicken&#10;Potatoes&#10;Cheddar cheese&#10;Broccoli"></textarea>
-    <div class="input-count"><span id="ingredientCount">0</span> ingredients</div>
+    <textarea id="ingredientsInput" maxlength="1200" aria-describedby="ingredientHelp inputError" placeholder="Chicken&#10;Potatoes&#10;Cheddar cheese&#10;Broccoli"></textarea>
+    <div id="ingredientHelp" class="input-count"><span id="ingredientCount">0 / 12</span> ingredients</div>
   </div>
   <div id="inputError" class="input-error hidden" role="alert">Add at least one ingredient to get started.</div>
   <div class="quick-pick-label">Or start with a favorite</div>
@@ -404,6 +404,6 @@
 </script>
 
 <script src="./config.js"></script>
-<script src="./app.js?v=2.33.0"></script>
+<script src="./app.js?v=2.35.0"></script>
 </body>
 </html>

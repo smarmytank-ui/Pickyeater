@@ -4,6 +4,8 @@ const assert = require('node:assert/strict');
 const {
   canonName,
   parseInputIngredient,
+  validateRecipeInput,
+  MAX_RECIPE_INGREDIENTS,
   sanitizeTasteProfile,
   roleFor,
   normalize,
@@ -49,6 +51,15 @@ test('preserves explicit quantities and normalizes units', () => {
   });
   const ingredients = normalize(['2 lbs chicken breasts', '1 cup bell peppers']);
   assert.deepEqual(ingredients.map(item=>item.base), [{v:2,u:'lb'}, {v:1,u:'cups'}]);
+});
+
+test('recipe input stays within a practical and recognizable boundary', () => {
+  assert.equal(MAX_RECIPE_INGREDIENTS,12);
+  assert.deepEqual(validateRecipeInput('chicken\nrice'),{ok:true,error:'',lines:['chicken','rice']});
+  assert.match(validateRecipeInput('').error,/at least one ingredient/);
+  assert.match(validateRecipeInput('---').error,/recognizable food/);
+  assert.match(validateRecipeInput('x'.repeat(81)).error,/under 80 characters/);
+  assert.match(validateRecipeInput(Array.from({length:13},(_,index)=>`food ${index}`).join('\n')).error,/12 ingredients or fewer/);
 });
 
 test('already-cooked and frozen proteins receive preparation-safe guidance', () => {
