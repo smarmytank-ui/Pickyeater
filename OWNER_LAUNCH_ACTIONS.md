@@ -12,7 +12,8 @@ No additional domain action is currently required from the owner.
 
 ## 2. Seller and support identity
 
-- Provide the legal person or company selling Food My Way, its public business/mailing address, and governing jurisdiction.
+- [x] Legal seller supplied: **TP Biz Op LLC, doing business as Food My Way**.
+- Provide its public business/mailing address and governing jurisdiction.
 - Name the existing inbox that should receive mail sent to `support@foodmyway.app`.
 - Approve the recommended 14-day refund policy and founding-offer definition in `LEGAL_LAUNCH_PACKET.md`.
 

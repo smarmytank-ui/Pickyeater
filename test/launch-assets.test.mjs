@@ -432,7 +432,8 @@ test('paid terms draft matches the actual founding offer and launch gates',async
   for(const phrase of ['USD $29','first 250 paid members','14 calendar days','Stripe','third-party grocery provider','commercial lifetime of the Food My Way premium product']){
     assert.match(draft,new RegExp(phrase.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i'));
   }
-  for(const field of ['LEGAL_OPERATOR_NAME','MAILING_ADDRESS','JURISDICTION','EFFECTIVE_DATE','COUNSEL_APPROVED_DISPUTE_LANGUAGE']) assert.match(draft,new RegExp(`\\[\\[${field}\\]\\]`));
+  assert.match(draft,/TP Biz Op LLC, doing business as Food My Way/);
+  for(const field of ['MAILING_ADDRESS','JURISDICTION','EFFECTIVE_DATE','COUNSEL_APPROVED_DISPUTE_LANGUAGE']) assert.match(draft,new RegExp(`\\[\\[${field}\\]\\]`));
   assert.match(draft,/does not sell, prepare, deliver, or guarantee groceries/i);
   assert.match(draft,/does not mean the purchaser’s lifetime/i);
   assert.match(packet,/PAID_TERMS_DRAFT\.md/);

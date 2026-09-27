@@ -6,7 +6,7 @@ Status: owner and legal review required. Replace every `[[BRACKETED_FIELD]]` bef
 
 **Effective:** `[[EFFECTIVE_DATE]]`
 
-These Terms of Use form an agreement between you and `[[LEGAL_OPERATOR_NAME]]`, located at `[[MAILING_ADDRESS]]` (“Food My Way,” “we,” “us,” or “our”). They govern your access to Food My Way websites, applications, accounts, and related services.
+These Terms of Use form an agreement between you and **TP Biz Op LLC, doing business as Food My Way**, located at `[[MAILING_ADDRESS]]` (“Food My Way,” “we,” “us,” or “our”). They govern your access to Food My Way websites, applications, accounts, and related services.
 
 ### Using Food My Way
 
@@ -64,7 +64,7 @@ To the extent permitted by law, Food My Way is provided “as is” and “as av
 
 ### Limitation of liability
 
-To the extent permitted by law, Food My Way and `[[LEGAL_OPERATOR_NAME]]` will not be liable for indirect, incidental, special, consequential, exemplary, or punitive damages arising from the service. Any monetary cap, exclusions, dispute procedure, and mandatory local disclosures must be completed or revised by counsel for `[[JURISDICTION]]`. Nothing in these terms limits liability or consumer rights that applicable law does not allow us to limit.
+To the extent permitted by law, Food My Way and **TP Biz Op LLC, doing business as Food My Way** will not be liable for indirect, incidental, special, consequential, exemplary, or punitive damages arising from the service. Any monetary cap, exclusions, dispute procedure, and mandatory local disclosures must be completed or revised by counsel for `[[JURISDICTION]]`. Nothing in these terms limits liability or consumer rights that applicable law does not allow us to limit.
 
 ### Governing law and disputes
 
@@ -81,4 +81,3 @@ We may update these terms as the service changes. We will revise the effective d
 ### Contact
 
 Questions, refund requests, and account support may be sent to `support@foodmyway.app`. Legal notices may be sent to `[[MAILING_ADDRESS]]`.
-

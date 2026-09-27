@@ -6,7 +6,7 @@ This is operational drafting, not legal advice. A qualified attorney should revi
 
 ## Required identity fields
 
-- Legal seller: `[[LEGAL_OPERATOR_NAME]]`
+- Legal seller: **TP Biz Op LLC, doing business as Food My Way**
 - Public business or mailing address: `[[MAILING_ADDRESS]]`
 - Governing jurisdiction: `[[JURISDICTION]]`
 - Effective date: `[[EFFECTIVE_DATE]]`
@@ -26,7 +26,7 @@ Food My Way offers a full refund when the purchaser requests one within 14 calen
 
 `PAID_TERMS_DRAFT.md` now contains the complete recommended publication draft. Counsel should edit that draft rather than reconstructing the terms from this checklist. Before replacing `terms.html`, confirm that it:
 
-1. names `[[LEGAL_OPERATOR_NAME]]` as the seller and identifies its address;
+1. names **TP Biz Op LLC, doing business as Food My Way** as the seller and identifies its address;
 2. incorporates the founding-offer definition above;
 3. states the exact price, one-time billing basis, included features, taxes, and 14-day refund process;
 4. explains suspension for misuse and what happens if Food My Way is discontinued;
