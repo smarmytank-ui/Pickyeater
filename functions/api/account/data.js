@@ -17,7 +17,12 @@ async function requirePremiumBackup(account,env){
 export async function onRequestGet({request,env}){
   const auth=await requireAccount(request,env); if(auth.error) return auth.error;
   const row=await env.ACCOUNTS.prepare('SELECT snapshot,revision,updated_epoch FROM account_data WHERE user_id=?1').bind(auth.account.user_id).first();
-  return json({email:auth.account.email,snapshot:row ? JSON.parse(row.snapshot) : {version:1,data:{}},revision:row?.revision || null,updatedAt:row?.updated_epoch || null});
+  let snapshot={version:1,data:{}};
+  if(row){
+    try{ snapshot=JSON.parse(row.snapshot); }
+    catch{ return json({error:'Cloud data could not be read. Contact support before saving new data.',code:'CLOUD_DATA_UNAVAILABLE'},500); }
+  }
+  return json({email:auth.account.email,snapshot,revision:row?.revision || null,updatedAt:row?.updated_epoch || null});
 }
 
 export async function onRequestPut({request,env}){

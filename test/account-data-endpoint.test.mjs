@@ -119,3 +119,19 @@ test('failed account deletion keeps the account and browser session intact',asyn
 
   accounts.close(); purchases.close();
 });
+
+test('corrupted cloud data returns a controlled error instead of an empty backup',async()=>{
+  const {accounts,purchases,env,cookie}=await setup();
+  const now=Math.floor(Date.now()/1000);
+  accounts.prepare('INSERT INTO account_data (user_id,snapshot,revision,updated_epoch) VALUES (?,?,?,?)')
+    .run('user_1','{not-valid-json',3,now);
+
+  const response=await onRequestGet({request:request('GET',cookie),env});
+  assert.equal(response.status,500);
+  assert.deepEqual(await response.json(),{
+    error:'Cloud data could not be read. Contact support before saving new data.',
+    code:'CLOUD_DATA_UNAVAILABLE'
+  });
+
+  accounts.close(); purchases.close();
+});
