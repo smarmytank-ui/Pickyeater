@@ -23,8 +23,16 @@ const {
   normalizeSavedRecipe,
   MAX_SHARED_RECIPE_CHARS,
   lsSet,
-  restoreCloudSnapshot
+  restoreCloudSnapshot,
+  boundedDiaryNumber
 } = require('../app.js');
+
+test('quick diary nutrition accepts only bounded nonnegative numbers', () => {
+  assert.equal(boundedDiaryNumber('-10',10000),0);
+  assert.equal(boundedDiaryNumber('not a number',1000),0);
+  assert.equal(boundedDiaryNumber('12.34',1000),12.3);
+  assert.equal(boundedDiaryNumber('99999',10000),10000);
+});
 
 test('browser commerce navigation accepts only exact HTTPS Instacart hosts', () => {
   assert.equal(validCommerceUrl('https://www.instacart.com/store/products/123'),true);

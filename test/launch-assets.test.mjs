@@ -156,6 +156,16 @@ test('diary meal tabs expose state and support arrow-key navigation',async()=>{
   assert.match(script,/setAttribute\('aria-selected',String\(selected\)\)/);
 });
 
+test('diary controls expose names, pressed state, and safe input hints',async()=>{
+  const [html,script]=await Promise.all([read('index.html'),read('app.js')]);
+  for(const label of ['Calories','Protein grams','Carbohydrate grams','Fat grams']) assert.match(html,new RegExp(`aria-label="${label}"`));
+  assert.match(html,/id="qaName"[^>]*maxlength="80"/);
+  assert.match(html,/id="viewToday"[^>]*aria-pressed="true"/);
+  assert.match(script,/boundedDiaryNumber\(document\.getElementById\('qaCal'\)\?\.value,10000\)/);
+  assert.match(script,/setAttribute\('aria-pressed',String\(offset===0\)\)/);
+  assert.match(script,/Remove \$\{item\.title\} from \$\{activeMeal\}/);
+});
+
 test('deployment verifier covers the complete public funnel',async()=>{
   const verifier=await read('scripts/verify-deployment.mjs');
   for(const page of audiencePages) assert.match(verifier,new RegExp(`/${page.replaceAll('.','\\.')}`));

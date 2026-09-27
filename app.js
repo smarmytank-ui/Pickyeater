@@ -2016,6 +2016,12 @@ function updateDiarySub(){
   if(el) el.textContent = `${key} • Saved on this device only`;
 }
 
+function boundedDiaryNumber(value,max){
+  const parsed=Number(value);
+  if(!Number.isFinite(parsed) || parsed<=0) return 0;
+  return Math.min(max,Number(parsed.toFixed(1)));
+}
+
 function setActiveMeal(meal){
   activeMeal = meal;
   document.querySelectorAll('.tab').forEach(btn => {
@@ -2074,6 +2080,8 @@ function renderDiary(){
     const del = document.createElement('button');
     del.className = 'icon-btn';
     del.textContent = 'Remove';
+    del.type = 'button';
+    del.setAttribute('aria-label',`Remove ${item.title} from ${activeMeal}`);
     del.onclick = () => { deleteEntry(activeMeal, idx); renderDiary(); };
 
     right.append(macroLine, del);
@@ -2099,6 +2107,8 @@ function setDiaryDay(offset){
   diaryDayOffset = offset;
   document.getElementById('viewToday')?.classList.toggle('active', offset===0);
   document.getElementById('viewYesterday')?.classList.toggle('active', offset===-1);
+  document.getElementById('viewToday')?.setAttribute('aria-pressed',String(offset===0));
+  document.getElementById('viewYesterday')?.setAttribute('aria-pressed',String(offset===-1));
   const title = document.querySelector('#diaryCard .diary-title');
   if(title) title.textContent = offset===0 ? 'Today' : 'Yesterday';
   const totalsTitle = document.getElementById('diaryTotalsTitle');
@@ -2116,10 +2126,10 @@ function quickAddDiaryEntry(){
     title:name,
     source:'Quick add',
     macros:{
-      cal:Number(document.getElementById('qaCal')?.value)||0,
-      p:Number(document.getElementById('qaP')?.value)||0,
-      c:Number(document.getElementById('qaC')?.value)||0,
-      f:Number(document.getElementById('qaF')?.value)||0
+      cal:boundedDiaryNumber(document.getElementById('qaCal')?.value,10000),
+      p:boundedDiaryNumber(document.getElementById('qaP')?.value,1000),
+      c:boundedDiaryNumber(document.getElementById('qaC')?.value,1000),
+      f:boundedDiaryNumber(document.getElementById('qaF')?.value,1000)
     },
     localOnly:true,
     time:new Date().toISOString()
@@ -2638,6 +2648,7 @@ if(typeof module !== 'undefined' && module.exports){
     normalizeSavedRecipe,
     MAX_SHARED_RECIPE_CHARS,
     lsSet,
-    restoreCloudSnapshot
+    restoreCloudSnapshot,
+    boundedDiaryNumber
   };
 }

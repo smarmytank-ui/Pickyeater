@@ -25,7 +25,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="manifest" href="./site.webmanifest">
-  <link rel="stylesheet" href="./styles.css?v=2.50.0" />
+  <link rel="stylesheet" href="./styles.css?v=2.51.0" />
 </head>
 <body>
 <div class="page">
@@ -227,7 +227,7 @@
 <section id="diaryCard" class="card hidden" aria-live="polite">
   <div class="diary-head">
     <div>
-      <div class="diary-title">Today</div><div class="diary-toggle"><button id="viewToday" class="btn ghost small active">Today</button><button id="viewYesterday" class="btn ghost small">Yesterday</button></div><div class="diary-hint">Log meals you actually eat. No pressure.</div>
+      <div class="diary-title">Today</div><div class="diary-toggle"><button id="viewToday" class="btn ghost small active" type="button" aria-pressed="true">Today</button><button id="viewYesterday" class="btn ghost small" type="button" aria-pressed="false">Yesterday</button></div><div class="diary-hint">Log meals you actually eat. No pressure.</div>
       <div id="diarySub" class="diary-sub"></div>
     </div>
     <button id="closeDiary" class="btn ghost">Close</button>
@@ -247,12 +247,13 @@
 
     <div class="section-title">Quick Add</div>
     <div class="quick-grid">
-      <input id="qaName" class="field" placeholder="Food name (e.g., Greek yogurt)" />
+      <label class="search-label" for="qaName">Food name</label>
+      <input id="qaName" class="field" maxlength="80" placeholder="Food name (e.g., Greek yogurt)" />
       <div class="quick-macros">
-        <input id="qaCal" class="field small" inputmode="numeric" placeholder="Cal" />
-        <input id="qaP" class="field small" inputmode="numeric" placeholder="P" />
-        <input id="qaC" class="field small" inputmode="numeric" placeholder="C" />
-        <input id="qaF" class="field small" inputmode="numeric" placeholder="F" />
+        <input id="qaCal" class="field small" inputmode="decimal" aria-label="Calories" placeholder="Cal" />
+        <input id="qaP" class="field small" inputmode="decimal" aria-label="Protein grams" placeholder="P" />
+        <input id="qaC" class="field small" inputmode="decimal" aria-label="Carbohydrate grams" placeholder="C" />
+        <input id="qaF" class="field small" inputmode="decimal" aria-label="Fat grams" placeholder="F" />
       </div>
       <button id="qaAdd" class="btn full">Add to this meal</button>
     </div>
@@ -419,6 +420,6 @@
 </script>
 
 <script src="./config.js"></script>
-<script src="./app.js?v=2.50.0"></script>
+<script src="./app.js?v=2.51.0"></script>
 </body>
 </html>
