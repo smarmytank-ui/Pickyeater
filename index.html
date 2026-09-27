@@ -25,7 +25,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="manifest" href="./site.webmanifest">
-  <link rel="stylesheet" href="./styles.css?v=2.57.0" />
+  <link rel="stylesheet" href="./styles.css?v=2.58.0" />
 </head>
 <body>
 <div class="page">
@@ -280,7 +280,7 @@
 <section id="pricing" class="marketing-section pricing-section" aria-labelledby="pricing-title">
   <div class="section-kicker">Simple founding pricing</div>
   <h2 id="pricing-title">Try the core app free. Upgrade when it earns its place.</h2>
-  <p class="section-intro">The private beta is free while we finish accounts and payments. Founding members will lock in access for the commercial lifetime of the Food My Way premium product.</p>
+  <p id="pricingIntro" class="section-intro">The core app is free today. Founding checkout opens after final production verification, with one-time access for the commercial lifetime of the Food My Way premium product.</p>
   <div class="pricing-grid">
     <article class="price-card">
       <div class="plan-name">Free</div><div class="plan-price">$0</div><div class="plan-note">A useful taste of Food My Way</div>
@@ -290,9 +290,9 @@
     <article class="price-card featured">
       <div class="founder-badge">FOUNDING OFFER</div>
       <div class="plan-name">Founding Member</div><div class="plan-price">$29 <small>one time</small></div><div class="plan-note">First 250 paid members · access for the commercial lifetime of Food My Way premium</div>
-      <ul><li>Unlimited saved recipes</li><li>Texture and separate-plating preferences</li><li>Weekly meal planning</li><li>Smart grocery lists</li><li>Verified founding-member status</li></ul>
+      <ul><li>Unlimited saved recipes</li><li>Texture and separate-plating preferences</li><li>Weekly meal planning</li><li>Smart grocery lists</li><li>Cloud backup and restore</li><li>Verified founding-member status</li></ul>
       <button id="founderCta" class="btn primary full" type="button">Join the founding list</button>
-      <div class="price-fineprint">No charge today. Materially different future products may be sold separately.</div>
+      <div id="founderFineprint" class="price-fineprint">No charge today. Materially different future products may be sold separately.</div>
     </article>
   </div>
 </section>
@@ -301,7 +301,7 @@
   <div class="section-kicker">Straight answers</div><h2 id="faq-title">Frequently asked questions</h2>
   <details><summary>Is this only for children?</summary><p>No. It is for picky adults, parents, neurodivergent households, and anyone who wants less pressure around food.</p></details>
   <details><summary>Does Food My Way provide medical or allergy advice?</summary><p>No. Recipes and nutrition are informational estimates. Always verify labels and speak with a qualified professional about allergies, eating disorders, or medical nutrition needs.</p></details>
-  <details><summary>Where are my recipes stored?</summary><p>During the private beta, recipes stay in your browser unless you share them. Cloud accounts and synchronization are being prepared for the premium release.</p></details>
+  <details><summary>Where are my recipes stored?</summary><p>Recipes stay in your browser by default. When cloud accounts are enabled, signed-in members can explicitly back up, restore, export, or delete their cloud data.</p></details>
   <details><summary>What stays free?</summary><p>You can create and swap recipes without a subscription and save up to three favorites. Founding membership adds unlimited saves, household preferences, weekly planning, grocery lists, and cloud account features when the paid release opens.</p></details>
   <details><summary>What does founding “lifetime” access mean?</summary><p>It means access for the commercial lifetime of the Food My Way premium product—not anyone’s personal lifetime and not every product we may ever create. Materially different future products may be sold separately.</p></details>
 </section>
@@ -416,10 +416,10 @@
 </footer>
 
 <script type="application/ld+json">
-{"@context":"https://schema.org","@graph":[{"@type":"SoftwareApplication","@id":"https://foodmyway.app/#app","name":"Food My Way","url":"https://foodmyway.app/","applicationCategory":"LifestyleApplication","operatingSystem":"Web","description":"A flexible recipe and ingredient-swap app built for picky eaters.","offers":[{"@type":"Offer","name":"Free","price":"0","priceCurrency":"USD","availability":"https://schema.org/InStock"},{"@type":"Offer","name":"Founding Member","price":"29","priceCurrency":"USD","availability":"https://schema.org/PreOrder","eligibleQuantity":{"@type":"QuantitativeValue","maxValue":250}}]},{"@type":"FAQPage","@id":"https://foodmyway.app/#faq","mainEntity":[{"@type":"Question","name":"Is this only for children?","acceptedAnswer":{"@type":"Answer","text":"No. Food My Way is for picky adults, parents, neurodivergent households, and anyone who wants less pressure around food."}},{"@type":"Question","name":"Does Food My Way provide medical or allergy advice?","acceptedAnswer":{"@type":"Answer","text":"No. Recipes and nutrition are informational estimates. Always verify labels and speak with a qualified professional about allergies, eating disorders, or medical nutrition needs."}},{"@type":"Question","name":"Where are my recipes stored?","acceptedAnswer":{"@type":"Answer","text":"During the private beta, recipes stay in your browser unless you share them. Cloud accounts and synchronization are being prepared for the premium release."}},{"@type":"Question","name":"What stays free?","acceptedAnswer":{"@type":"Answer","text":"You can create and swap recipes without a subscription and save up to three favorites. Founding membership adds unlimited saves, household preferences, weekly planning, grocery lists, and cloud account features when the paid release opens."}},{"@type":"Question","name":"What does founding lifetime access mean?","acceptedAnswer":{"@type":"Answer","text":"It means access for the commercial lifetime of the Food My Way premium product, not anyone’s personal lifetime and not every product Food My Way may create. Materially different future products may be sold separately."}}]}]}
+{"@context":"https://schema.org","@graph":[{"@type":"SoftwareApplication","@id":"https://foodmyway.app/#app","name":"Food My Way","url":"https://foodmyway.app/","applicationCategory":"LifestyleApplication","operatingSystem":"Web","description":"A flexible recipe and ingredient-swap app built for picky eaters.","offers":[{"@type":"Offer","name":"Free","price":"0","priceCurrency":"USD","availability":"https://schema.org/InStock"},{"@type":"Offer","name":"Founding Member","price":"29","priceCurrency":"USD","availability":"https://schema.org/PreOrder","eligibleQuantity":{"@type":"QuantitativeValue","maxValue":250}}]},{"@type":"FAQPage","@id":"https://foodmyway.app/#faq","mainEntity":[{"@type":"Question","name":"Is this only for children?","acceptedAnswer":{"@type":"Answer","text":"No. Food My Way is for picky adults, parents, neurodivergent households, and anyone who wants less pressure around food."}},{"@type":"Question","name":"Does Food My Way provide medical or allergy advice?","acceptedAnswer":{"@type":"Answer","text":"No. Recipes and nutrition are informational estimates. Always verify labels and speak with a qualified professional about allergies, eating disorders, or medical nutrition needs."}},{"@type":"Question","name":"Where are my recipes stored?","acceptedAnswer":{"@type":"Answer","text":"Recipes stay in your browser by default. When cloud accounts are enabled, signed-in members can explicitly back up, restore, export, or delete their cloud data."}},{"@type":"Question","name":"What stays free?","acceptedAnswer":{"@type":"Answer","text":"You can create and swap recipes without a subscription and save up to three favorites. Founding membership adds unlimited saves, household preferences, weekly planning, grocery lists, and cloud account features when the paid release opens."}},{"@type":"Question","name":"What does founding lifetime access mean?","acceptedAnswer":{"@type":"Answer","text":"It means access for the commercial lifetime of the Food My Way premium product, not anyone’s personal lifetime and not every product Food My Way may create. Materially different future products may be sold separately."}}]}]}
 </script>
 
 <script src="./config.js"></script>
-<script src="./app.js?v=2.57.0"></script>
+<script src="./app.js?v=2.58.0"></script>
 </body>
 </html>

@@ -2548,18 +2548,23 @@ function wireEvents(){
   const founderCta = $('founderCta');
   const savedFounderCta = $('savedFounderCta');
   const checkoutUrl = getPublicConfig().founderCheckoutUrl;
+  const checkoutReady=validCheckoutUrl(checkoutUrl);
   $('checkoutSignIn')?.addEventListener('click',()=>{
     if(getPublicConfig().accountsEnabled) $('openAccount')?.click();
     else showToast('Account sign-in is temporarily unavailable. Your payment is recorded; contact support if this continues.');
   });
   document.querySelectorAll('.diary-tabs [role="tab"]').forEach(tab=>tab.addEventListener('keydown',handleMealTabKeydown));
-  if(founderCta && validCheckoutUrl(checkoutUrl)) founderCta.textContent='Become a founding member — $29';
+  if(checkoutReady){
+    if(founderCta) founderCta.textContent='Become a founding member — $29';
+    if($('pricingIntro')) $('pricingIntro').textContent='The core app stays free. Founding members can unlock the complete experience with one secure, one-time purchase.';
+    if($('founderFineprint')) $('founderFineprint').textContent='One-time purchase through Stripe. Taxes may apply. Materially different future products may be sold separately.';
+  }
   const closeFounder = ()=>{
     closeDialog(founderOverlay);
     $('founderError')?.classList.add('hidden');
   };
   const openFounderOffer = ()=>{
-    if(validCheckoutUrl(checkoutUrl)){
+    if(checkoutReady){
       track('founder_checkout_started',{price:29,currency:'USD'});
       location.assign(checkoutUrl);
       return;

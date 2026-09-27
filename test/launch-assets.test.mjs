@@ -189,7 +189,13 @@ test('pricing copy matches the enforced free save allowance',async()=>{
   const [html,script,plan]=await Promise.all([read('index.html'),read('app.js'),read('GO_TO_MARKET.md')]);
   assert.match(html,/Up to 3 saved recipes/);
   assert.match(html,/Unlimited saved recipes/);
+  assert.match(html,/Cloud backup and restore/);
   assert.match(html,/First 250 paid members/);
+  assert.match(html,/id="pricingIntro"/);
+  assert.match(html,/id="founderFineprint"/);
+  assert.doesNotMatch(html,/private beta is free while we finish accounts and payments/i);
+  assert.match(script,/checkoutReady=validCheckoutUrl\(checkoutUrl\)/);
+  assert.match(script,/One-time purchase through Stripe\. Taxes may apply\./);
   assert.match(script,/const FREE_RECIPE_LIMIT = 3/);
   assert.match(script,/requirePremium\('unlimited_saves'\)/);
   assert.match(plan,/Free: unlimited recipe creation and ingredient swaps, with up to three saved recipes/);
