@@ -1,0 +1,43 @@
+# Payments and founding leads
+
+Updated: September 26, 2026
+
+## Founding checkout
+
+Food My Way is prepared for a Stripe Payment Link priced at **$29 one time**. No secret Stripe key belongs in this repository.
+
+After the owner completes Stripe identity, banking, tax, refund, and business-profile setup:
+
+1. Create a one-time product named `Food My Way Founding Member` for USD $29.
+2. Limit public availability to the first 250 purchases operationally or with Stripe inventory/automation.
+3. Collect the customer email in Checkout.
+4. Link Stripe’s privacy and terms fields to `https://foodmyway.app/privacy.html` and `https://foodmyway.app/terms.html`.
+5. Set the success URL to `https://foodmyway.app/?founding=success` and the cancel URL to `https://foodmyway.app/#pricing`.
+6. Put the resulting `https://buy.stripe.com/...` URL in `config.js` as `founderCheckoutUrl`.
+
+The app accepts only `buy.stripe.com` or `checkout.stripe.com` HTTPS URLs, preventing an accidental or malicious arbitrary checkout redirect.
+
+## Founding-interest storage
+
+`POST /api/founding-interest` is a Cloudflare Pages Function. It requires a D1 binding named `LEADS`. Until that binding exists, the endpoint fails closed and the browser tells the user that interest is saved only on that device.
+
+Cloudflare setup:
+
+1. Create a D1 database for Food My Way leads.
+2. Run `migrations/0001_founding_leads.sql` against it.
+3. Bind the database to the Pages project as `LEADS` in preview and production.
+4. Deploy, submit a test email with explicit consent, and verify one row.
+5. Configure a compliant email provider before sending marketing mail.
+6. Add unsubscribe processing that changes `status` to `unsubscribed` before the first broadcast.
+
+## Required owner actions
+
+The owner must personally complete Stripe onboarding because it involves legal identity, banking, tax information, and acceptance of financial terms. The owner must also approve the final refund language and identify the legal seller displayed on receipts.
+
+## Founding offer guardrails
+
+- Do not promise that every future Food My Way product is included.
+- Define lifetime access as access for the commercial lifetime of the Food My Way premium product.
+- State which current and announced premium features are included.
+- Honor the price for founding customers even if standard pricing changes.
+- Publish support and refund handling before accepting payment.

@@ -29,6 +29,17 @@ function track(eventName, details = {}){
   window.dispatchEvent(new CustomEvent('foodmyway:analytics', { detail:payload }));
 }
 
+function getPublicConfig(){
+  return typeof window!=='undefined' && window.FMW_CONFIG ? window.FMW_CONFIG : {};
+}
+
+function validCheckoutUrl(value){
+  try{
+    const url=new URL(String(value || ''));
+    return url.protocol==='https:' && ['buy.stripe.com','checkout.stripe.com'].includes(url.hostname);
+  }catch{ return false; }
+}
+
 function getTasteProfile(){
   const profile = lsGet(TASTE_PROFILE_KEY, {});
   return {
@@ -1870,28 +1881,59 @@ function wireEvents(){
 
   const founderOverlay = $('founderOverlay');
   const founderEmail = $('founderEmail');
+  const founderCta = $('founderCta');
+  const checkoutUrl = getPublicConfig().founderCheckoutUrl;
+  if(founderCta && validCheckoutUrl(checkoutUrl)) founderCta.textContent='Become a founding member — $29';
   const closeFounder = ()=>{
     founderOverlay?.classList.add('hidden');
     $('founderError')?.classList.add('hidden');
   };
-  $('founderCta')?.addEventListener('click', ()=>{
+  founderCta?.addEventListener('click', ()=>{
+    if(validCheckoutUrl(checkoutUrl)){
+      track('founder_checkout_started',{price:29,currency:'USD'});
+      location.assign(checkoutUrl);
+      return;
+    }
     founderOverlay?.classList.remove('hidden');
     founderEmail?.focus();
     track('founder_interest_opened');
   });
   $('founderClose')?.addEventListener('click', closeFounder);
   founderOverlay?.addEventListener('click', event=>{ if(event.target===founderOverlay) closeFounder(); });
-  $('founderSave')?.addEventListener('click', ()=>{
+  $('founderSave')?.addEventListener('click', async()=>{
     const email = founderEmail?.value.trim() || '';
-    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    const consent = Boolean($('founderConsent')?.checked);
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !consent){
+      $('founderError').textContent = !consent ? 'Please consent to founding-access emails.' : 'Enter a valid email address.';
       $('founderError')?.classList.remove('hidden');
-      founderEmail?.focus();
+      (!consent ? $('founderConsent') : founderEmail)?.focus();
       return;
     }
-    lsSet('foodMyWayFounderInterest', { email, savedAt:new Date().toISOString() });
+    const button=$('founderSave');
+    if(button){ button.disabled=true; button.textContent='Saving…'; }
+    let synced=false;
+    try{
+      const response=await fetch('./api/founding-interest',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email,consent:true,source:'founding-modal',company:''})});
+      synced=response.ok;
+      if(!response.ok && ![404,503].includes(response.status)){
+        const result=await response.json().catch(()=>({}));
+        const failure=new Error(result.error || 'Signup failed.');
+        failure.userFacing=true;
+        throw failure;
+      }
+    }catch(error){
+      if(error.userFacing){
+        $('founderError').textContent=error.message;
+        $('founderError')?.classList.remove('hidden');
+        if(button){ button.disabled=false; button.textContent='Save my spot'; }
+        return;
+      }
+    }
+    lsSet('foodMyWayFounderInterest', { email, consent:true, synced, savedAt:new Date().toISOString() });
     closeFounder();
-    showToast('Your interest is saved on this device.');
-    track('founder_interest_saved');
+    if(button){ button.disabled=false; button.textContent='Save my spot'; }
+    showToast(synced ? 'You’re on the founding list.' : 'Saved on this device; online signup is not connected yet.');
+    track('founder_interest_saved',{synced});
   });
 
   const profileOverlay = $('profileOverlay');

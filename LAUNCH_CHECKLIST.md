@@ -22,10 +22,12 @@
 - [x] Positioning and brand hierarchy
 - [x] Free and founding plan presentation
 - [x] Conversion-event hooks
+- [x] Stripe Payment Link configuration and hostname validation
+- [x] Consent-based founding-lead endpoint and D1 schema
 - [ ] Stripe account and verified business identity
 - [ ] Stripe $29 founding product and Payment Link
 - [ ] Refund and cancellation policy finalized
-- [ ] Founding-interest email endpoint
+- [ ] Cloudflare D1 `LEADS` binding and live founding-interest verification
 - [ ] Purchase entitlement and webhook
 
 ## Trust and operations

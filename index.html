@@ -338,6 +338,7 @@
     <div class="modal-sub">Founding access will be $29 once, not another monthly bill. Enter your email and we’ll remember your interest on this device while the secure signup connection is completed.</div>
     <label class="modal-label" for="founderEmail">Email</label>
     <input id="founderEmail" class="field" type="email" autocomplete="email" placeholder="you@example.com" />
+    <label class="consent-row"><input id="founderConsent" type="checkbox" /> <span>Email me about founding access and major Food My Way updates. I can unsubscribe anytime.</span></label>
     <div id="founderError" class="input-error hidden" role="alert">Enter a valid email address.</div>
     <button id="founderSave" class="btn primary full" type="button">Save my spot</button>
     <div class="price-fineprint">No spam. No payment collected yet.</div>
@@ -370,6 +371,7 @@
 {"@context":"https://schema.org","@type":"SoftwareApplication","name":"Food My Way","applicationCategory":"LifestyleApplication","operatingSystem":"Web","description":"A flexible recipe and ingredient-swap app built for picky eaters.","offers":[{"@type":"Offer","name":"Free","price":"0","priceCurrency":"USD"},{"@type":"Offer","name":"Founding Member","price":"29","priceCurrency":"USD"}]}
 </script>
 
+<script src="./config.js"></script>
 <script src="./app.js"></script>
 </body>
 </html>
