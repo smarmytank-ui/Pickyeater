@@ -1,10 +1,10 @@
 # Food My Way paid-launch Terms of Use draft
 
-Status: owner and legal review required. Replace every `[[BRACKETED_FIELD]]` before publishing. This draft is not legal advice.
+Status: approved by the owner on September 27, 2026 and published as `terms.html`. Professional legal review remains recommended. This draft is not legal advice.
 
 ## Terms of Use
 
-**Effective:** `[[EFFECTIVE_DATE]]`
+**Effective:** September 27, 2026
 
 These Terms of Use form an agreement between you and **TP Biz Op LLC, doing business as Food My Way**, located at **22365 El Toro Road, Unit 2088, Lake Forest, CA 92630** (“Food My Way,” “we,” “us,” or “our”). They govern your access to Food My Way websites, applications, accounts, and related services.
 
@@ -64,11 +64,11 @@ To the extent permitted by law, Food My Way is provided “as is” and “as av
 
 ### Limitation of liability
 
-To the extent permitted by law, Food My Way and **TP Biz Op LLC, doing business as Food My Way** will not be liable for indirect, incidental, special, consequential, exemplary, or punitive damages arising from the service. Any monetary cap, exclusions, dispute procedure, and mandatory local disclosures must be completed or revised by counsel for `[[JURISDICTION]]`. Nothing in these terms limits liability or consumer rights that applicable law does not allow us to limit.
+To the extent permitted by law, Food My Way and **TP Biz Op LLC, doing business as Food My Way** will not be liable for indirect, incidental, special, consequential, exemplary, or punitive damages arising from the service. Nothing in these terms limits liability or consumer rights that applicable law does not allow us to limit.
 
 ### Governing law and disputes
 
-These terms are governed by the laws of `[[JURISDICTION]]`, without regard to conflict-of-law rules, except where applicable consumer law requires otherwise. `[[COUNSEL_APPROVED_DISPUTE_LANGUAGE]]`
+These terms are governed by the laws of California, without regard to conflict-of-law rules, except where applicable consumer law requires otherwise. Before filing a claim, contact `support@foodmyway.app` so we can try to resolve it informally. Either party may bring an eligible claim in small-claims court. Other proceedings must be brought in the state or federal courts serving Orange County, California, unless applicable law allows or requires a different forum.
 
 ### Privacy
 

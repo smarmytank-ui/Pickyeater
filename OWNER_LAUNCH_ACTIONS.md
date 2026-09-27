@@ -14,9 +14,9 @@ No additional domain action is currently required from the owner.
 
 - [x] Legal seller supplied: **TP Biz Op LLC, doing business as Food My Way**.
 - [x] Public business/mailing address supplied: **22365 El Toro Road, Unit 2088, Lake Forest, CA 92630**.
-- Provide the governing jurisdiction for the Terms of Use.
+- [x] California approved as the governing jurisdiction for the Terms of Use.
 - [x] `support@foodmyway.app` routes to the owner's verified Gmail inbox and passed a live delivery test.
-- Approve the recommended 14-day refund policy and founding-offer definition in `LEGAL_LAUNCH_PACKET.md`.
+- [x] Recommended 14-day refund policy and founding-offer definition approved on September 27, 2026.
 
 ## 3. Stripe
 
@@ -29,9 +29,9 @@ No additional domain action is currently required from the owner.
 
 ## 4. Transactional email
 
-- Create or approve the Resend account and accept its terms.
+- [x] Resend account creation and its terms approved on September 27, 2026.
 - Complete any account-ownership or domain-ownership confirmation that Resend requires personally.
-- Approve `Food My Way <login@foodmyway.app>` or another verified sender.
+- [x] `Food My Way <login@foodmyway.app>` approved as the transactional sender.
 
 ## 5. Later grocery-commerce enrollment
 
@@ -48,7 +48,6 @@ On September 27, 2026, the live core deployment passed all 26 checks. The strict
 
 The remaining owner-only inputs are:
 
-1. Governing jurisdiction and approval of the 14-day refund/founding terms.
-2. Resend enrollment plus approval of `Food My Way <login@foodmyway.app>` as the account-email sender.
+1. Complete any personal verification that Resend requires during the authorized enrollment for `Food My Way <login@foodmyway.app>`.
 
 After those inputs, the deployment operator can publish the approved legal pages, add the Resend secret, enable accounts and premium enforcement, and run the purchase/refund/account lifecycle without further domain or infrastructure work from the owner.

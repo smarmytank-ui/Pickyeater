@@ -435,7 +435,9 @@ test('paid terms draft matches the actual founding offer and launch gates',async
   assert.match(draft,/TP Biz Op LLC, doing business as Food My Way/);
   assert.match(draft,/22365 El Toro Road, Unit 2088, Lake Forest, CA 92630/);
   assert.doesNotMatch(draft,/\[\[MAILING_ADDRESS\]\]/);
-  for(const field of ['JURISDICTION','EFFECTIVE_DATE','COUNSEL_APPROVED_DISPUTE_LANGUAGE']) assert.match(draft,new RegExp(`\\[\\[${field}\\]\\]`));
+  assert.match(draft,/laws of California/i);
+  assert.match(draft,/Effective:\*\* September 27, 2026/i);
+  assert.doesNotMatch(draft,/\[\[[A-Z_]+\]\]/);
   assert.match(draft,/does not sell, prepare, deliver, or guarantee groceries/i);
   assert.match(draft,/does not mean the purchaser’s lifetime/i);
   assert.match(packet,/PAID_TERMS_DRAFT\.md/);

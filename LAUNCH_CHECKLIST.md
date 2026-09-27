@@ -38,7 +38,7 @@
 - [x] Signed-in email entitlement lookup and feature-flagged premium gates
 - [ ] Stripe account and verified business identity
 - [x] Stripe $29 founding product and Payment Link
-- [ ] Refund and cancellation policy finalized
+- [x] Refund and cancellation policy finalized and owner-approved
 - [x] Cloudflare D1 `LEADS` database, schema, and preview binding
 - [x] Live founding-interest verification
 - [x] `LEADS_UNSUBSCRIBE_SECRET` and live unsubscribe verification
@@ -50,7 +50,7 @@
 
 - [x] Privacy draft
 - [x] Terms draft
-- [x] Complete paid-launch terms draft with owner/counsel placeholders
+- [x] Complete paid-launch terms published with owner-approved California terms
 - [x] Support page
 - [x] Nutrition and medical disclaimers
 - [x] Legal operator name/address inserted in the approval-ready paid terms draft

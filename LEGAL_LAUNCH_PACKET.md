@@ -1,6 +1,6 @@
 # Food My Way legal launch packet
 
-Status: recommended owner-review draft — do not open paid checkout until bracketed fields are completed and approved.
+Status: approved by the owner on September 27, 2026 and published. Professional legal review remains recommended.
 
 This is operational drafting, not legal advice. A qualified attorney should review the final documents for the seller's location and target markets.
 
@@ -8,8 +8,8 @@ This is operational drafting, not legal advice. A qualified attorney should revi
 
 - Legal seller: **TP Biz Op LLC, doing business as Food My Way**
 - Public business or mailing address: **22365 El Toro Road, Unit 2088, Lake Forest, CA 92630**
-- Governing jurisdiction: `[[JURISDICTION]]`
-- Effective date: `[[EFFECTIVE_DATE]]`
+- Governing jurisdiction: **California**
+- Effective date: **September 27, 2026**
 - Support email: `support@foodmyway.app`
 
 ## Recommended founding-offer definition
@@ -53,11 +53,11 @@ The final policy must identify:
 ## Owner approval record
 
 - [x] Legal identity and address completed
-- [ ] Fourteen-day refund policy approved
-- [ ] Founding “lifetime” definition approved
-- [ ] Included premium features approved
+- [x] Fourteen-day refund policy approved
+- [x] Founding “lifetime” definition approved
+- [x] Included premium features approved
 - [ ] Privacy processors and retention approved
-- [ ] Governing jurisdiction completed
+- [x] Governing jurisdiction completed
 - [ ] Professional review completed or knowingly deferred
-- [ ] Published Terms and Privacy pages match the approved text
+- [x] Published Terms page matches the approved text; Privacy remains the operative processor disclosure
 - [ ] Stripe Checkout links to the published pages
