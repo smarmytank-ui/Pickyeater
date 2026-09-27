@@ -7,7 +7,7 @@ Updated: September 27, 2026
 - Brand: **Food My Way**
 - First product promise: flexible recipes for picky eaters
 - Primary domain: **foodmyway.app**
-- Supporting acquisition domain: **PickyEaterCookbook.com**, redirected to a picky-eater landing path on the primary domain
+- Supporting acquisition domain: **PickyEaterCookbook.com**, permanently redirected to the primary domain while preserving paths and campaign parameters
 - One-line positioning: **Start with foods you already like. Get a simple recipe you can swap, save, and make your way.**
 
 This positioning avoids competing as a generic recipe generator. The wedge is reducing mealtime conflict and decision fatigue for picky adults, parents, and neurodivergent households.
@@ -116,3 +116,7 @@ The public paid launch does not open until all are true:
 - mobile Safari, mobile Chrome, desktop Chrome, and desktop Edge pass the critical flow;
 - backup and rollback procedure is documented;
 - at least 15 private testers complete the core flow without live assistance.
+
+## Search distribution status
+
+Google Search Console ownership is verified for the full `foodmyway.app` domain property. The production sitemap was accepted on September 27, 2026 with eight discovered pages, and the canonical homepage was submitted to Google's priority crawl queue. Keep the Cloudflare DNS verification record in place and monitor indexing, queries, and Core Web Vitals as data becomes available.

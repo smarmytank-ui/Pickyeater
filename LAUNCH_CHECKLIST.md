@@ -73,7 +73,7 @@
 - [x] Privacy-minimized first-party analytics and generic client-error endpoint
 - [x] Cloudflare D1 `TELEMETRY` database, schema, and preview binding
 - [x] Live event verification and production confirmation of transactional 90-day cleanup
-- [ ] Search-engine verification and sitemap submission
+- [x] Search-engine verification and sitemap submission
 - [ ] TikTok, Instagram, and YouTube handles reserved
 - [ ] Apple/Google store packaging decision after web retention proof
 
@@ -147,6 +147,8 @@ Database presence and binding do not by themselves enable customer-facing accoun
 Production telemetry was enabled in release `2.62.0` at commit `1273d9e` after its binding and privacy controls were verified. Two allowlisted `page_view` events returned `201 Created` from `https://foodmyway.app/api/events` and were visible in the production `food-my-way-telemetry` database. A disposable event dated January 1, 2025 was inserted before the second request; the following database query returned only the two current verification paths and no expired test path, proving the production transaction performed its 90-day cleanup. The production verifier then passed all 26 core checks.
 
 The production founding-interest lifecycle was verified after encrypted secret deployment `45c4c40`. A consented `example.com` QA submission returned `201 Created`; D1 showed `consent=1`, `status='active'`, and a 43-character opaque unsubscribe token. The signed GET rendered the confirmation form, the POST changed the record to `consent=0` and `status='unsubscribed'`, and a repeated POST returned the same successful unsubscribed response without another state transition. The disposable QA row was then removed and a zero-row query confirmed cleanup.
+
+Google Search Console domain ownership for `foodmyway.app` was verified through a DNS TXT record on September 27, 2026. Google accepted `https://foodmyway.app/sitemap.xml` with status **Success**, reported eight discovered pages, and added the canonical homepage to its priority crawl queue. The verification TXT record must remain in Cloudflare DNS.
 
 On September 26, 2026, release `2.47.0` passed the automated suite and a rendered in-app-browser smoke test against the local HTTP build:
 
