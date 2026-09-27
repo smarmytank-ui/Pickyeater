@@ -24,7 +24,9 @@ async function validChallenge(token,env){
 export async function onRequestGet({request,env}){
   if(!env.ACCOUNTS) return redirectHome(request,'unavailable');
   const token=new URL(request.url).searchParams.get('token') || '';
-  const valid=await validChallenge(token,env);
+  let valid;
+  try{ valid=await validChallenge(token,env); }
+  catch{ return redirectHome(request,'unavailable'); }
   return valid ? confirmationPage(token) : redirectHome(request,'invalid');
 }
 
@@ -33,10 +35,14 @@ export async function onRequestPost({request,env}){
   let token='';
   try{ token=String((await request.formData()).get('token') || ''); }
   catch{ return redirectHome(request,'invalid'); }
-  const valid=await validChallenge(token,env);
+  let valid;
+  try{ valid=await validChallenge(token,env); }
+  catch{ return redirectHome(request,'unavailable'); }
   if(!valid) return redirectHome(request,'invalid');
   const {challenge,now}=valid;
-  const user=await env.ACCOUNTS.prepare('SELECT id FROM users WHERE email=?1').bind(challenge.email).first();
+  let user;
+  try{ user=await env.ACCOUNTS.prepare('SELECT id FROM users WHERE email=?1').bind(challenge.email).first(); }
+  catch{ return redirectHome(request,'unavailable'); }
   const userId=user?.id || crypto.randomUUID();
   const sessionToken=randomToken();
   const sessionHash=await sha256Hex(sessionToken);
@@ -47,6 +53,6 @@ export async function onRequestPost({request,env}){
       env.ACCOUNTS.prepare('INSERT INTO sessions (id,user_id,challenge_id,token_hash,created_epoch,expires_epoch) VALUES (?1,?2,?3,?4,?5,?6)')
         .bind(crypto.randomUUID(),userId,challenge.id,sessionHash,now,now+(60*60*24*30))
     ]);
-  }catch{ return redirectHome(request,'invalid'); }
+  }catch{ return redirectHome(request,'unavailable'); }
   return redirectHome(request,'success',{'set-cookie':sessionCookie(sessionToken)});
 }

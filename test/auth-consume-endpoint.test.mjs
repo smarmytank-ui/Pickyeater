@@ -70,3 +70,21 @@ test('magic-link GET is scanner-safe and confirmed POST is single use',async()=>
   assert.equal(database.prepare('SELECT COUNT(*) AS count FROM sessions').get().count,1);
   database.close();
 });
+
+test('account storage outages preserve the link and redirect safely',async()=>{
+  const token=randomToken();
+  const unavailableAccounts={prepare(){ throw new Error('unavailable'); }};
+  const link=`https://foodmyway.app/api/auth/consume?token=${token}`;
+
+  const preview=await onRequestGet({request:new Request(link),env:{ACCOUNTS:unavailableAccounts}});
+  assert.equal(preview.status,302);
+  assert.match(preview.headers.get('location'),/login=unavailable/);
+  assert.equal(preview.headers.get('set-cookie'),null);
+
+  const confirmed=await onRequestPost({request:new Request('https://foodmyway.app/api/auth/consume',{
+    method:'POST',body:new URLSearchParams({token})
+  }),env:{ACCOUNTS:unavailableAccounts}});
+  assert.equal(confirmed.status,302);
+  assert.match(confirmed.headers.get('location'),/login=unavailable/);
+  assert.equal(confirmed.headers.get('set-cookie'),null);
+});
