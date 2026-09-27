@@ -15,12 +15,14 @@
 - [x] Weekly meal planner
 - [x] Consolidated grocery list
 - [ ] Real cloud accounts and synchronization
-- [ ] Account export and deletion
+- [x] Account export and atomic account deletion implementation
+- [x] Multi-session sign-out isolation and paid-record retention tests
 - [x] Passwordless account/session backend and bounded cloud-data API
 - [x] Scanner-resistant, explicit-confirmation magic-link consumption
 - [x] Feature-flagged account UI and conflict-safe explicit backup/restore
 - [x] Server-enforced founding entitlement for cloud backup writes
-- [ ] Account email delivery and end-to-end preview verification
+- [x] Corrupted-backup and account-service-outage safeguards
+- [ ] Account email delivery plus live backup, restore, export, and deletion verification
 
 ## Commercial
 
@@ -98,6 +100,8 @@ These steps require the owner because they involve legal identity, banking, taxe
 See `OWNER_LAUNCH_ACTIONS.md` for the minimal owner-only sequence and `LEGAL_LAUNCH_PACKET.md` for recommended approval-ready language.
 
 ## Latest local browser evidence
+
+Release `2.55.0` passes all 98 automated tests, including transaction-level account deletion, payment-record retention, multi-device sign-out isolation, corrupted-backup handling, and account-service-outage behavior. These checks prove the local implementation; the production Cloudflare bindings and live email flow still require the end-to-end verification listed above.
 
 On September 26, 2026, release `2.47.0` passed the automated suite and a rendered in-app-browser smoke test against the local HTTP build:
 
