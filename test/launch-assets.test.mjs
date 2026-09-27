@@ -40,6 +40,14 @@ test('manifest icons and offline shell assets exist',async()=>{
   }
 });
 
+test('service worker never caches account or API data',async()=>{
+  const worker=await read('service-worker.js');
+  assert.match(worker,/url\.pathname\.startsWith\('\/api\/'\)\) return/);
+  assert.match(worker,/no-store\|private/);
+  assert.match(worker,/networkFirst=url\.pathname\.endsWith\('\/config\.js'\)/);
+  assert.doesNotMatch(worker,/cache\.put\(event\.request, copy\)/);
+});
+
 test('homepage release assets match the service-worker cache version',async()=>{
   const [html,worker,pkg]=await Promise.all([read('index.html'),read('service-worker.js'),read('package.json')]);
   const { version }=JSON.parse(pkg);

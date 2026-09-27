@@ -1,9 +1,9 @@
-const CACHE_NAME = 'food-my-way-v2-39-0';
+const CACHE_NAME = 'food-my-way-v2-40-0';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=2.39.0',
-  './app.js?v=2.39.0',
+  './styles.css?v=2.40.0',
+  './app.js?v=2.40.0',
   './config.js',
   './site.webmanifest',
   './picky-mark.svg',
@@ -37,30 +37,41 @@ self.addEventListener('activate', event=>{
 });
 
 self.addEventListener('fetch', event=>{
-  if(event.request.method !== 'GET' || new URL(event.request.url).origin !== self.location.origin) return;
+  const url=new URL(event.request.url);
+  if(event.request.method !== 'GET' || url.origin !== self.location.origin) return;
+
+  // Account, purchase, telemetry, and cloud data must always go directly to the network.
+  if(url.pathname.startsWith('/api/')) return;
 
   if(event.request.mode === 'navigate'){
     event.respondWith(
       fetch(event.request)
-        .then(response=>{
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache=>cache.put(event.request, copy));
-          return response;
-        })
-        .catch(()=>caches.match(event.request).then(cached=>cached || caches.match('./index.html')))
+        .catch(()=>caches.match(event.request,{ignoreSearch:true}).then(cached=>cached || caches.match('./index.html')))
     );
+    return;
+  }
+
+  const networkFirst=url.pathname.endsWith('/config.js') || url.pathname.endsWith('/service-worker.js');
+  const canStore=response=>{
+    const policy=response.headers.get('cache-control') || '';
+    return response.ok && response.type!=='opaque' && !/\b(?:no-store|private)\b/i.test(policy);
+  };
+  const fetchAndStore=()=>fetch(event.request).then(response=>{
+    if(canStore(response)){
+      const copy=response.clone();
+      return caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy)).then(()=>response);
+    }
+    return response;
+  });
+
+  if(networkFirst){
+    event.respondWith(fetchAndStore().catch(()=>caches.match(event.request)));
     return;
   }
 
   event.respondWith(
     caches.match(event.request).then(cached=>{
-      const fresh = fetch(event.request).then(response=>{
-        if(response.ok){
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache=>cache.put(event.request, copy));
-        }
-        return response;
-      });
+      const fresh=fetchAndStore();
       return cached || fresh;
     })
   );
