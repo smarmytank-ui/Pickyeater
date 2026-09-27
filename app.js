@@ -379,7 +379,7 @@ function parseInputIngredient(raw){
   const preparation = /\b(?:pre[ -]?cooked|cooked|rotisserie|leftovers?)\b/i.test(text)
     ? 'cooked'
     : (/\bfrozen\b/i.test(text) ? 'frozen' : null);
-  const match = text.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)\s*(lb|lbs|pound|pounds|oz|ounce|ounces|cup|cups|tbsp|tablespoons?|tsp|teaspoons?|cloves?|pieces?|slices?|cans?|medium|large|small)\b/i);
+  const match = text.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)\s*(lb|lbs|pound|pounds|oz|ounce|ounces|cup|cups|tbsp|tablespoons?|tsp|teaspoons?|cloves?|pieces?|slices?|cans?|packages?|medium|large|small)\b/i);
   if(!match) return { name:canonName(text), quantity:null, unit:null, preparation };
   const numberText = match[1];
   let quantity;
@@ -396,6 +396,7 @@ function parseInputIngredient(raw){
     lbs:'lb', pound:'lb', pounds:'lb', ounce:'oz', ounces:'oz', cup:'cups',
     tablespoon:'tbsp', tablespoons:'tbsp', teaspoon:'tsp', teaspoons:'tsp',
     clove:'cloves', piece:'pieces', slice:'slices', can:'count', cans:'count',
+    package:'package', packages:'package',
     large:'count', small:'count'
   };
   return { name:canonName(text), quantity, unit:unitMap[rawUnit] || rawUnit, preparation };
@@ -1114,7 +1115,8 @@ function applySwap(ingId, opt, optsArg){
   // Role handling:
   // - Catalog swaps: role follows ingredient
   // - Jackpot swaps: role stays on slot (persist behavior)
-  ing.role = keepRole ? prevRole : roleFor(ing.name);
+  const detectedRole=roleFor(ing.name);
+  ing.role = keepRole && detectedRole==='other' ? prevRole : detectedRole;
   ing.intent = keepRole ? (prevIntent || intentForRole(ing.role)) : intentForRole(ing.role);
 
   // Quantity handling:
@@ -1138,7 +1140,11 @@ function applySwap(ingId, opt, optsArg){
   ing.swapMeta = { patchKey: opt.instrPatchKey || null };
 
   // Update steps + title
-  state.steps = buildInstructions(state.ingredients,getTasteProfile());
+  state.preferences=state.preferences || (()=>{
+    const profile=getTasteProfile();
+    return {texture:profile.texture,servingStyle:profile.servingStyle};
+  })();
+  state.steps = buildInstructions(state.ingredients,state.preferences);
   state.title = titleFrom(state.ingredients);
 
   computeMacrosPerServing();
@@ -1163,7 +1169,7 @@ function render(){
   if($('recipeDescription')) $('recipeDescription').textContent = details.description;
   if($('prepTime')) $('prepTime').textContent = `${details.prepMinutes} min prep`;
   if($('cookTime')) $('cookTime').textContent = `${details.cookMinutes} min cook`;
-  const profile=getTasteProfile();
+  const profile=sanitizeTasteProfile(state.preferences || getTasteProfile());
   const appliedPreferences=[];
   if(profile.texture==='crisp') appliedPreferences.push('Crisp texture');
   if(profile.texture==='soft') appliedPreferences.push('Soft texture');
@@ -1322,9 +1328,54 @@ function render(){
 // Recipe Book + portable share links (local-first)
 // -------------------------------
 const RECIPE_BOOK_KEY = 'pickyRecipesV2';
+const MAX_SHARED_RECIPE_CHARS = 24000;
+const SAVED_UNITS = new Set(['','serving','count','cups','tbsp','tsp','lb','oz','eggs','cloves','medium','pieces','slices','package']);
+const SAVED_ROLES = new Set(Object.keys(BASE_QTY));
 
 function safeClone(value){
   return JSON.parse(JSON.stringify(value));
+}
+
+function cleanPortableText(value,maxLength){
+  return String(value || '').replace(/[\u0000-\u001f\u007f]/g,' ').replace(/\s+/g,' ').trim().slice(0,maxLength);
+}
+
+function sanitizeSavedIngredients(value){
+  if(!Array.isArray(value)) return [];
+  const ingredients=[];
+  let activeCount=0;
+  const optionalSkips=new Set();
+  for(const item of value.slice(0,24)){
+    if(!item || typeof item!=='object') continue;
+    const name=canonName(cleanPortableText(item.name,MAX_INGREDIENT_NAME_LENGTH));
+    if(!name || (name!=='skip it' && !/[\p{L}\p{N}]/u.test(name))) continue;
+    const inferredRole=roleFor(name);
+    const role=name==='skip it'
+      ? (SAVED_ROLES.has(item.role) ? item.role : 'other')
+      : (inferredRole==='other' && SAVED_ROLES.has(item.role) ? item.role : inferredRole);
+    if(name==='skip it'){
+      if(!['fat','acid','seasoning','aromatic','dairy','bread'].includes(role) || optionalSkips.has(role)) continue;
+      optionalSkips.add(role);
+    }else{
+      if(activeCount>=MAX_RECIPE_INGREDIENTS) continue;
+      activeCount+=1;
+    }
+    const fallback={...(CANON_DEFAULT_BASE[name] || BASE_QTY[role] || BASE_QTY.other)};
+    const rawQuantity=Number(item.base?.v);
+    const quantity=Number.isFinite(rawQuantity) ? Math.min(50,Math.max(0,rawQuantity)) : fallback.v;
+    const rawUnit=cleanPortableText(item.base?.u,16);
+    const unit=SAVED_UNITS.has(rawUnit) ? rawUnit : fallback.u;
+    ingredients.push({
+      id:cleanPortableText(item.id,80) || uid(),
+      name,
+      role,
+      intent:intentForRole(role),
+      base:{v:quantity,u:unit},
+      preparation:['cooked','frozen'].includes(item.preparation) ? item.preparation : null,
+      swapMeta:null
+    });
+  }
+  return activeCount && ingredients.some(isActiveIngredient) ? ingredients : [];
 }
 
 function recipeMacros(recipeState = state, recipeServings = servings){
@@ -1350,6 +1401,7 @@ function recipeMacros(recipeState = state, recipeServings = servings){
 function snapshotCurrentRecipe(){
   if(!state) return null;
   const details = recipeDetails(state.ingredients);
+  const profile=sanitizeTasteProfile(state.preferences || getTasteProfile());
   return {
     id: uid(),
     version: 2,
@@ -1360,6 +1412,7 @@ function snapshotCurrentRecipe(){
     cookMinutes: details.cookMinutes,
     ingredients: safeClone(state.ingredients),
     steps: safeClone(state.steps),
+    preferences:{texture:profile.texture,servingStyle:profile.servingStyle},
     nutrition: recipeMacros(state, servings),
     favorite: true,
     savedAt: new Date().toISOString(),
@@ -1367,29 +1420,43 @@ function snapshotCurrentRecipe(){
   };
 }
 
-function normalizeSavedRecipe(recipe){
+function normalizeSavedRecipe(recipe,{untrusted=false}={}){
   if(!recipe || !Array.isArray(recipe.ingredients)) return null;
-  const recipeServings = Number(recipe.servings) || 2;
+  const ingredients=sanitizeSavedIngredients(recipe.ingredients);
+  if(!ingredients.length) return null;
+  const rawServings=Number(recipe.servings);
+  const recipeServings=Number.isFinite(rawServings) ? Math.min(8,Math.max(1,Math.round(rawServings))) : 2;
+  const importedSteps=Array.isArray(recipe.steps) ? recipe.steps.slice(0,30).map((step,index)=>({
+    key:cleanPortableText(step?.key,60) || `step-${index}`,
+    text:cleanPortableText(step?.text ?? step,300)
+  })).filter(step=>step.text) : [];
+  const sanitizedProfile=sanitizeTasteProfile({
+    texture:recipe.preferences?.texture,
+    servingStyle:recipe.preferences?.servingStyle
+  });
+  const preferences={texture:sanitizedProfile.texture,servingStyle:sanitizedProfile.servingStyle};
   const recipeState = {
-    title: recipe.title || titleFrom(recipe.ingredients),
-    ingredients: safeClone(recipe.ingredients),
-    steps: Array.isArray(recipe.steps) ? safeClone(recipe.steps) : buildInstructions(recipe.ingredients)
+    title: cleanPortableText(recipe.title,100) || titleFrom(ingredients),
+    ingredients,
+    steps: !untrusted && importedSteps.length ? importedSteps : buildInstructions(ingredients,preferences)
   };
   const details = recipeDetails(recipeState.ingredients);
+  const savedAt=cleanPortableText(recipe.savedAt,40) || new Date().toISOString();
   return {
-    id: recipe.id || uid(),
+    id:cleanPortableText(recipe.id,80) || uid(),
     version: 2,
     title: recipeState.title,
-    description: recipe.description || details.description,
+    description:cleanPortableText(recipe.description,240) || details.description,
     servings: recipeServings,
-    prepMinutes: Number(recipe.prepMinutes) || details.prepMinutes,
-    cookMinutes: Number(recipe.cookMinutes) || details.cookMinutes,
+    prepMinutes:details.prepMinutes,
+    cookMinutes:details.cookMinutes,
     ingredients: recipeState.ingredients,
     steps: recipeState.steps,
-    nutrition: recipe.nutrition || recipeMacros(recipeState, recipeServings),
+    preferences,
+    nutrition:recipeMacros(recipeState,recipeServings),
     favorite: recipe.favorite !== false,
-    savedAt: recipe.savedAt || new Date().toISOString(),
-    updatedAt: recipe.updatedAt || recipe.savedAt || new Date().toISOString()
+    savedAt,
+    updatedAt:cleanPortableText(recipe.updatedAt,40) || savedAt
   };
 }
 
@@ -1603,7 +1670,8 @@ function openSavedRecipe(recipe){
   state = {
     title: normalized.title,
     ingredients: safeClone(normalized.ingredients),
-    steps: safeClone(normalized.steps)
+    steps: safeClone(normalized.steps),
+    preferences:safeClone(normalized.preferences)
   };
   owned = true;
   $('recipeBookCard')?.classList.add('hidden');
@@ -1709,11 +1777,12 @@ function encodeSharedRecipe(recipe){
 
 function decodeSharedRecipe(value){
   try{
+    if(typeof value!=='string' || !value.length || value.length>MAX_SHARED_RECIPE_CHARS) return null;
     const base64 = value.replace(/-/g,'+').replace(/_/g,'/');
     const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
     const binary = atob(padded);
     const bytes = Uint8Array.from(binary, char=>char.charCodeAt(0));
-    return normalizeSavedRecipe(JSON.parse(new TextDecoder().decode(bytes)));
+    return normalizeSavedRecipe(JSON.parse(new TextDecoder().decode(bytes)),{untrusted:true});
   }catch(error){
     return null;
   }
@@ -1780,6 +1849,11 @@ function loadSharedRecipeFromUrl(){
   if(!match) return;
   const recipe = decodeSharedRecipe(match[1]);
   if(recipe) showSharedRecipe(recipe);
+  else{
+    showCreateView();
+    showToast('This shared recipe link is invalid or too large.');
+    track('shared_recipe_invalid');
+  }
 }
 
 // -------------------------------
@@ -2102,8 +2176,14 @@ function wireEvents(){
       if(!hasAcid) ingredients.push({ id: uid(), name:'skip it', role:'acid', intent:intentForRole('acid'), base:{ v:0, u:'' }, swapMeta:null });
       if(!hasSeasoning) ingredients.push({ id: uid(), name:'skip it', role:'seasoning', intent:intentForRole('seasoning'), base:{ v:0, u:'' }, swapMeta:null });
 
-      state = { ingredients, title: titleFrom(ingredients), steps: [] };
-      state.steps = buildInstructions(state.ingredients,getTasteProfile());
+      const profile=getTasteProfile();
+      state = {
+        ingredients,
+        title:titleFrom(ingredients),
+        steps:[],
+        preferences:{texture:profile.texture,servingStyle:profile.servingStyle}
+      };
+      state.steps = buildInstructions(state.ingredients,state.preferences);
 
       owned = false;
 
@@ -2314,7 +2394,8 @@ function wireEvents(){
     showToast('Preferences saved.');
     track('taste_profile_saved', { avoid_count:profile.avoids.length });
     if(state){
-      state.steps=buildInstructions(state.ingredients,profile);
+      state.preferences={texture:profile.texture,servingStyle:profile.servingStyle};
+      state.steps=buildInstructions(state.ingredients,state.preferences);
       render();
     }
   });
@@ -2420,6 +2501,8 @@ if(typeof module !== 'undefined' && module.exports){
     FREE_RECIPE_LIMIT,
     canSaveRecipe,
     encodeSharedRecipe,
-    decodeSharedRecipe
+    decodeSharedRecipe,
+    normalizeSavedRecipe,
+    MAX_SHARED_RECIPE_CHARS
   };
 }

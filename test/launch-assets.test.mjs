@@ -139,7 +139,8 @@ test('paid sensory preferences are visible and applied to recipe results',async(
   assert.match(html,/id="preferencePill" class="pill hidden"/);
   assert.match(script,/Soft texture/);
   assert.match(script,/Foods separate/);
-  assert.match(script,/state\.steps=buildInstructions\(state\.ingredients,profile\)/);
+  assert.match(script,/state\.preferences=\{texture:profile\.texture,servingStyle:profile\.servingStyle\}/);
+  assert.match(script,/state\.steps=buildInstructions\(state\.ingredients,state\.preferences\)/);
 });
 
 test('a successful recipe save exposes a useful conversion next step',async()=>{

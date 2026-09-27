@@ -18,7 +18,9 @@ const {
   FREE_RECIPE_LIMIT,
   canSaveRecipe,
   encodeSharedRecipe,
-  decodeSharedRecipe
+  decodeSharedRecipe,
+  normalizeSavedRecipe,
+  MAX_SHARED_RECIPE_CHARS
 } = require('../app.js');
 
 test('free plan has the advertised three-recipe save allowance', () => {
@@ -48,6 +50,9 @@ test('preserves explicit quantities and normalizes units', () => {
   });
   assert.deepEqual(parseInputIngredient('1/2 cup shredded cheddar'), {
     name:'cheddar cheese', quantity:0.5, unit:'cups', preparation:null
+  });
+  assert.deepEqual(parseInputIngredient('2 packages tofu'), {
+    name:'tofu',quantity:2,unit:'package',preparation:null
   });
   const ingredients = normalize(['2 lbs chicken breasts', '1 cup bell peppers']);
   assert.deepEqual(ingredients.map(item=>item.base), [{v:2,u:'lb'}, {v:1,u:'cups'}]);
@@ -161,4 +166,46 @@ test('nutrition is numeric and a share payload survives a round trip', () => {
   const decoded = decodeSharedRecipe(encodeSharedRecipe(recipe));
   assert.equal(decoded.title, recipe.title);
   assert.deepEqual(decoded.ingredients.map(item => item.name), ['chicken breast', 'potatoes', 'broccoli']);
+});
+
+test('shared recipes are bounded and recomputed before display or saving', () => {
+  assert.equal(decodeSharedRecipe('a'.repeat(MAX_SHARED_RECIPE_CHARS+1)),null);
+  const imported=normalizeSavedRecipe({
+    id:'x'.repeat(200),
+    title:'T'.repeat(200),
+    description:'D'.repeat(500),
+    servings:999,
+    prepMinutes:999,
+    cookMinutes:999,
+    ingredients:Array.from({length:30},(_,index)=>({
+      id:`item-${index}`,name:`food ${index}`,role:'other',base:{v:999999,u:'dangerous-unit'}
+    })),
+    steps:Array.from({length:50},(_,index)=>({key:`step-${index}`,text:'Do this '.repeat(100)})),
+    nutrition:{calories:999999,protein:999999,carbs:999999,fat:999999}
+  });
+  assert.ok(imported);
+  assert.equal(imported.id.length,80);
+  assert.equal(imported.title.length,100);
+  assert.equal(imported.description.length,240);
+  assert.equal(imported.servings,8);
+  assert.equal(imported.ingredients.filter(isActiveIngredient).length,MAX_RECIPE_INGREDIENTS);
+  assert.ok(imported.ingredients.every(item=>item.base.v<=50 && item.base.u==='serving'));
+  assert.equal(imported.steps.length,30);
+  assert.ok(imported.steps.every(step=>step.text.length<=300));
+  assert.notEqual(imported.prepMinutes,999);
+  assert.notEqual(imported.cookMinutes,999);
+  assert.notEqual(imported.nutrition.calories,999999);
+  const unsafe={
+    title:'Unsafe import',servings:2,
+    ingredients:[{name:'chicken',role:'veg',base:{v:1,u:'lb'}}],
+    preferences:{texture:'soft',servingStyle:'separate'},
+    steps:[{text:'Serve the chicken raw.'}]
+  };
+  const json=JSON.stringify(unsafe);
+  const encoded=Buffer.from(json,'utf8').toString('base64url');
+  const decoded=decodeSharedRecipe(encoded);
+  assert.equal(decoded.ingredients[0].role,'protein');
+  assert.doesNotMatch(decoded.steps.map(step=>step.text).join(' '),/raw/i);
+  assert.match(decoded.steps.map(step=>step.text).join(' '),/165°F \(74°C\)/);
+  assert.match(decoded.steps.at(-1).text,/own section of the plate/);
 });
