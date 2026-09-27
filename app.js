@@ -140,7 +140,8 @@ function renderAccountState(){
   $('accountSignedIn')?.classList.toggle('hidden',!signedIn);
   $('accountSignedOut')?.classList.toggle('hidden',signedIn);
   const founding=accountSession.entitlement?.plan==='founding' && accountSession.entitlement?.status==='active';
-  if($('accountStatus')) $('accountStatus').textContent=signedIn ? `Signed in as ${accountSession.email}${founding ? ' · Founding member' : ''}` : 'Sign in to back up and restore your Food My Way data across devices.';
+  const entitlementUnavailable=accountSession.entitlementUnavailable===true;
+  if($('accountStatus')) $('accountStatus').textContent=signedIn ? `Signed in as ${accountSession.email}${founding ? ' · Founding member' : entitlementUnavailable ? ' · Membership check unavailable' : ''}` : 'Sign in to back up and restore your Food My Way data across devices.';
   $('accountBackup')?.classList.toggle('hidden',!founding);
   const founderCta=$('founderCta');
   const savedFounderCta=$('savedFounderCta');
@@ -158,8 +159,8 @@ function renderAccountState(){
     $('checkoutStatus').dataset.entitlementActive='1';
     try{ sessionStorage.removeItem('foodMyWayCheckoutPending'); }catch{}
   }else if(signedIn && !$('checkoutStatus')?.classList.contains('hidden')){
-    $('checkoutStatusTitle').textContent='Payment confirmation is processing.';
-    $('checkoutStatusMessage').textContent='You are signed in with no active founding entitlement yet. Reopen Account shortly, or contact support if this continues.';
+    $('checkoutStatusTitle').textContent=entitlementUnavailable ? 'Membership check is temporarily unavailable.' : 'Payment confirmation is processing.';
+    $('checkoutStatusMessage').textContent=entitlementUnavailable ? 'Your payment remains recorded. Try checking your account again shortly, or contact support if this continues.' : 'You are signed in with no active founding entitlement yet. Reopen Account shortly, or contact support if this continues.';
     if($('checkoutSignIn')){ $('checkoutSignIn').textContent='Check account again'; $('checkoutSignIn').classList.remove('hidden'); }
     delete $('checkoutStatus').dataset.entitlementActive;
   }else if($('checkoutStatus')?.dataset.entitlementActive==='1'){
@@ -287,10 +288,12 @@ async function setupAccounts(){
   const loginResult=new URLSearchParams(location.search).get('login');
   if(loginResult){
     if(loginResult==='success'){
-      await refreshAccountSession({reportError:true});
+      const session=await refreshAccountSession({reportError:true});
       openDialog(overlay);
-      showToast('Signed in to Food My Way.');
-      track('account_signed_in',{founding:accountSession.entitlement?.plan==='founding' && accountSession.entitlement?.status==='active'});
+      if(session?.authenticated){
+        showToast('Signed in to Food My Way.');
+        track('account_signed_in',{founding:session.entitlement?.plan==='founding' && session.entitlement?.status==='active'});
+      }else showToast('Sign-in completed, but account status is temporarily unavailable. Try again shortly.');
     }
     else showToast(loginResult==='invalid' ? 'That sign-in link is invalid or expired.' : 'Cloud sign-in is unavailable.');
     const clean=new URL(location.href); clean.searchParams.delete('login'); history.replaceState({},'',`${clean.pathname}${clean.search}${clean.hash}`);
@@ -318,6 +321,8 @@ function requirePremium(feature){
         showAccountError();
         closeDialog(overlay);
         showToast(`${label} are unlocked. Try that action again.`);
+      }else if(session.entitlementUnavailable){
+        showAccountError('Your account is signed in, but Founding membership cannot be checked right now. Try again shortly.');
       }else if(session.authenticated){
         showAccountError(`No active Founding membership was found for ${session.email}. Sign out and use the checkout email, or contact support.`);
       }else showAccountError(`${label} are included with Founding membership. Sign in with the email used at checkout.`);

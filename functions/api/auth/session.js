@@ -7,12 +7,15 @@ export async function onRequestGet({request,env}){
   const account=await currentAccount(request,env.ACCOUNTS);
   if(!account) return json({authenticated:false,configured:true});
   let entitlement=null;
+  let entitlementUnavailable=false;
   if(env.PURCHASES){
-    const row=await env.PURCHASES.prepare("SELECT plan,status FROM entitlements WHERE email=?1 AND status='active' ORDER BY updated_at DESC LIMIT 1")
-      .bind(account.email).first();
-    if(row) entitlement={plan:row.plan,status:row.status};
+    try{
+      const row=await env.PURCHASES.prepare("SELECT plan,status FROM entitlements WHERE email=?1 AND status='active' ORDER BY updated_at DESC LIMIT 1")
+        .bind(account.email).first();
+      if(row) entitlement={plan:row.plan,status:row.status};
+    }catch{ entitlementUnavailable=true; }
   }
-  return json({authenticated:true,email:account.email,entitlement});
+  return json({authenticated:true,email:account.email,entitlement,entitlementUnavailable});
 }
 
 export async function onRequestPost({request,env}){

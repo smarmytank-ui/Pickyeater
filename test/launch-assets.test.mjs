@@ -318,6 +318,19 @@ test('account outages preserve the last known session and surface an error',asyn
   assert.match(script,/refreshAccountSession\(\{reportError:true\}\)\.then\(session=>\{\s*if\(!session\) return;/);
 });
 
+test('membership outages preserve account access and paid-customer recovery',async()=>{
+  const [script,sessionEndpoint]=await Promise.all([
+    readFile(path.join(root,'app.js'),'utf8'),
+    readFile(path.join(root,'functions/api/auth/session.js'),'utf8')
+  ]);
+  assert.match(sessionEndpoint,/catch\{ entitlementUnavailable=true; \}/);
+  assert.match(sessionEndpoint,/authenticated:true,email:account\.email,entitlement,entitlementUnavailable/);
+  assert.match(script,/Membership check is temporarily unavailable\./);
+  assert.match(script,/Your payment remains recorded\./);
+  assert.match(script,/else if\(session\.entitlementUnavailable\)/);
+  assert.match(script,/if\(session\?\.authenticated\)/);
+});
+
 test('privacy disclosures cover enabled processors, cloud controls, and retention',async()=>{
   const privacy=await read('privacy.html');
   for(const provider of ['Cloudflare','Resend','Stripe','Instacart']) assert.match(privacy,new RegExp(provider));

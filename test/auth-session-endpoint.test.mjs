@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { onRequestPost } from '../functions/api/auth/session.js';
+import { onRequestGet, onRequestPost } from '../functions/api/auth/session.js';
 import { sessionCookie, sha256Hex } from '../functions/_shared/account.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -54,6 +54,36 @@ test('sign out removes only the current device session',async()=>{
   assert.equal(accounts.prepare('SELECT COUNT(*) AS count FROM users').get().count,1);
   assert.equal(accounts.prepare('SELECT COUNT(*) AS count FROM login_challenges').get().count,2);
   assert.equal(accounts.prepare('SELECT COUNT(*) AS count FROM account_data').get().count,1);
+
+  accounts.close();
+});
+
+test('an entitlement outage keeps the customer signed in',async()=>{
+  const accounts=new DatabaseSync(':memory:');
+  accounts.exec('PRAGMA foreign_keys=ON');
+  accounts.exec(await readFile(path.join(root,'migrations/0004_cloud_accounts.sql'),'utf8'));
+  const now=Math.floor(Date.now()/1000);
+  const token='membership-outage-token';
+  accounts.prepare('INSERT INTO users (id,email,created_epoch) VALUES (?,?,?)').run('user_1','buyer@example.com',now);
+  accounts.prepare('INSERT INTO login_challenges (id,email,token_hash,created_epoch,expires_epoch,used_epoch) VALUES (?,?,?,?,?,?)')
+    .run('challenge_1','buyer@example.com','challenge_hash',now,now+900,now);
+  accounts.prepare('INSERT INTO sessions (id,user_id,challenge_id,token_hash,created_epoch,expires_epoch) VALUES (?,?,?,?,?,?)')
+    .run('session_1','user_1','challenge_1',await sha256Hex(token),now,now+3600);
+  const unavailablePurchases={prepare(){ throw new Error('database unavailable'); }};
+
+  const response=await onRequestGet({
+    request:new Request('https://foodmyway.app/api/auth/session',{headers:{cookie:sessionCookie(token)}}),
+    env:{ACCOUNTS:new D1(accounts),PURCHASES:unavailablePurchases}
+  });
+
+  assert.equal(response.status,200);
+  assert.deepEqual(await response.json(),{
+    authenticated:true,
+    email:'buyer@example.com',
+    entitlement:null,
+    entitlementUnavailable:true
+  });
+  assert.equal(accounts.prepare('SELECT COUNT(*) AS count FROM sessions').get().count,1);
 
   accounts.close();
 });
