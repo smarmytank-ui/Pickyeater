@@ -201,6 +201,16 @@ test('founding-list consent includes a secure unsubscribe path',async()=>{
   assert.match(pkg,/founding-unsubscribe\.js/);
 });
 
+test('privacy disclosures cover enabled processors, cloud controls, and retention',async()=>{
+  const privacy=await read('privacy.html');
+  for(const provider of ['Cloudflare','Resend','Stripe','Instacart']) assert.match(privacy,new RegExp(provider));
+  assert.match(privacy,/export your cloud snapshot or delete the account/i);
+  assert.match(privacy,/deleted after 90 days/i);
+  assert.match(privacy,/Login challenges expire after 15 minutes/i);
+  assert.doesNotMatch(privacy,/before their material data collection is enabled/i);
+  assert.doesNotMatch(privacy,/Once cloud accounts are introduced/i);
+});
+
 test('payment fulfillment preserves refunds delivered before checkout completion',async()=>{
   const [endpoint,migration,docs]=await Promise.all([
     readFile(path.join(root,'functions/api/stripe-webhook.js'),'utf8'),
