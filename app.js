@@ -21,6 +21,7 @@ let owned = false;
 const TASTE_PROFILE_KEY = 'foodMyWayTasteProfile';
 const WEEKLY_PLAN_KEY = 'foodMyWayWeeklyPlan';
 const GROCERY_CHECKS_KEY = 'foodMyWayGroceryChecks';
+let deferredInstallPrompt = null;
 
 function track(eventName, details = {}){
   const payload = { event:eventName, ...details };
@@ -50,6 +51,29 @@ function applyFoodIdea(text){
   input.dispatchEvent(new Event('input', { bubbles:true }));
   input.focus();
   if(filtered.length < original.length) showToast('Your “leave out” foods were removed.');
+}
+
+function betaDataSnapshot(){
+  const keys = [RECIPE_BOOK_KEY, WEEKLY_PLAN_KEY, GROCERY_CHECKS_KEY, TASTE_PROFILE_KEY, 'pickyDiaryMeals', 'pickyAuth', 'foodMyWayFounderInterest'];
+  return {
+    product:'Food My Way',
+    exportedAt:new Date().toISOString(),
+    version:2,
+    data:Object.fromEntries(keys.map(key=>[key,lsGet(key,null)]).filter(([,value])=>value!==null))
+  };
+}
+
+function exportBetaData(){
+  const blob = new Blob([JSON.stringify(betaDataSnapshot(), null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href=url;
+  anchor.download=`food-my-way-backup-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+  track('beta_data_exported');
 }
 
 // -------------------------------
@@ -1892,6 +1916,39 @@ function wireEvents(){
     showToast(profile.avoids.length ? `Saved ${profile.avoids.length} foods to leave out.` : 'Taste profile saved.');
     track('taste_profile_saved', { avoid_count:profile.avoids.length });
     if(state) render();
+  });
+  $('exportData')?.addEventListener('click', exportBetaData);
+  $('clearLocalData')?.addEventListener('click', ()=>{
+    if(!confirm('Delete all Food My Way recipes, plans, diary entries, and preferences stored in this browser? This cannot be undone.')) return;
+    [RECIPE_BOOK_KEY, WEEKLY_PLAN_KEY, GROCERY_CHECKS_KEY, TASTE_PROFILE_KEY, 'pickyDiaryMeals', 'pickyAuth', 'foodMyWayFounderInterest', 'pickyFavorites', 'picky_saved_recipes'].forEach(key=>localStorage.removeItem(key));
+    closeProfile();
+    state=null; servings=2; owned=false;
+    showCreateView();
+    showToast('Local Food My Way data deleted.');
+    track('local_data_deleted');
+  });
+
+  window.addEventListener('beforeinstallprompt', event=>{
+    event.preventDefault();
+    deferredInstallPrompt=event;
+    $('installApp')?.classList.remove('hidden');
+  });
+  $('installApp')?.addEventListener('click', async()=>{
+    if(deferredInstallPrompt){
+      deferredInstallPrompt.prompt();
+      const choice=await deferredInstallPrompt.userChoice;
+      track('install_prompt_result',{outcome:choice.outcome});
+      deferredInstallPrompt=null;
+      $('installApp')?.classList.add('hidden');
+      return;
+    }
+    showToast('On iPhone: Share → Add to Home Screen.');
+  });
+  window.addEventListener('appinstalled', ()=>{ $('installApp')?.classList.add('hidden'); track('app_installed'); });
+
+  document.addEventListener('keydown', event=>{
+    if(event.key!=='Escape') return;
+    closeFounder(); closeProfile(); hideAuthGate(); hideEmailCapture(); hideMealPicker();
   });
 
   if($('footerYear')) $('footerYear').textContent = String(new Date().getFullYear());

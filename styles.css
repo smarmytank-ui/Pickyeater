@@ -347,6 +347,7 @@ textarea:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 5px r
 .faq-section summary{cursor:pointer;font-weight:900}.faq-section details p{font-size:14px;color:var(--muted);margin-top:10px}
 .founder-modal{position:relative}.modal-close{position:absolute;right:14px;top:12px;border:0;background:transparent;font-size:27px;color:var(--muted);cursor:pointer}
 .preference-textarea{min-height:105px;resize:vertical}
+.data-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.data-actions .btn{font-size:12px;padding:10px}.btn.danger{color:#a13a32;border-color:rgba(161,58,50,.25)}
 .planned-meals{display:grid;gap:10px}.planned-meal{display:flex;align-items:center;justify-content:space-between;gap:14px;background:#f7faf8;border:1px solid var(--border);border-radius:14px;padding:13px}.planned-meal strong{display:block}.planned-meal span{font-size:12px;color:var(--muted)}
 .grocery-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.grocery-heading .section-title{margin:0}.grocery-list{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:12px}.grocery-item{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--border);border-radius:13px;padding:11px 12px;background:#fff;font-size:14px}.grocery-item input{margin-top:3px;accent-color:var(--accent)}.grocery-item.checked span{text-decoration:line-through;color:var(--muted)}
 .site-footer{max-width:760px;margin:18px auto 0;padding:30px 18px 40px;border-top:1px solid var(--border);color:var(--muted)}
@@ -358,6 +359,7 @@ textarea:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 5px r
   .pricing-grid{grid-template-columns:1fr}
   .marketing-section{margin:42px 0}
   .grocery-list{grid-template-columns:1fr}
+  .data-actions{grid-template-columns:1fr}
 }
 
 /* v1.9.6 — Truth Labels */
