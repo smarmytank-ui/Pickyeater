@@ -18,6 +18,7 @@ const $ = (id) => document.getElementById(id);
 let servings = 2;
 let state = null;
 let owned = false;
+let loadedRecipeId = null;
 let activeDialog = null;
 let dialogReturnFocus = null;
 const TASTE_PROFILE_KEY = 'foodMyWayTasteProfile';
@@ -1175,6 +1176,8 @@ function setOwned(){
   owned = true;
   const sr = $('saveRow');
   if(sr) sr.classList.remove('hidden');
+  if($('saveBtn')) $('saveBtn').textContent=loadedRecipeId ? 'Save changes' : '⭐ Save to Favorites';
+  $('savedNextStep')?.classList.add('hidden');
 }
 
 // -------------------------------
@@ -1722,13 +1725,16 @@ function saveRecipe(recipe, options = {}){
     requirePremium('unlimited_saves');
     return null;
   }
-  if(existingIndex >= 0) recipes[existingIndex] = { ...normalized, id: options.replaceId };
-  else recipes.unshift(normalized);
+  const persisted=existingIndex >= 0
+    ? { ...normalized, id:options.replaceId, favorite:recipes[existingIndex].favorite, savedAt:recipes[existingIndex].savedAt }
+    : normalized;
+  if(existingIndex >= 0) recipes[existingIndex] = persisted;
+  else recipes.unshift(persisted);
   if(!setRecipeBook(recipes)){
     showStorageFailure();
     return null;
   }
-  return normalized;
+  return persisted;
 }
 
 let toastTimer = null;
@@ -1773,12 +1779,14 @@ function openSavedRecipe(recipe){
     preferences:safeClone(normalized.preferences)
   };
   owned = true;
+  loadedRecipeId = normalized.id;
   $('recipeBookCard')?.classList.add('hidden');
   $('inputCard')?.classList.add('hidden');
   $('sharedRecipeCard')?.classList.add('hidden');
   $('resultCard')?.classList.remove('hidden');
   $('saveRow')?.classList.remove('hidden');
   $('savedNextStep')?.classList.add('hidden');
+  if($('saveBtn')) $('saveBtn').textContent='Save changes';
   render();
   track('saved_recipe_opened', { recipe_title:normalized.title });
   window.scrollTo({ top:0, behavior:'smooth' });
@@ -2350,6 +2358,7 @@ function wireEvents(){
       state.steps = buildInstructions(state.ingredients,state.preferences);
 
       owned = false;
+      loadedRecipeId = null;
 
       $('inputCard')?.classList.add('hidden');
       $('resultCard')?.classList.remove('hidden');
@@ -2369,6 +2378,7 @@ function wireEvents(){
     inc.dataset.wired='1';
     inc.addEventListener('click', ()=>{
       servings = Math.min(8, servings+1);
+      setOwned();
       render();
     });
   }
@@ -2377,6 +2387,7 @@ function wireEvents(){
     dec.dataset.wired='1';
     dec.addEventListener('click', ()=>{
       servings = Math.max(1, servings-1);
+      setOwned();
       render();
     });
   }
@@ -2385,11 +2396,13 @@ function wireEvents(){
     saveBtn.dataset.wired='1';
     saveBtn.addEventListener('click', ()=>{
       if(!state) return;
-      const saved=saveRecipe(snapshotCurrentRecipe());
+      const replacing=Boolean(loadedRecipeId);
+      const saved=saveRecipe(snapshotCurrentRecipe(),{replaceId:loadedRecipeId});
       if(!saved) return;
-      saveBtn.textContent = '✓ Saved';
+      loadedRecipeId=saved.id;
+      saveBtn.textContent = replacing ? '✓ Changes saved' : '✓ Saved';
       $('savedNextStep')?.classList.remove('hidden');
-      showToast('Saved to your Recipe Book.');
+      showToast(replacing ? 'Changes saved to your Recipe Book.' : 'Saved to your Recipe Book.');
       track('recipe_saved', { recipe_title:state.title });
     });
   }
@@ -2408,6 +2421,7 @@ function wireEvents(){
       servings = 2;
       state = null;
       owned = false;
+      loadedRecipeId = null;
       $('resultCard')?.classList.add('hidden');
       $('inputCard')?.classList.remove('hidden');
       $('saveRow')?.classList.add('hidden');
@@ -2558,6 +2572,7 @@ function wireEvents(){
     if(state){
       state.preferences={texture:profile.texture,servingStyle:profile.servingStyle};
       state.steps=buildInstructions(state.ingredients,state.preferences);
+      setOwned();
       render();
     }
   });
@@ -2566,7 +2581,7 @@ function wireEvents(){
     if(!confirm('Delete all Food My Way recipes, plans, diary entries, and preferences stored in this browser? This cannot be undone.')) return;
     [RECIPE_BOOK_KEY, WEEKLY_PLAN_KEY, GROCERY_CHECKS_KEY, TASTE_PROFILE_KEY, 'pickyDiaryMeals', 'pickyAuth', 'foodMyWayFounderInterest', 'pickyFavorites', 'picky_saved_recipes'].forEach(key=>localStorage.removeItem(key));
     closeProfile();
-    state=null; servings=2; owned=false;
+    state=null; servings=2; owned=false; loadedRecipeId=null;
     showCreateView();
     showToast('Local Food My Way data deleted.');
     track('local_data_deleted');

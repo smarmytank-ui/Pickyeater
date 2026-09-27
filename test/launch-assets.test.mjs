@@ -196,6 +196,17 @@ test('pricing copy matches the enforced free save allowance',async()=>{
   assert.doesNotMatch(plan,/Free: limited creations/);
 });
 
+test('editing a saved recipe replaces it without consuming another free slot',async()=>{
+  const script=await read('app.js');
+  assert.match(script,/let loadedRecipeId = null/);
+  assert.match(script,/loadedRecipeId = normalized\.id/);
+  assert.match(script,/saveRecipe\(snapshotCurrentRecipe\(\),\{replaceId:loadedRecipeId\}\)/);
+  assert.match(script,/favorite:recipes\[existingIndex\]\.favorite, savedAt:recipes\[existingIndex\]\.savedAt/);
+  assert.match(script,/replacing \? '✓ Changes saved' : '✓ Saved'/);
+  assert.match(script,/loadedRecipeId \? 'Save changes' : '⭐ Save to Favorites'/);
+  assert.match(script,/state\.steps=buildInstructions\(state\.ingredients,state\.preferences\);\s+setOwned\(\);/);
+});
+
 test('paid sensory preferences are visible and applied to recipe results',async()=>{
   const [html,script]=await Promise.all([read('index.html'),read('app.js')]);
   assert.match(html,/Texture and separate-plating preferences/);
