@@ -170,6 +170,7 @@ async function setupAccounts(){
       if(button){ button.disabled=true; button.textContent='Sending…'; }
       const result=await accountApi('./api/auth/request',{method:'POST',body:JSON.stringify({email})});
       if($('accountStatus')) $('accountStatus').textContent=result.message;
+      track('account_sign_in_requested');
     }catch(error){ showAccountError(error.message); }
     finally{ if(button){ button.disabled=false; button.textContent='Email me a sign-in link'; } }
   });
@@ -179,6 +180,7 @@ async function setupAccounts(){
       const cloud=await accountApi('./api/account/data');
       await accountApi('./api/account/data',{method:'PUT',body:JSON.stringify({data:betaDataSnapshot().data,baseRevision:cloud.revision})});
       showToast('This device is backed up to your cloud account.');
+      track('cloud_backup_completed',{founding:true});
     }catch(error){
       if(error.code==='SYNC_CONFLICT') showAccountError('Cloud data changed on another device. Restore it or try the backup again.');
       else if(error.code==='PREMIUM_REQUIRED') showAccountError('Cloud backup is included with Founding membership.');
@@ -218,7 +220,12 @@ async function setupAccounts(){
   await refreshAccountSession();
   const loginResult=new URLSearchParams(location.search).get('login');
   if(loginResult){
-    if(loginResult==='success'){ await refreshAccountSession(); overlay?.classList.remove('hidden'); showToast('Signed in to Food My Way.'); }
+    if(loginResult==='success'){
+      await refreshAccountSession();
+      overlay?.classList.remove('hidden');
+      showToast('Signed in to Food My Way.');
+      track('account_signed_in',{founding:accountSession.entitlement?.plan==='founding' && accountSession.entitlement?.status==='active'});
+    }
     else showToast(loginResult==='invalid' ? 'That sign-in link is invalid or expired.' : 'Cloud sign-in is unavailable.');
     const clean=new URL(location.href); clean.searchParams.delete('login'); history.replaceState({},'',`${clean.pathname}${clean.search}${clean.hash}`);
   }

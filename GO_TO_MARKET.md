@@ -106,7 +106,7 @@ The public paid launch does not open until all are true:
 - Stripe product, price, checkout, refunds, and tax settings verified;
 - real authentication and cloud deletion/export paths tested;
 - privacy policy and terms reviewed with correct operator identity;
-- analytics captures visit, generation, save, founding-interest, checkout, and purchase events;
+- privacy-minimized browser analytics captures visits, generation, saves, founding interest, checkout intent, and paid-member activation, while signed Stripe records remain the source of truth for purchases and refunds;
 - error monitoring is active;
 - mobile Safari, mobile Chrome, desktop Chrome, and desktop Edge pass the critical flow;
 - backup and rollback procedure is documented;

@@ -4,17 +4,18 @@ const ALLOWED_EVENTS=new Set([
   'recipe_saved','founder_checkout_started','founder_checkout_returned','founder_interest_opened',
   'founder_interest_saved','taste_profile_opened','taste_profile_saved','local_data_deleted',
   'install_prompt_result','app_installed','premium_gate_viewed','grocery_shop_started',
-  'grocery_shop_link_created','grocery_shop_failed'
+  'grocery_shop_link_created','grocery_shop_failed','account_sign_in_requested',
+  'account_signed_in','cloud_backup_completed'
 ]);
 
 const NUMBER_KEYS=new Set(['ingredient_count','saved_count','plan_size','avoid_count','price','item_count']);
-const BOOLEAN_KEYS=new Set(['planned','checked','synced']);
+const BOOLEAN_KEYS=new Set(['planned','checked','synced','founding']);
 const STRING_VALUES={
   currency:new Set(['USD']),
   outcome:new Set(['accepted','dismissed']),
   result:new Set(['success','cancel']),
   source:new Set(['runtime','promise']),
-  feature:new Set(['weekly_planning','household_profile'])
+  feature:new Set(['weekly_planning','household_profile','unlimited_saves'])
 };
 
 export function normalizeTelemetryEvent(input){

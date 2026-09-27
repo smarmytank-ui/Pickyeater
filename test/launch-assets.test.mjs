@@ -207,6 +207,21 @@ test('magic-link GET is read-only and explicit POST creates the session',async()
   assert.match(docs,/email-security scanners do not consume access/);
 });
 
+test('funnel measurement separates browser intent from authoritative purchases',async()=>{
+  const [telemetry,script,docs]=await Promise.all([
+    readFile(path.join(root,'functions/_shared/telemetry.mjs'),'utf8'),
+    readFile(path.join(root,'app.js'),'utf8'),
+    readFile(path.join(root,'TELEMETRY.md'),'utf8')
+  ]);
+  for(const event of ['account_sign_in_requested','account_signed_in','cloud_backup_completed']){
+    assert.match(telemetry,new RegExp(event));
+    assert.match(script,new RegExp(`track\\('${event}'`));
+  }
+  assert.match(telemetry,/unlimited_saves/);
+  assert.match(docs,/signed Stripe webhook records and `PURCHASES` database/);
+  assert.match(docs,/currently_active_sales_usd/);
+});
+
 test('customer-facing product chrome consistently uses Food My Way',async()=>{
   const [html,script,legacy]=await Promise.all([read('index.html'),read('app.js'),read('generator.html')]);
   assert.doesNotMatch(html,/Shared from Picky Eater|apple-mobile-web-app-title" content="Picky Eater"/);

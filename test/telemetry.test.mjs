@@ -23,6 +23,17 @@ test('allows only named premium-gate features',()=>{
   assert.deepEqual(event.details,{feature:'weekly_planning'});
   const filtered=normalizeTelemetryEvent({event:'premium_gate_viewed',sessionId:'12345678-1234-4123-8123-123456789abc',details:{feature:'secret_feature'}});
   assert.deepEqual(filtered.details,{});
+  const saves=normalizeTelemetryEvent({event:'premium_gate_viewed',sessionId:'12345678-1234-4123-8123-123456789abc',details:{feature:'unlimited_saves'}});
+  assert.deepEqual(saves.details,{feature:'unlimited_saves'});
+});
+
+test('measures paid activation without accepting identity or content',()=>{
+  const event=normalizeTelemetryEvent({
+    event:'account_signed_in',sessionId:'12345678-1234-4123-8123-123456789abc',
+    details:{founding:true,email:'buyer@example.com',recipe:'private dinner'}
+  });
+  assert.deepEqual(event.details,{founding:true});
+  assert.doesNotThrow(()=>normalizeTelemetryEvent({event:'cloud_backup_completed',sessionId:'12345678-1234-4123-8123-123456789abc'}));
 });
 
 test('keeps a bounded grocery item count without grocery content',()=>{

@@ -16,6 +16,8 @@ After the owner completes Stripe identity, banking, tax, refund, and business-pr
 6. Put the resulting `https://buy.stripe.com/...` URL in `config.js` as `founderCheckoutUrl`.
 7. Set Payment Link metadata `offer=food_my_way_founding`. The webhook intentionally ignores any checkout without this exact marker.
 
+Stripe documents that metadata on a Payment Link is copied to the Checkout Sessions it creates: https://docs.stripe.com/api/payment-link/object
+
 The app accepts only `buy.stripe.com` or `checkout.stripe.com` HTTPS URLs, preventing an accidental or malicious arbitrary checkout redirect.
 
 ## Payment fulfillment
