@@ -25,7 +25,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="manifest" href="./site.webmanifest">
-  <link rel="stylesheet" href="./styles.css?v=2.44.0" />
+  <link rel="stylesheet" href="./styles.css?v=2.45.0" />
 </head>
 <body>
 <div class="page">
@@ -331,11 +331,13 @@
     <div class="eyebrow">Founding member list</div>
     <div id="founderTitle" class="modal-title">Be first in when checkout opens.</div>
     <div class="modal-sub">Founding access will be $29 once for the first 250 paid members, not another monthly bill. Join the email list and we’ll tell you when secure checkout opens.</div>
-    <label class="modal-label" for="founderEmail">Email</label>
-    <input id="founderEmail" class="field" type="email" autocomplete="email" placeholder="you@example.com" />
-    <label class="consent-row"><input id="founderConsent" type="checkbox" /> <span>Email me about founding access and major Food My Way updates. I can unsubscribe anytime.</span></label>
-    <div id="founderError" class="input-error hidden" role="alert">Enter a valid email address.</div>
-    <button id="founderSave" class="btn primary full" type="button">Save my spot</button>
+    <form id="founderForm" novalidate>
+      <label class="modal-label" for="founderEmail">Email</label>
+      <input id="founderEmail" class="field" type="email" autocomplete="email" placeholder="you@example.com" />
+      <label class="consent-row"><input id="founderConsent" type="checkbox" /> <span>Email me about founding access and major Food My Way updates. I can unsubscribe anytime.</span></label>
+      <div id="founderError" class="input-error hidden" role="alert">Enter a valid email address.</div>
+      <button id="founderSave" class="btn primary full" type="submit">Save my spot</button>
+    </form>
     <div class="price-fineprint">No spam. No payment collected yet.</div>
   </div>
 </div>
@@ -373,12 +375,12 @@
     <div class="eyebrow">Cloud account</div>
     <div id="accountTitle" class="modal-title">Your Food My Way account</div>
     <div id="accountStatus" class="modal-sub" role="status">Checking account…</div>
-    <div id="accountSignedOut" class="hidden">
+    <form id="accountSignedOut" class="hidden" novalidate>
       <label class="modal-label" for="accountEmail">Email</label>
       <input id="accountEmail" class="field" type="email" autocomplete="email" placeholder="you@example.com" />
-      <button id="accountRequestLink" class="btn primary full" type="button">Email me a sign-in link</button>
+      <button id="accountRequestLink" class="btn primary full" type="submit">Email me a sign-in link</button>
       <div class="price-fineprint">No password. The secure link expires in 15 minutes.</div>
-    </div>
+    </form>
     <div id="accountSignedIn" class="hidden">
       <div class="account-actions">
         <button id="accountBackup" class="btn primary full" type="button">Back up this device</button>
@@ -417,6 +419,6 @@
 </script>
 
 <script src="./config.js"></script>
-<script src="./app.js?v=2.44.0"></script>
+<script src="./app.js?v=2.45.0"></script>
 </body>
 </html>

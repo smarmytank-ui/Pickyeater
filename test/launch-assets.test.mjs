@@ -230,6 +230,16 @@ test('locally saved founding consent is retried after a temporary outage',async(
   assert.match(script,/syncPendingFounderInterest\(\);/);
 });
 
+test('conversion email flows use submit-capable forms',async()=>{
+  const [html,script]=await Promise.all([read('index.html'),read('app.js')]);
+  assert.match(html,/<form id="founderForm" novalidate>/);
+  assert.match(html,/id="founderSave"[^>]*type="submit"/);
+  assert.match(html,/<form id="accountSignedOut" class="hidden" novalidate>/);
+  assert.match(html,/id="accountRequestLink"[^>]*type="submit"/);
+  assert.match(script,/\$\('founderForm'\)\?\.addEventListener\('submit'/);
+  assert.match(script,/\$\('accountSignedOut'\)\?\.addEventListener\('submit'/);
+});
+
 test('privacy disclosures cover enabled processors, cloud controls, and retention',async()=>{
   const privacy=await read('privacy.html');
   for(const provider of ['Cloudflare','Resend','Stripe','Instacart']) assert.match(privacy,new RegExp(provider));

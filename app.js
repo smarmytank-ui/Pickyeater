@@ -207,7 +207,8 @@ async function setupAccounts(){
   });
   $('accountClose')?.addEventListener('click',close);
   overlay?.addEventListener('click',event=>{ if(event.target===overlay) close(); });
-  $('accountRequestLink')?.addEventListener('click',async()=>{
+  $('accountSignedOut')?.addEventListener('submit',async event=>{
+    event.preventDefault();
     showAccountError();
     const email=$('accountEmail')?.value.trim() || '';
     const button=$('accountRequestLink');
@@ -2446,7 +2447,8 @@ function wireEvents(){
   $('savedOpenBook')?.addEventListener('click', showRecipeBookView);
   $('founderClose')?.addEventListener('click', closeFounder);
   founderOverlay?.addEventListener('click', event=>{ if(event.target===founderOverlay) closeFounder(); });
-  $('founderSave')?.addEventListener('click', async()=>{
+  $('founderForm')?.addEventListener('submit', async event=>{
+    event.preventDefault();
     const email = founderEmail?.value.trim() || '';
     const consent = Boolean($('founderConsent')?.checked);
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !consent){
