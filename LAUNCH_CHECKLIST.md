@@ -47,7 +47,7 @@
 - [x] Cloudflare D1 `PURCHASES` database, schema, and preview binding
 - [x] Production webhook secret and live signed fulfillment verification
 - [x] End-to-end founding purchase, login, and premium-access verification
-- [ ] Full-refund webhook and automatic entitlement-revocation verification
+- [x] Full-refund webhook and automatic entitlement-revocation verification
 
 ## Trust and operations
 
@@ -99,10 +99,9 @@
 
 These remaining steps require the owner because they involve a financial transaction, banking/tax information, or public representation:
 
-1. Give action-time approval for the controlled full refund of the verified $29 purchase.
-2. Complete Stripe payout-bank and any remaining payout-tax details.
-3. Approve every public testimonial and creator partnership before publication.
-4. Obtain professional legal review if desired before scaling paid promotion.
+1. Complete Stripe payout-bank and any remaining payout-tax details.
+2. Approve every public testimonial and creator partnership before publication.
+3. Obtain professional legal review if desired before scaling paid promotion.
 
 See `OWNER_LAUNCH_ACTIONS.md` for the minimal owner-only sequence and `LEGAL_LAUNCH_PACKET.md` for recommended approval-ready language.
 
@@ -110,7 +109,7 @@ See `OWNER_LAUNCH_ACTIONS.md` for the minimal owner-only sequence and `LEGAL_LAU
 
 Release `2.64.0` passes all 114 automated tests plus direct syntax checks across the browser application, service worker, and every Cloudflare Function. Coverage includes transaction-level account deletion, payment-record retention, multi-device sign-out isolation, corrupted-backup handling, account and entitlement outages, cross-tab checkout recovery, tax-tolerant one-time Founding pricing, grocery handoff authorization, legacy-route cleanup, canonical SEO signals, and the privacy-minimized telemetry contract. These checks prove the local implementation; the live full-refund revocation flow still requires the action-time owner approval listed above.
 
-On September 27, 2026, the first live USD $29 Founding purchase completed through Stripe with the approved Terms accepted and the exact `food_my_way_founding` offer metadata. The initial signed webhook attempts correctly failed closed because Cloudflare held an obsolete destination secret. After the production secret was replaced and release `2.64.0` was deployed at commit `d96a099`, a manual resend returned `200 OK` and Stripe marked the event recovered. A fresh passwordless login using the checkout email then showed `Founding access is active`, the disabled `Founding member ✓` state, and all premium account controls on `foodmyway.app`. The core production verifier passes all 26 checks and the paid-launch verifier passes 42 of 43; `premiumEnforced` remains intentionally false until an owner-approved full refund proves automatic entitlement revocation. Stripe separately requests a payout bank account before collected revenue can be transferred to the owner.
+On September 27, 2026, the first live USD $29 Founding purchase completed through Stripe with the approved Terms accepted and the exact `food_my_way_founding` offer metadata. The initial signed webhook attempts correctly failed closed because Cloudflare held an obsolete destination secret. After the production secret was replaced and release `2.64.0` was deployed at commit `d96a099`, a manual resend returned `200 OK` and Stripe marked the event recovered. A fresh passwordless login using the checkout email then showed `Founding access is active`, the disabled `Founding member ✓` state, and all premium account controls on `foodmyway.app`. The owner then authorized a full refund; Stripe showed the payment as refunded, and a fresh account check kept the user signed in while removing Founding status, cloud backup, and the paid CTA lock. Release `2.65.0` enabled production premium enforcement at commit `02982d2`. All 114 automated tests pass, the core production verifier passes all 26 checks, and the strict paid-launch verifier passes all 43 checks. Stripe separately requests a payout bank account before collected revenue can be transferred to the owner.
 
 On September 27, 2026, the protected Cloudflare preview was revalidated before the pending source push:
 

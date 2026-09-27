@@ -28,6 +28,7 @@ No additional domain action is currently required from the owner.
 - [x] Production webhook created for completed payments, delayed-payment success, and full refunds; its signing secret is stored as an encrypted Cloudflare production secret.
 - [x] Checkout requires acceptance of the published Food My Way Terms of Service and links both the Terms and Privacy pages.
 - [x] First live USD $29 purchase, signed webhook fulfillment, passwordless login, and founding entitlement verified on September 27, 2026.
+- [x] Owner-authorized full refund completed; the signed refund path automatically revoked founding access while preserving the account session.
 - [ ] Add and verify the owner's payout bank account in Stripe so collected revenue can be transferred out.
 
 ## 4. Transactional email
@@ -49,4 +50,4 @@ You do **not** need to create D1 databases, bindings, API secrets, DNS records, 
 
 On September 27, 2026, the approved legal pages were published, Resend domain authentication and live delivery passed, and the scanner-safe passwordless login completed successfully on `foodmyway.app`. Customer accounts are enabled in production. The live founding checkout is active at USD $29, limited to 250 completed payments, requires acceptance of the published Terms, and links the published Terms and Privacy pages.
 
-No remaining owner-only domain, legal-copy, or transactional-email input blocks technical verification. The controlled Stripe payment, entitlement lookup, and account-recovery path have passed. Premium enforcement stays disabled until the owner gives action-time approval for the controlled $29 full refund and automatic entitlement revocation is verified. Stripe payout-bank setup is also owner-only because it requires the owner's banking and tax information.
+No remaining owner-only domain, legal-copy, transactional-email, payment-fulfillment, or refund-revocation input blocks technical verification. Premium enforcement is live and the strict paid-launch verifier passes all 43 checks. Stripe payout-bank setup remains owner-only because it requires the owner's banking and tax information.

@@ -19,7 +19,7 @@ This positioning avoids competing as a generic recipe generator. The wedge is re
 - Founding Member: **$29 one time**, limited to the first 250 customers
 - Free: unlimited recipe creation and ingredient swaps, with up to three saved recipes
 - The live checkout, signed fulfillment webhook, passwordless account recovery, and Founding entitlement have passed a real-payment test.
-- Public promotion waits only for the controlled refund-revocation test and production premium enforcement.
+- The controlled refund-revocation test passed, production premium enforcement is live, and the strict paid-launch verifier passes all 43 checks.
 
 ### Planned recurring release after retention proof
 
@@ -68,7 +68,7 @@ This is achievable only through retention, not one viral post. The operating tar
 - Interview anyone who stops after one recipe.
 - Collect permission before using any quote, name, image, or video publicly.
 - Secure checkout, signed fulfillment, login, and paid entitlement are live and verified with a controlled purchase.
-- Complete the owner-approved refund-revocation test before enforcing premium access for public traffic.
+- The owner-approved refund-revocation test passed before premium enforcement was enabled.
 
 ### Phase 2 — paid founding launch
 
@@ -119,7 +119,7 @@ The public paid launch does not open until all are true:
 - backup and rollback procedure is documented;
 - at least 15 private testers complete the core flow without live assistance.
 
-Current technical status: production passes all 26 core checks and 42 of 43 paid-launch checks. The remaining technical gate is `premiumEnforced`; turn it on only after the controlled full refund has revoked the verified founding entitlement. Owner-only operational work is limited to authorizing that refund test and completing Stripe payout-bank/tax details. Professional legal review and public testimonial/creator approvals remain prudent business decisions, not software blockers.
+Current technical status: production passes all 26 core checks and all 43 paid-launch checks. The controlled full refund revoked the verified founding entitlement, and `premiumEnforced` is live. The remaining owner-only operational work is completing Stripe payout-bank/tax details. Professional legal review and public testimonial/creator approvals remain prudent business decisions, not software blockers.
 
 ## Search distribution status
 
