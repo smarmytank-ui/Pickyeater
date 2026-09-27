@@ -10,10 +10,10 @@
 - [x] Recipe sharing
 - [x] Local food diary
 - [x] Responsive installable web app
-- [ ] Household taste profiles
-- [ ] “Never suggest” preferences
-- [ ] Weekly meal planner
-- [ ] Consolidated grocery list
+- [x] Local household taste profile
+- [x] “Never suggest” preferences
+- [x] Weekly meal planner
+- [x] Consolidated grocery list
 - [ ] Real cloud accounts and synchronization
 - [ ] Account export and deletion
 

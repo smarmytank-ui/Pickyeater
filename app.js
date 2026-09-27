@@ -19,6 +19,8 @@ let servings = 2;
 let state = null;
 let owned = false;
 const TASTE_PROFILE_KEY = 'foodMyWayTasteProfile';
+const WEEKLY_PLAN_KEY = 'foodMyWayWeeklyPlan';
+const GROCERY_CHECKS_KEY = 'foodMyWayGroceryChecks';
 
 function track(eventName, details = {}){
   const payload = { event:eventName, ...details };
@@ -1083,6 +1085,103 @@ function setRecipeBook(recipes){
   lsSet(RECIPE_BOOK_KEY, recipes);
 }
 
+function getWeeklyPlan(){
+  const value = lsGet(WEEKLY_PLAN_KEY, []);
+  return Array.isArray(value) ? value : [];
+}
+
+function toggleWeeklyPlan(recipeId){
+  const plan = getWeeklyPlan();
+  const next = plan.includes(recipeId) ? plan.filter(id=>id!==recipeId) : [...plan, recipeId];
+  lsSet(WEEKLY_PLAN_KEY, next);
+  track('weekly_plan_toggled', { planned:next.includes(recipeId), plan_size:next.length });
+  return next;
+}
+
+function groceryQuantity(value, unit){
+  const quantity = formatQty(value) || String(Number(value.toFixed(2)));
+  if(unit==='count' || !unit) return quantity;
+  return `${quantity} ${unit}`;
+}
+
+function renderPlanner(){
+  const recipeMap = new Map(getRecipeBook().map(recipe=>[recipe.id, recipe]));
+  const recipes = getWeeklyPlan().map(id=>recipeMap.get(id)).filter(Boolean);
+  const mealsHost = $('plannedMeals');
+  const groceriesHost = $('groceryList');
+  if(!mealsHost || !groceriesHost) return;
+  mealsHost.replaceChildren();
+  groceriesHost.replaceChildren();
+
+  if(!recipes.length){
+    const empty = document.createElement('div');
+    empty.className='empty-state';
+    empty.textContent='No meals planned yet. Add saved recipes from your Recipe Book.';
+    mealsHost.appendChild(empty);
+    const groceryEmpty = empty.cloneNode(true);
+    groceryEmpty.textContent='Your grocery list will appear when you plan a meal.';
+    groceriesHost.appendChild(groceryEmpty);
+    return;
+  }
+
+  recipes.forEach(recipe=>{
+    const row=document.createElement('div');
+    row.className='planned-meal';
+    const copy=document.createElement('div');
+    const title=document.createElement('strong');
+    title.textContent=recipe.title;
+    const meta=document.createElement('span');
+    meta.textContent=`Serves ${recipe.servings} • ${recipe.ingredients.filter(item=>item.name!=='skip it').length} ingredients`;
+    copy.append(title,meta);
+    const remove=document.createElement('button');
+    remove.type='button'; remove.className='btn ghost small'; remove.textContent='Remove';
+    remove.onclick=()=>{ toggleWeeklyPlan(recipe.id); renderPlanner(); };
+    row.append(copy,remove);
+    mealsHost.appendChild(row);
+  });
+
+  const combined = new Map();
+  recipes.forEach(recipe=>recipe.ingredients
+    .filter(item=>item.name!=='skip it' && Number(item.base?.v)>0)
+    .forEach(item=>{
+      const unit=item.base?.u || '';
+      const key=`${canonName(item.name)}|${unit}`;
+      const amount=Number(item.base.v)*(Number(recipe.servings)||2)/2;
+      const current=combined.get(key) || { name:canonName(item.name), unit, amount:0 };
+      current.amount += amount;
+      combined.set(key,current);
+    }));
+  const checks=lsGet(GROCERY_CHECKS_KEY, {});
+  [...combined.entries()].sort((a,b)=>a[1].name.localeCompare(b[1].name)).forEach(([key,item])=>{
+    const label=document.createElement('label');
+    label.className=`grocery-item${checks[key]?' checked':''}`;
+    const checkbox=document.createElement('input');
+    checkbox.type='checkbox'; checkbox.checked=Boolean(checks[key]);
+    const text=document.createElement('span');
+    text.textContent=`${groceryQuantity(item.amount,item.unit)} ${pretty(item.name)}`;
+    checkbox.onchange=()=>{
+      const updated=lsGet(GROCERY_CHECKS_KEY,{});
+      updated[key]=checkbox.checked;
+      lsSet(GROCERY_CHECKS_KEY,updated);
+      label.classList.toggle('checked',checkbox.checked);
+      track('grocery_item_checked',{checked:checkbox.checked});
+    };
+    label.append(checkbox,text);
+    groceriesHost.appendChild(label);
+  });
+}
+
+function openPlanner(){
+  $('inputCard')?.classList.add('hidden');
+  $('resultCard')?.classList.add('hidden');
+  $('recipeBookCard')?.classList.add('hidden');
+  $('diaryCard')?.classList.add('hidden');
+  $('plannerCard')?.classList.remove('hidden');
+  renderPlanner();
+  $('plannerCard')?.scrollIntoView({behavior:'smooth',block:'start'});
+  track('weekly_planner_opened',{plan_size:getWeeklyPlan().length});
+}
+
 function saveRecipe(recipe, options = {}){
   const normalized = normalizeSavedRecipe(recipe);
   if(!normalized) return null;
@@ -1117,6 +1216,7 @@ function showCreateView(){
   $('recipeBookCard')?.classList.add('hidden');
   $('diaryCard')?.classList.add('hidden');
   $('sharedRecipeCard')?.classList.add('hidden');
+  $('plannerCard')?.classList.add('hidden');
   if(state) $('resultCard')?.classList.remove('hidden');
   else $('inputCard')?.classList.remove('hidden');
 }
@@ -1192,8 +1292,10 @@ function renderRecipeBook(query = ''){
 
     const actions = document.createElement('div');
     actions.className = 'recipe-card-actions';
+    const isPlanned = getWeeklyPlan().includes(recipe.id);
     const buttons = [
       ['Open', ()=>openSavedRecipe(recipe), 'primary'],
+      [isPlanned ? '✓ In weekly plan' : 'Add to week', ()=>{ toggleWeeklyPlan(recipe.id); renderRecipeBook($('recipeSearch')?.value || ''); }, isPlanned ? 'primary' : ''],
       ['Share', ()=>shareRecipe(recipe), ''],
       ['Duplicate', ()=>{ const duplicate={...safeClone(recipe), id:uid(), title:`${recipe.title} Copy`, savedAt:new Date().toISOString()}; saveRecipe(duplicate); renderRecipeBook(); }, ''],
       ['Delete', ()=>{ if(confirm(`Delete “${recipe.title}”?`)){ setRecipeBook(getRecipeBook().filter(item=>item.id!==recipe.id)); renderRecipeBook($('recipeSearch')?.value || ''); } }, 'ghost']
@@ -1212,6 +1314,7 @@ function openRecipeBook(){
   $('inputCard')?.classList.add('hidden');
   $('resultCard')?.classList.add('hidden');
   $('sharedRecipeCard')?.classList.add('hidden');
+  $('plannerCard')?.classList.add('hidden');
   $('recipeBookCard')?.classList.remove('hidden');
   $('diaryCard')?.classList.add('hidden');
   renderRecipeBook($('recipeSearch')?.value || '');
@@ -1476,6 +1579,7 @@ function openDiary(){
   $('resultCard')?.classList.add('hidden');
   $('recipeBookCard')?.classList.add('hidden');
   $('sharedRecipeCard')?.classList.add('hidden');
+  $('plannerCard')?.classList.add('hidden');
   if(card) card.classList.remove('hidden');
   updateDiarySub();
   renderDiary();
@@ -1682,6 +1786,16 @@ function wireEvents(){
     showCreateView();
   });
   document.getElementById('recipeSearch')?.addEventListener('input', e=>renderRecipeBook(e.target.value));
+  $('openPlanner')?.addEventListener('click', openPlanner);
+  $('closePlanner')?.addEventListener('click', ()=>{
+    $('plannerCard')?.classList.add('hidden');
+    openRecipeBook();
+  });
+  $('clearGroceryChecks')?.addEventListener('click', ()=>{
+    lsSet(GROCERY_CHECKS_KEY,{});
+    renderPlanner();
+    showToast('Grocery checks cleared.');
+  });
   document.getElementById('viewToday')?.addEventListener('click', ()=>setDiaryDay(0));
   document.getElementById('viewYesterday')?.addEventListener('click', ()=>setDiaryDay(-1));
   document.getElementById('qaAdd')?.addEventListener('click', quickAddDiaryEntry);

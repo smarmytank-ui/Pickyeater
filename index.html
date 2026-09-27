@@ -156,7 +156,21 @@
   </div>
   <label class="search-label" for="recipeSearch">Search saved recipes</label>
   <input id="recipeSearch" class="field" type="search" placeholder="Search by recipe or ingredient" />
+  <button id="openPlanner" class="btn full" type="button">View weekly plan & grocery list</button>
   <div id="recipeBookList" class="recipe-grid"></div>
+</section>
+
+<section id="plannerCard" class="card hidden" aria-live="polite">
+  <div class="library-head">
+    <div><div class="eyebrow">This week</div><div class="diary-title">Meal plan & grocery list</div><div class="diary-hint">Add saved recipes from your Recipe Book. Check items off while you shop.</div></div>
+    <button id="closePlanner" class="btn ghost" type="button">Close</button>
+  </div>
+  <div class="divider"></div>
+  <div class="section-title">Planned meals</div>
+  <div id="plannedMeals" class="planned-meals"></div>
+  <div class="divider"></div>
+  <div class="grocery-heading"><div class="section-title">Grocery list</div><button id="clearGroceryChecks" class="btn ghost small" type="button">Clear checks</button></div>
+  <div id="groceryList" class="grocery-list"></div>
 </section>
 
 <!-- Shared recipe viewer -->
