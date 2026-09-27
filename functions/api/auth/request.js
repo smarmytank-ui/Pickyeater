@@ -37,13 +37,19 @@ export async function onRequestPost({request,env}){
     return json({error:'Cloud account origin is invalid.'},503);
   }
   link.searchParams.set('token',token);
-  const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{
-    authorization:`Bearer ${env.RESEND_API_KEY}`,'content-type':'application/json'
-  },body:JSON.stringify({
-    from:env.AUTH_FROM_EMAIL,to:[email],subject:'Sign in to Food My Way',
-    text:`Use this secure link to sign in to Food My Way. It expires in 15 minutes and can be used once:\n\n${link.href}\n\nIf you did not request this, you can ignore this email.`,
-    html:`<p>Use this secure link to sign in to Food My Way. It expires in 15 minutes and can be used once.</p><p><a href="${link.href}">Sign in to Food My Way</a></p><p>If you did not request this, you can ignore this email.</p>`
-  })});
+  let response;
+  try{
+    response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{
+      authorization:`Bearer ${env.RESEND_API_KEY}`,'content-type':'application/json'
+    },body:JSON.stringify({
+      from:env.AUTH_FROM_EMAIL,to:[email],subject:'Sign in to Food My Way',
+      text:`Use this secure link to sign in to Food My Way. It expires in 15 minutes and can be used once:\n\n${link.href}\n\nIf you did not request this, you can ignore this email.`,
+      html:`<p>Use this secure link to sign in to Food My Way. It expires in 15 minutes and can be used once.</p><p><a href="${link.href}">Sign in to Food My Way</a></p><p>If you did not request this, you can ignore this email.</p>`
+    }),signal:AbortSignal.timeout(12000)});
+  }catch{
+    await env.ACCOUNTS.prepare('DELETE FROM login_challenges WHERE id=?1').bind(id).run().catch(()=>{});
+    return json({error:'Sign-in email could not be sent.'},503);
+  }
   if(!response.ok){
     await env.ACCOUNTS.prepare('DELETE FROM login_challenges WHERE id=?1').bind(id).run().catch(()=>{});
     return json({error:'Sign-in email could not be sent.'},503);

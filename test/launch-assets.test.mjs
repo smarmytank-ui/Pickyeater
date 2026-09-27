@@ -250,6 +250,18 @@ test('conversion email flows use submit-capable forms',async()=>{
   assert.match(script,/\$\('accountSignedOut'\)\?\.addEventListener\('submit'/);
 });
 
+test('customer-facing network actions have bounded wait times',async()=>{
+  const [script,authRequest,shop]=await Promise.all([
+    read('app.js'),read('functions/api/auth/request.js'),read('functions/api/shop.js')
+  ]);
+  assert.match(script,/async function fetchWithTimeout\(resource,options=\{\},timeoutMs=12000\)/);
+  assert.match(script,/controller\.abort\(\)/);
+  for(const path of ['founding-interest','shop']) assert.match(script,new RegExp(`fetchWithTimeout\\('./api/${path}`));
+  assert.match(script,/response=await fetchWithTimeout\(path/);
+  assert.match(authRequest,/signal:AbortSignal\.timeout\(12000\)/);
+  assert.match(shop,/signal:AbortSignal\.timeout\(12000\)/);
+});
+
 test('privacy disclosures cover enabled processors, cloud controls, and retention',async()=>{
   const privacy=await read('privacy.html');
   for(const provider of ['Cloudflare','Resend','Stripe','Instacart']) assert.match(privacy,new RegExp(provider));

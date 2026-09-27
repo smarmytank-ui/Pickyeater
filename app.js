@@ -33,8 +33,15 @@ function track(eventName, details = {}){
   window.dispatchEvent(new CustomEvent('foodmyway:analytics', { detail:payload }));
 }
 
+async function fetchWithTimeout(resource,options={},timeoutMs=12000){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),timeoutMs);
+  try{ return await fetch(resource,{...options,signal:controller.signal}); }
+  finally{ clearTimeout(timer); }
+}
+
 async function submitFoundingInterest(email,source='founding-modal'){
-  const response=await fetch('./api/founding-interest',{
+  const response=await fetchWithTimeout('./api/founding-interest',{
     method:'POST',
     headers:{'content-type':'application/json'},
     body:JSON.stringify({email,consent:true,source,company:''})
@@ -108,7 +115,9 @@ function handleCheckoutReturn(){
 let accountSession={authenticated:false,configured:false,email:'',entitlement:null};
 
 async function accountApi(path,options={}){
-  const response=await fetch(path,{...options,headers:{'content-type':'application/json',...(options.headers || {})}});
+  let response;
+  try{ response=await fetchWithTimeout(path,{...options,headers:{'content-type':'application/json',...(options.headers || {})}}); }
+  catch{ throw new Error('The account service is temporarily unavailable. Try again.'); }
   const result=await response.json().catch(()=>({}));
   if(!response.ok){
     const error=new Error(result.error || 'Account request failed.');
@@ -1646,7 +1655,7 @@ async function shopPlannedGroceries(){
   try{
     if(button){ button.disabled=true; button.textContent='Creating list…'; }
     track('grocery_shop_started',{item_count:items.length});
-    const response=await fetch('./api/shop',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({title:'Food My Way weekly groceries',items})});
+    const response=await fetchWithTimeout('./api/shop',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({title:'Food My Way weekly groceries',items})});
     const result=await response.json().catch(()=>({}));
     if(!response.ok || !validCommerceUrl(result.url)) throw new Error(result.error || 'The grocery service returned an invalid link.');
     track('grocery_shop_link_created',{item_count:items.length});
