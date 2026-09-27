@@ -83,6 +83,21 @@ test('canonical launch files consistently use foodmyway.app',async()=>{
   assert.match(robots,/https:\/\/foodmyway\.app\/sitemap\.xml/);
 });
 
+test('sitemap legal and support pages have explicit canonical signals',async()=>{
+  const [sitemap,privacy,support,terms,headers]=await Promise.all([
+    read('sitemap.xml'),read('privacy.html'),read('support.html'),read('terms.html'),read('_headers')
+  ]);
+  for(const page of ['privacy.html','support.html','terms.html']){
+    assert.match(sitemap,new RegExp(`https://foodmyway\\.app/${page.replace('.','\\.')}`));
+  }
+  for(const [page,html] of [['privacy.html',privacy],['support.html',support]]){
+    assert.match(html,/name="robots" content="index,follow"/);
+    assert.match(html,new RegExp(`rel="canonical" href="https://foodmyway\\.app/${page.replace('.','\\.')}"`));
+  }
+  assert.match(terms,/name="robots" content="index,follow"/);
+  assert.match(headers,/\/terms\.html[\s\S]*Link: <https:\/\/foodmyway\.app\/terms\.html>; rel="canonical"/);
+});
+
 test('homepage structured data describes the app, offers, and visible FAQ',async()=>{
   const html=await read('index.html');
   const source=html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];

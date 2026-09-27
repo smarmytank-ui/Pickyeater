@@ -15,3 +15,6 @@
 
 /api/*
   Cache-Control: no-store
+
+/terms.html
+  Link: <https://foodmyway.app/terms.html>; rel="canonical"
