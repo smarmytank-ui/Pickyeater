@@ -18,6 +18,8 @@ const $ = (id) => document.getElementById(id);
 let servings = 2;
 let state = null;
 let owned = false;
+let activeDialog = null;
+let dialogReturnFocus = null;
 const TASTE_PROFILE_KEY = 'foodMyWayTasteProfile';
 const WEEKLY_PLAN_KEY = 'foodMyWayWeeklyPlan';
 const GROCERY_CHECKS_KEY = 'foodMyWayGroceryChecks';
@@ -168,9 +170,9 @@ async function setupAccounts(){
   if(!getPublicConfig().accountsEnabled) return;
   $('openAccount')?.classList.remove('hidden');
   const overlay=$('accountOverlay');
-  const close=()=>{ overlay?.classList.add('hidden'); showAccountError(); };
+  const close=()=>{ closeDialog(overlay); showAccountError(); };
   $('openAccount')?.addEventListener('click',async()=>{
-    overlay?.classList.remove('hidden');
+    openDialog(overlay);
     if($('accountStatus')) $('accountStatus').textContent='Checking account…';
     await refreshAccountSession();
   });
@@ -236,7 +238,7 @@ async function setupAccounts(){
   if(loginResult){
     if(loginResult==='success'){
       await refreshAccountSession();
-      overlay?.classList.remove('hidden');
+      openDialog(overlay);
       showToast('Signed in to Food My Way.');
       track('account_signed_in',{founding:accountSession.entitlement?.plan==='founding' && accountSession.entitlement?.status==='active'});
     }
@@ -256,7 +258,7 @@ function requirePremium(feature){
   const label=labels[feature] || 'This feature';
   track('premium_gate_viewed',{feature});
   if(getPublicConfig().accountsEnabled){
-    $('accountOverlay')?.classList.remove('hidden');
+    openDialog($('accountOverlay'));
     showAccountError(`${label} are included with Founding membership. Sign in with the email used at checkout.`);
   }else{
     document.querySelector('#pricing')?.scrollIntoView({behavior:'smooth',block:'start'});
@@ -2081,12 +2083,41 @@ function hideDiaryView(){
   showCreateView();
 }
 
-// Overlay helpers
-function show(el){ el && el.classList.remove('hidden'); }
-function hide(el){ el && el.classList.add('hidden'); }
+// Accessible dialog helpers
+const DIALOG_FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-function showMealPicker(){ show(document.getElementById('mealOverlay')); }
-function hideMealPicker(){ hide(document.getElementById('mealOverlay')); }
+function openDialog(dialog, preferredFocus){
+  if(!dialog) return;
+  if(activeDialog && activeDialog!==dialog) closeDialog(activeDialog,{restoreFocus:false});
+  dialogReturnFocus=document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  activeDialog=dialog;
+  dialog.classList.remove('hidden');
+  const target=preferredFocus || dialog.querySelector(DIALOG_FOCUSABLE);
+  target?.focus();
+}
+
+function closeDialog(dialog,{restoreFocus=true}={}){
+  if(!dialog) return;
+  dialog.classList.add('hidden');
+  if(activeDialog!==dialog) return;
+  activeDialog=null;
+  const returnTarget=dialogReturnFocus;
+  dialogReturnFocus=null;
+  if(restoreFocus && returnTarget?.isConnected) returnTarget.focus();
+}
+
+function trapDialogFocus(event){
+  if(event.key!=='Tab' || !activeDialog || activeDialog.classList.contains('hidden')) return;
+  const focusable=[...activeDialog.querySelectorAll(DIALOG_FOCUSABLE)].filter(element=>element.getClientRects().length || element===document.activeElement);
+  if(!focusable.length){ event.preventDefault(); return; }
+  const first=focusable[0];
+  const last=focusable[focusable.length-1];
+  if(event.shiftKey && document.activeElement===first){ event.preventDefault(); last.focus(); }
+  else if(!event.shiftKey && document.activeElement===last){ event.preventDefault(); first.focus(); }
+}
+
+function showMealPicker(){ openDialog(document.getElementById('mealOverlay')); }
+function hideMealPicker(){ closeDialog(document.getElementById('mealOverlay')); }
 
 function addCurrentRecipeToMeal(meal){
   if(!state) return;
@@ -2350,7 +2381,7 @@ function wireEvents(){
   });
   if(founderCta && validCheckoutUrl(checkoutUrl)) founderCta.textContent='Become a founding member — $29';
   const closeFounder = ()=>{
-    founderOverlay?.classList.add('hidden');
+    closeDialog(founderOverlay);
     $('founderError')?.classList.add('hidden');
   };
   const openFounderOffer = ()=>{
@@ -2359,8 +2390,7 @@ function wireEvents(){
       location.assign(checkoutUrl);
       return;
     }
-    founderOverlay?.classList.remove('hidden');
-    founderEmail?.focus();
+    openDialog(founderOverlay,founderEmail);
     track('founder_interest_opened');
   };
   founderCta?.addEventListener('click', openFounderOffer);
@@ -2410,7 +2440,7 @@ function wireEvents(){
   });
 
   const profileOverlay = $('profileOverlay');
-  const closeProfile = ()=>profileOverlay?.classList.add('hidden');
+  const closeProfile = ()=>closeDialog(profileOverlay);
   $('openProfile')?.addEventListener('click', ()=>{
     if(!requirePremium('household_profile')) return;
     const profile = getTasteProfile();
@@ -2418,8 +2448,7 @@ function wireEvents(){
     if($('avoidFoods')) $('avoidFoods').value = profile.avoids.join('\n');
     if($('preferredTexture')) $('preferredTexture').value = profile.texture;
     if($('servingStyle')) $('servingStyle').value = profile.servingStyle;
-    profileOverlay?.classList.remove('hidden');
-    $('profileName')?.focus();
+    openDialog(profileOverlay,$('profileName'));
     track('taste_profile_opened');
   });
   $('profileClose')?.addEventListener('click', closeProfile);
@@ -2453,7 +2482,7 @@ function wireEvents(){
   });
 
   const shareOverlay=$('shareOverlay');
-  const closeShare=()=>shareOverlay?.classList.add('hidden');
+  const closeShare=()=>closeDialog(shareOverlay);
   $('shareClose')?.addEventListener('click',closeShare);
   shareOverlay?.addEventListener('click',event=>{ if(event.target===shareOverlay) closeShare(); });
   $('copyShareLink')?.addEventListener('click',async()=>{
@@ -2489,8 +2518,9 @@ function wireEvents(){
   window.addEventListener('appinstalled', ()=>{ $('installApp')?.classList.add('hidden'); track('app_installed'); });
 
   document.addEventListener('keydown', event=>{
+    trapDialogFocus(event);
     if(event.key!=='Escape') return;
-    closeFounder(); closeProfile(); closeShare(); hideMealPicker();
+    closeFounder(); closeProfile(); closeShare(); hideMealPicker(); closeDialog($('accountOverlay')); showAccountError();
   });
 
   if($('footerYear')) $('footerYear').textContent = String(new Date().getFullYear());

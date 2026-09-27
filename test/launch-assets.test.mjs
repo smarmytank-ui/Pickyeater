@@ -109,6 +109,16 @@ test('homepage uses no inline script handlers or presentation styles',async()=>{
   assert.doesNotMatch(script,/\.style\./);
 });
 
+test('modal dialogs trap keyboard focus and restore it when closed',async()=>{
+  const script=await read('app.js');
+  assert.match(script,/function openDialog\(dialog, preferredFocus\)/);
+  assert.match(script,/dialogReturnFocus=document\.activeElement/);
+  assert.match(script,/function trapDialogFocus\(event\)/);
+  assert.match(script,/event\.key!=='Tab'/);
+  assert.match(script,/returnTarget\?\.isConnected/);
+  assert.match(script,/closeDialog\(\$\('accountOverlay'\)\)/);
+});
+
 test('deployment verifier covers the complete public funnel',async()=>{
   const verifier=await read('scripts/verify-deployment.mjs');
   for(const page of audiencePages) assert.match(verifier,new RegExp(`/${page.replaceAll('.','\\.')}`));
