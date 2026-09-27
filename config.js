@@ -2,6 +2,6 @@ window.FMW_CONFIG = Object.freeze({
   founderCheckoutUrl: 'https://buy.stripe.com/dRmeVd9327iW7cK0GtaMU00',
   commerceEnabled: false,
   telemetryEnabled: true,
-  accountsEnabled: false,
+  accountsEnabled: true,
   premiumEnforced: false
 });

@@ -206,10 +206,10 @@ test('deployment verifier covers the complete public funnel',async()=>{
   assert.match(verifier,/launchMode && commerceLaunchEnabled \? \[401\]/);
 });
 
-test('unverified paid and account integrations stay disabled while verified telemetry is enabled',async()=>{
+test('verified accounts and telemetry are enabled while paid and grocery integrations remain gated',async()=>{
   const config=await read('config.js');
   assert.match(config,/commerceEnabled:\s*false/);
-  assert.match(config,/accountsEnabled:\s*false/);
+  assert.match(config,/accountsEnabled:\s*true/);
   assert.match(config,/premiumEnforced:\s*false/);
   assert.match(config,/telemetryEnabled:\s*true/);
 });
