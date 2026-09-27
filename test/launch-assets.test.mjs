@@ -22,6 +22,14 @@ test('HTML references required local launch assets that exist',async()=>{
   for(const reference of new Set(references)) await access(path.join(root,reference));
 });
 
+test('HTML ids do not collide with global function declarations',async()=>{
+  const [html,script]=await Promise.all([read('index.html'),read('app.js')]);
+  const ids=new Set([...html.matchAll(/\sid="([^"]+)"/g)].map(match=>match[1]));
+  const functionNames=[...script.matchAll(/^function\s+([A-Za-z_$][\w$]*)\s*\(/gm)].map(match=>match[1]);
+  const collisions=functionNames.filter(name=>ids.has(name));
+  assert.deepEqual(collisions,[],'element ids must not shadow global functions');
+});
+
 test('manifest icons and offline shell assets exist',async()=>{
   const manifest=JSON.parse(await read('site.webmanifest'));
   assert.equal(manifest.name,'Food My Way — Picky Eater Recipes');
@@ -30,6 +38,15 @@ test('manifest icons and offline shell assets exist',async()=>{
   for(const asset of ['index.html','styles.css','app.js','config.js','privacy.html','terms.html','support.html']){
     assert.match(worker,new RegExp(asset.replace('.','\\.')));
   }
+});
+
+test('homepage release assets match the service-worker cache version',async()=>{
+  const [html,worker,pkg]=await Promise.all([read('index.html'),read('service-worker.js'),read('package.json')]);
+  const { version }=JSON.parse(pkg);
+  assert.match(html,new RegExp(`styles\\.css\\?v=${version.replaceAll('.','\\.')}`));
+  assert.match(html,new RegExp(`app\\.js\\?v=${version.replaceAll('.','\\.')}`));
+  assert.match(worker,new RegExp(`food-my-way-v${version.replaceAll('.','-')}`));
+  assert.match(worker,new RegExp(`app\\.js\\?v=${version.replaceAll('.','\\.')}`));
 });
 
 test('canonical launch files consistently use foodmyway.app',async()=>{

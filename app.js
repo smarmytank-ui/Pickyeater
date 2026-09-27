@@ -698,6 +698,10 @@ function gramsFor(name, unit, qty){
   return 0;
 }
 
+function isActiveIngredient(ingredient){
+  return Boolean(ingredient && ingredient.name!=='skip it' && Number(ingredient.base?.v)>0);
+}
+
 // -------------------------------
 // Instructions (simple, deterministic)
 // -------------------------------
@@ -1054,7 +1058,7 @@ function render(){
   if(ul){
     ul.innerHTML = '';
 
-    state.ingredients.forEach((ing)=>{
+    state.ingredients.filter(isActiveIngredient).forEach((ing)=>{
       const li = document.createElement('li');
       li.className = 'ing-row';
       li.setAttribute('data-role', ing.role);
@@ -1318,7 +1322,7 @@ function plannedGroceryItems(){
   const recipes=getWeeklyPlan().map(id=>recipeMap.get(id)).filter(Boolean);
   const combined=new Map();
   recipes.forEach(recipe=>recipe.ingredients
-    .filter(item=>item.name!=='skip it' && Number(item.base?.v)>0)
+    .filter(isActiveIngredient)
     .forEach(item=>{
       const unit=item.base?.u || '';
       const key=`${canonName(item.name)}|${unit}`;
@@ -1359,7 +1363,7 @@ function renderPlanner(){
     const title=document.createElement('strong');
     title.textContent=recipe.title;
     const meta=document.createElement('span');
-    meta.textContent=`Serves ${recipe.servings} • ${recipe.ingredients.filter(item=>item.name!=='skip it').length} ingredients`;
+    meta.textContent=`Serves ${recipe.servings} • ${recipe.ingredients.filter(isActiveIngredient).length} ingredients`;
     copy.append(title,meta);
     const remove=document.createElement('button');
     remove.type='button'; remove.className='btn ghost small'; remove.textContent='Remove';
@@ -1416,7 +1420,7 @@ async function shopPlannedGroceries(){
   }
 }
 
-function openPlanner(){
+function showPlannerView(){
   $('inputCard')?.classList.add('hidden');
   $('resultCard')?.classList.add('hidden');
   $('recipeBookCard')?.classList.add('hidden');
@@ -1518,7 +1522,7 @@ function renderRecipeBook(query = ''){
     title.textContent = recipe.title;
     const meta = document.createElement('div');
     meta.className = 'recipe-card-meta';
-    meta.textContent = `${recipe.servings} servings • ${recipe.ingredients.length} ingredients • ${recipe.nutrition.calories} cal/serv`;
+    meta.textContent = `${recipe.servings} servings • ${recipe.ingredients.filter(isActiveIngredient).length} ingredients • ${recipe.nutrition.calories} cal/serv`;
     copy.append(title, meta);
 
     const favorite = document.createElement('button');
@@ -1555,7 +1559,7 @@ function renderRecipeBook(query = ''){
   });
 }
 
-function openRecipeBook(){
+function showRecipeBookView(){
   $('inputCard')?.classList.add('hidden');
   $('resultCard')?.classList.add('hidden');
   $('sharedRecipeCard')?.classList.add('hidden');
@@ -1615,7 +1619,7 @@ function showSharedRecipe(recipe){
     const span=document.createElement('span'); span.textContent=text; $('sharedRecipeMeta').appendChild(span);
   });
   $('sharedIngredients').replaceChildren();
-  recipe.ingredients.filter(i=>i.name!=='skip it').forEach(ing=>{
+  recipe.ingredients.filter(isActiveIngredient).forEach(ing=>{
     const li=document.createElement('li');
     const quantity = qtyStrForServings(ing, recipe.servings);
     li.textContent = `${quantity ? `${quantity} ` : ''}${pretty(ing.name)}`;
@@ -1812,7 +1816,7 @@ function quickAddDiaryEntry(){
   renderDiary();
 }
 
-function openDiary(){
+function showDiaryView(){
   const card = $('diaryCard');
   $('inputCard')?.classList.add('hidden');
   $('resultCard')?.classList.add('hidden');
@@ -1824,7 +1828,7 @@ function openDiary(){
   renderDiary();
   card?.scrollIntoView({ behavior:'smooth', block:'start' });
 }
-function closeDiary(){
+function hideDiaryView(){
   const card = $('diaryCard');
   if(card) card.classList.add('hidden');
   showCreateView();
@@ -1854,7 +1858,7 @@ function addCurrentRecipeToMeal(meal){
   });
 
   setActiveMeal(meal);
-  openDiary();
+  showDiaryView();
 }
 
 // Ensure Add to Diary exists + wired
@@ -1886,6 +1890,12 @@ function wireEvents(){
   const shareBtn = $('shareBtn');
   const backBtn = $('backBtn');
   const ingredientsInput = $('ingredientsInput');
+  const wireClick = (id,handler)=>{
+    const element=$(id);
+    if(!element || element.dataset.wired) return;
+    element.dataset.wired='1';
+    element.onclick=handler;
+  };
 
   const updateIngredientCount = ()=>{
     const count = parseLines(ingredientsInput?.value).length;
@@ -2013,18 +2023,18 @@ function wireEvents(){
   }
 
   // Diary wiring
-  document.getElementById('openDiary')?.addEventListener('click', openDiary);
-  document.getElementById('closeDiary')?.addEventListener('click', closeDiary);
-  document.getElementById('openRecipeBook')?.addEventListener('click', openRecipeBook);
-  document.getElementById('closeRecipeBook')?.addEventListener('click', ()=>{
+  wireClick('openDiary',showDiaryView);
+  wireClick('closeDiary',hideDiaryView);
+  wireClick('openRecipeBook',showRecipeBookView);
+  wireClick('closeRecipeBook',()=>{
     $('recipeBookCard')?.classList.add('hidden');
     showCreateView();
   });
   document.getElementById('recipeSearch')?.addEventListener('input', e=>renderRecipeBook(e.target.value));
-  $('openPlanner')?.addEventListener('click', ()=>{ if(requirePremium('weekly_planning')) openPlanner(); });
+  $('openPlanner')?.addEventListener('click', ()=>{ if(requirePremium('weekly_planning')) showPlannerView(); });
   $('closePlanner')?.addEventListener('click', ()=>{
     $('plannerCard')?.classList.add('hidden');
-    openRecipeBook();
+    showRecipeBookView();
   });
   $('clearGroceryChecks')?.addEventListener('click', ()=>{
     lsSet(GROCERY_CHECKS_KEY,{});
@@ -2223,6 +2233,7 @@ if(typeof module !== 'undefined' && module.exports){
     titleFrom,
     gramsFor,
     recipeMacros,
+    isActiveIngredient,
     encodeSharedRecipe,
     decodeSharedRecipe
   };

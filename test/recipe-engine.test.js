@@ -10,9 +10,16 @@ const {
   recipeDetails,
   titleFrom,
   recipeMacros,
+  isActiveIngredient,
   encodeSharedRecipe,
   decodeSharedRecipe
 } = require('../app.js');
+
+test('omits empty optional ingredient slots from customer-facing recipes', () => {
+  assert.equal(isActiveIngredient({name:'skip it',base:{v:0,u:''}}),false);
+  assert.equal(isActiveIngredient({name:'salt',base:{v:0,u:'tsp'}}),false);
+  assert.equal(isActiveIngredient({name:'broccoli',base:{v:2,u:'cups'}}),true);
+});
 
 test('cleans common quantities, preparation words, and plurals', () => {
   assert.equal(canonName('2 lbs boneless skinless chicken breasts'), 'chicken breast');
