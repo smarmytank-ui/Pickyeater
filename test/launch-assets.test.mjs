@@ -157,6 +157,16 @@ test('a successful recipe save exposes a useful conversion next step',async()=>{
   assert.match(styles,/\.saved-next-step\.hidden\s*\{display:none\}/);
 });
 
+test('recipe sharing has a branded non-blocking clipboard fallback',async()=>{
+  const [html,script]=await Promise.all([read('index.html'),read('app.js')]);
+  assert.match(html,/id="shareOverlay"[^>]*role="dialog"/);
+  assert.match(html,/id="shareUrl"[^>]*readonly/);
+  assert.match(html,/id="copyShareLink"/);
+  assert.match(script,/showShareFallback\(url\)/);
+  assert.doesNotMatch(script,/alert\('Share link copied/);
+  assert.doesNotMatch(script,/prompt\('Copy this share link/);
+});
+
 test('a successful checkout has a durable account-unlock path',async()=>{
   const [html,script,styles]=await Promise.all([
     readFile(path.join(root,'index.html'),'utf8'),

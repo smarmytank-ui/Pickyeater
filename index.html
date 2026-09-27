@@ -25,7 +25,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="manifest" href="./site.webmanifest">
-  <link rel="stylesheet" href="./styles.css?v=2.35.0" />
+  <link rel="stylesheet" href="./styles.css?v=2.36.0" />
 </head>
 <body>
 <div class="page">
@@ -392,6 +392,18 @@
   </div>
 </div>
 
+<div id="shareOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
+  <div class="modal founder-modal">
+    <button id="shareClose" class="modal-close" type="button" aria-label="Close">×</button>
+    <div class="eyebrow">Share recipe</div>
+    <div id="shareTitle" class="modal-title">Copy your Food My Way link.</div>
+    <div class="modal-sub">Anyone with this link can view the recipe and save a copy.</div>
+    <label class="modal-label" for="shareUrl">Recipe link</label>
+    <input id="shareUrl" class="field" type="url" readonly />
+    <button id="copyShareLink" class="btn primary full" type="button">Copy link</button>
+  </div>
+</div>
+
 <footer class="site-footer">
   <div><strong>Food My Way</strong><span>Less pressure. More food that works.</span></div>
   <nav aria-label="Food My Way guides"><a href="./picky-adults.html">For adults</a><a href="./picky-kids.html">For families</a><a href="./sensory-friendly-meals.html">Sensory-friendly ideas</a><a href="./easy-weeknight-meals.html">Easy weeknights</a></nav>
@@ -404,6 +416,6 @@
 </script>
 
 <script src="./config.js"></script>
-<script src="./app.js?v=2.35.0"></script>
+<script src="./app.js?v=2.36.0"></script>
 </body>
 </html>

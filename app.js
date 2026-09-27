@@ -1725,12 +1725,22 @@ async function shareRecipe(recipe){
   const url = `${location.origin}${location.pathname}#recipe=${encodeSharedRecipe(normalized)}`;
   try{
     if(navigator.share) await navigator.share({ title:normalized.title, text:`${normalized.title} from Food My Way`, url });
-    else if(navigator.clipboard) { await navigator.clipboard.writeText(url); alert('Share link copied.'); }
-    else prompt('Copy this share link:', url);
+    else if(navigator.clipboard) { await navigator.clipboard.writeText(url); showToast('Share link copied.'); }
+    else showShareFallback(url);
     track('recipe_shared', { recipe_title:normalized.title });
   }catch(error){
-    if(error?.name !== 'AbortError') prompt('Copy this share link:', url);
+    if(error?.name !== 'AbortError') showShareFallback(url);
   }
+}
+
+function showShareFallback(url){
+  const overlay=$('shareOverlay');
+  const input=$('shareUrl');
+  if(!overlay || !input) return;
+  input.value=url;
+  overlay.classList.remove('hidden');
+  input.focus();
+  input.select();
 }
 
 function showSharedRecipe(recipe){
@@ -2319,6 +2329,24 @@ function wireEvents(){
     track('local_data_deleted');
   });
 
+  const shareOverlay=$('shareOverlay');
+  const closeShare=()=>shareOverlay?.classList.add('hidden');
+  $('shareClose')?.addEventListener('click',closeShare);
+  shareOverlay?.addEventListener('click',event=>{ if(event.target===shareOverlay) closeShare(); });
+  $('copyShareLink')?.addEventListener('click',async()=>{
+    const input=$('shareUrl');
+    if(!input) return;
+    try{
+      await navigator.clipboard.writeText(input.value);
+      closeShare();
+      showToast('Share link copied.');
+    }catch{
+      input.focus();
+      input.select();
+      showToast('Select the link and copy it.');
+    }
+  });
+
   window.addEventListener('beforeinstallprompt', event=>{
     event.preventDefault();
     deferredInstallPrompt=event;
@@ -2339,7 +2367,7 @@ function wireEvents(){
 
   document.addEventListener('keydown', event=>{
     if(event.key!=='Escape') return;
-    closeFounder(); closeProfile(); hideMealPicker();
+    closeFounder(); closeProfile(); closeShare(); hideMealPicker();
   });
 
   if($('footerYear')) $('footerYear').textContent = String(new Date().getFullYear());
