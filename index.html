@@ -25,7 +25,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="manifest" href="./site.webmanifest">
-  <link rel="stylesheet" href="./styles.css?v=2.31.0" />
+  <link rel="stylesheet" href="./styles.css?v=2.32.0" />
 </head>
 <body>
 <div class="page">
@@ -343,12 +343,23 @@
     <button id="profileClose" class="modal-close" type="button" aria-label="Close">×</button>
     <div class="eyebrow">Taste profile</div>
     <div id="profileTitle" class="modal-title">Make suggestions feel more like you.</div>
-    <div class="modal-sub">These preferences stay on this device during the beta. Food My Way will leave avoided foods out of starter ideas and swap suggestions.</div>
+    <div class="modal-sub">Food My Way uses these preferences to leave avoided foods out, adjust cooking texture, and plate meals in a more comfortable way.</div>
     <label class="modal-label" for="profileName">Who is this for?</label>
     <input id="profileName" class="field" type="text" maxlength="40" placeholder="Me, Alex, the whole family…" />
     <label class="modal-label" for="avoidFoods">Foods to leave out <span>(one per line)</span></label>
     <textarea id="avoidFoods" class="field preference-textarea" placeholder="mushrooms&#10;tomatoes&#10;mayonnaise"></textarea>
-    <button id="profileSave" class="btn primary full" type="button">Save my foods</button>
+    <label class="modal-label" for="preferredTexture">Preferred texture</label>
+    <select id="preferredTexture" class="field">
+      <option value="either">Flexible / no preference</option>
+      <option value="crisp">Crisp or crunchy</option>
+      <option value="soft">Soft and easy to bite</option>
+    </select>
+    <label class="modal-label" for="servingStyle">How should foods be served?</label>
+    <select id="servingStyle" class="field">
+      <option value="together">Mixed or together is okay</option>
+      <option value="separate">Keep foods and sauces separate</option>
+    </select>
+    <button id="profileSave" class="btn primary full" type="button">Save preferences</button>
     <div class="data-actions"><button id="exportData" class="btn ghost" type="button">Export my beta data</button><button id="clearLocalData" class="btn ghost danger" type="button">Delete local data</button></div>
     <div class="price-fineprint">Not an allergy-safety tool. Always check labels and ingredients yourself.</div>
   </div>
@@ -392,6 +403,6 @@
 </script>
 
 <script src="./config.js"></script>
-<script src="./app.js?v=2.31.0"></script>
+<script src="./app.js?v=2.32.0"></script>
 </body>
 </html>

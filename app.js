@@ -258,12 +258,20 @@ function validCheckoutUrl(value){
   }catch{ return false; }
 }
 
-function getTasteProfile(){
-  const profile = lsGet(TASTE_PROFILE_KEY, {});
+function sanitizeTasteProfile(profile){
+  const source=profile && typeof profile==='object' ? profile : {};
+  const texture=['crisp','soft'].includes(source.texture) ? source.texture : 'either';
+  const servingStyle=source.servingStyle==='separate' ? 'separate' : 'together';
   return {
-    name:String(profile.name || '').slice(0, 40),
-    avoids:Array.isArray(profile.avoids) ? profile.avoids.map(canonName).filter(Boolean) : []
+    name:String(source.name || '').slice(0, 40),
+    avoids:Array.isArray(source.avoids) ? [...new Set(source.avoids.map(canonName).filter(Boolean))].slice(0,100) : [],
+    texture,
+    servingStyle
   };
+}
+
+function getTasteProfile(){
+  return sanitizeTasteProfile(lsGet(TASTE_PROFILE_KEY, {}));
 }
 
 function isAvoidedFood(name){
@@ -791,7 +799,8 @@ const INSTR = {
   combine: 'Combine everything. Taste. Season. Serve.'
 };
 
-function buildInstructions(ingredients){
+function buildInstructions(ingredients,preferences={}){
+  const profile=sanitizeTasteProfile(preferences);
   const active = ingredients.filter(i=>i.name!=='skip it' && i.base.v>0);
   const namesFor = role => active.filter(i=>i.role===role).map(i=>pretty(i.name));
   const joinNames = names => names.length > 1
@@ -835,6 +844,8 @@ function buildInstructions(ingredients){
     if(starch.name.includes('rice')) text = `Cook ${name} according to the package directions, then fluff.`;
     else if(starch.name.includes('pasta')) text = `Boil ${name} according to the package directions, then drain.`;
     else if(starch.name.includes('quinoa')) text = `Rinse ${name}, simmer until the liquid is absorbed, then rest 5 minutes and fluff.`;
+    else if(profile.texture==='crisp') text = `Cook ${name} until crisp outside and tender inside; roasting or air-frying works well.`;
+    else if(profile.texture==='soft') text = `Cook ${name} until very soft and easy to bite; boiling or microwaving works well.`;
     else text = `Cook ${name} until fork-tender; roast, boil, or microwave based on your preferred texture.`;
     steps.push({ key:`starch-${index}`, text });
   });
@@ -842,7 +853,12 @@ function buildInstructions(ingredients){
   const vegetables = namesFor('veg');
   if(vegetables.length){
     const quick = vegetables.every(name=>/spinach|tomato/i.test(name));
-    steps.push({ key:'veg', text:`Add ${joinNames(vegetables)} and cook until ${quick ? 'just softened, 2–3 minutes' : 'tender-crisp, about 4–6 minutes'}.` });
+    const finish=profile.texture==='crisp'
+      ? 'still crisp, about 3–4 minutes'
+      : profile.texture==='soft'
+        ? 'soft and easy to bite, about 7–10 minutes'
+        : (quick ? 'just softened, 2–3 minutes' : 'tender-crisp, about 4–6 minutes');
+    steps.push({ key:'veg', text:`Add ${joinNames(vegetables)} and cook until ${finish}.` });
   }
 
   const dairy = namesFor('dairy');
@@ -870,7 +886,9 @@ function buildInstructions(ingredients){
     steps.push({ key:'seasoning', text:`Taste and season with ${joinNames(seasonings)}. Add a little at a time.` });
   }
 
-  steps.push({ key:'combine', text:'Combine everything, divide between plates, and serve warm.' });
+  steps.push({ key:'combine', text:profile.servingStyle==='separate'
+    ? 'Arrange each food in its own section of the plate. Keep sauces and toppings on the side, and serve warm.'
+    : 'Combine everything, divide between plates, and serve warm.' });
   return steps;
 }
 
@@ -1102,7 +1120,7 @@ function applySwap(ingId, opt, optsArg){
   ing.swapMeta = { patchKey: opt.instrPatchKey || null };
 
   // Update steps + title
-  state.steps = buildInstructions(state.ingredients);
+  state.steps = buildInstructions(state.ingredients,getTasteProfile());
   state.title = titleFrom(state.ingredients);
 
   computeMacrosPerServing();
@@ -2038,7 +2056,7 @@ function wireEvents(){
       if(!hasSeasoning) ingredients.push({ id: uid(), name:'skip it', role:'seasoning', intent:intentForRole('seasoning'), base:{ v:0, u:'' }, swapMeta:null });
 
       state = { ingredients, title: titleFrom(ingredients), steps: [] };
-      state.steps = buildInstructions(state.ingredients);
+      state.steps = buildInstructions(state.ingredients,getTasteProfile());
 
       owned = false;
 
@@ -2229,6 +2247,8 @@ function wireEvents(){
     const profile = getTasteProfile();
     if($('profileName')) $('profileName').value = profile.name;
     if($('avoidFoods')) $('avoidFoods').value = profile.avoids.join('\n');
+    if($('preferredTexture')) $('preferredTexture').value = profile.texture;
+    if($('servingStyle')) $('servingStyle').value = profile.servingStyle;
     profileOverlay?.classList.remove('hidden');
     $('profileName')?.focus();
     track('taste_profile_opened');
@@ -2236,15 +2256,20 @@ function wireEvents(){
   $('profileClose')?.addEventListener('click', closeProfile);
   profileOverlay?.addEventListener('click', event=>{ if(event.target===profileOverlay) closeProfile(); });
   $('profileSave')?.addEventListener('click', ()=>{
-    const profile = {
+    const profile = sanitizeTasteProfile({
       name:$('profileName')?.value.trim().slice(0, 40) || '',
-      avoids:[...new Set(parseLines($('avoidFoods')?.value).map(canonName).filter(Boolean))]
-    };
+      avoids:parseLines($('avoidFoods')?.value),
+      texture:$('preferredTexture')?.value,
+      servingStyle:$('servingStyle')?.value
+    });
     lsSet(TASTE_PROFILE_KEY, profile);
     closeProfile();
     showToast(profile.avoids.length ? `Saved ${profile.avoids.length} foods to leave out.` : 'Taste profile saved.');
     track('taste_profile_saved', { avoid_count:profile.avoids.length });
-    if(state) render();
+    if(state){
+      state.steps=buildInstructions(state.ingredients,profile);
+      render();
+    }
   });
   $('exportData')?.addEventListener('click', exportBetaData);
   $('clearLocalData')?.addEventListener('click', ()=>{
@@ -2315,6 +2340,7 @@ if(typeof module !== 'undefined' && module.exports){
   module.exports = {
     canonName,
     parseInputIngredient,
+    sanitizeTasteProfile,
     roleFor,
     normalize,
     buildInstructions,

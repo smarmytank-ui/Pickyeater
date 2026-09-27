@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const {
   canonName,
   parseInputIngredient,
+  sanitizeTasteProfile,
   roleFor,
   normalize,
   buildInstructions,
@@ -71,6 +72,23 @@ test('raw animal proteins use thermometer-based minimum temperatures', () => {
   const text=buildInstructions(normalize(['chicken','ground beef','steak','salmon'])).map(step=>step.text).join(' ');
   assert.doesNotMatch(text,/no pink|until browned and safely cooked/i);
   assert.match(text,/food thermometer/);
+});
+
+test('sensory preferences change recipe texture and plating instructions', () => {
+  assert.deepEqual(sanitizeTasteProfile({
+    name:'Alex',avoids:['Mushrooms','mushrooms'],texture:'soft',servingStyle:'separate'
+  }),{
+    name:'Alex',avoids:['mushrooms'],texture:'soft',servingStyle:'separate'
+  });
+  const ingredients=normalize(['potatoes','broccoli']);
+  const softSeparate=buildInstructions(ingredients,{texture:'soft',servingStyle:'separate'}).map(step=>step.text).join(' ');
+  assert.match(softSeparate,/very soft and easy to bite/);
+  assert.match(softSeparate,/soft and easy to bite, about 7–10 minutes/);
+  assert.match(softSeparate,/own section of the plate/);
+  assert.match(softSeparate,/sauces and toppings on the side/);
+  const crisp=buildInstructions(ingredients,{texture:'crisp'}).map(step=>step.text).join(' ');
+  assert.match(crisp,/crisp outside and tender inside/);
+  assert.match(crisp,/still crisp, about 3–4 minutes/);
 });
 
 test('classifies familiar proteins and vegetables', () => {
