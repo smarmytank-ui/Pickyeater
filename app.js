@@ -1894,6 +1894,11 @@ function showStorageFailure(){
   track('storage_write_failed');
 }
 
+function setRecipeIntentPrompt(visible){
+  $('recipeIntent')?.classList.toggle('hidden',!visible);
+  $('recipeIntentThanks')?.classList.add('hidden');
+}
+
 function showCreateView(){
   $('recipeBookCard')?.classList.add('hidden');
   $('diaryCard')?.classList.add('hidden');
@@ -1921,6 +1926,7 @@ function openSavedRecipe(recipe){
   $('resultCard')?.classList.remove('hidden');
   $('saveRow')?.classList.remove('hidden');
   $('savedNextStep')?.classList.add('hidden');
+  setRecipeIntentPrompt(false);
   if($('saveBtn')) $('saveBtn').textContent='Save changes';
   render();
   track('saved_recipe_opened', { recipe_title:normalized.title });
@@ -2502,6 +2508,7 @@ function wireEvents(){
       const sr = $('saveRow');
       if(sr) sr.classList.remove('hidden');
       $('savedNextStep')?.classList.add('hidden');
+      setRecipeIntentPrompt(true);
       if(saveBtn) saveBtn.textContent = '⭐ Save to Favorites';
 
       render();
@@ -2553,6 +2560,15 @@ function wireEvents(){
 
   wireClick('shopRecipe',shopCurrentRecipe);
 
+  document.querySelectorAll('[data-recipe-intent]').forEach(button=>{
+    button.addEventListener('click',()=>{
+      const planned=button.dataset.recipeIntent==='true';
+      $('recipeIntent')?.classList.add('hidden');
+      $('recipeIntentThanks')?.classList.remove('hidden');
+      track('recipe_intent_recorded',{planned});
+    });
+  });
+
   if(backBtn && !backBtn.dataset.wired){
     backBtn.dataset.wired='1';
     backBtn.addEventListener('click', ()=>{
@@ -2564,6 +2580,7 @@ function wireEvents(){
       $('inputCard')?.classList.remove('hidden');
       $('saveRow')?.classList.add('hidden');
       $('savedNextStep')?.classList.add('hidden');
+      setRecipeIntentPrompt(false);
       if($('saveBtn')) $('saveBtn').textContent = '⭐ Save to Favorites';
     });
   }

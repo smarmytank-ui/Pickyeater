@@ -25,7 +25,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="manifest" href="./site.webmanifest">
-  <link rel="stylesheet" href="./styles.css?v=2.62.0" />
+  <link rel="stylesheet" href="./styles.css?v=2.63.0" />
 </head>
 <body>
 <div class="page">
@@ -159,6 +159,17 @@
     <button id="shopRecipe" class="btn full hidden" type="button">Shop this recipe</button>
     <button id="addDiaryBtn" class="btn full">➕ Add to Diary</button>
   </div>
+
+  <div id="recipeIntent" class="recipe-intent hidden" role="group" aria-labelledby="recipeIntentQuestion">
+    <strong id="recipeIntentQuestion">Would you make this?</strong>
+    <span>One tap helps us improve Food My Way. We never send the recipe or your ingredients.</span>
+    <div class="recipe-intent-actions">
+      <button class="btn small" type="button" data-recipe-intent="true">Yes, I’d make it</button>
+      <button class="btn ghost small" type="button" data-recipe-intent="false">Not this one</button>
+    </div>
+  </div>
+
+  <p id="recipeIntentThanks" class="recipe-intent-thanks hidden" role="status">Thanks—that helps us build better picky-eater recipes.</p>
 
   <div id="savedNextStep" class="saved-next-step hidden" role="status">
     <div>
@@ -421,6 +432,6 @@
 </script>
 
 <script src="./config.js"></script>
-<script src="./app.js?v=2.62.0"></script>
+<script src="./app.js?v=2.63.0"></script>
 </body>
 </html>

@@ -32,8 +32,20 @@ Daily funnel counts:
 SELECT substr(created_at,1,10) AS day, event_name, count(*) AS events,
        count(DISTINCT session_id) AS sessions
 FROM product_events
-WHERE event_name IN ('page_view','recipe_generated','recipe_saved','founder_interest_saved','founder_checkout_started','founder_checkout_returned','account_sign_in_requested','account_signed_in','cloud_backup_completed')
+WHERE event_name IN ('page_view','recipe_generated','recipe_intent_recorded','recipe_saved','founder_interest_saved','founder_checkout_started','founder_checkout_returned','account_sign_in_requested','account_signed_in','cloud_backup_completed')
 GROUP BY day,event_name ORDER BY day DESC,event_name;
+```
+
+Recipe-market-fit signal (the boolean `planned` value is the visitor's one-tap answer; no recipe content or identity is stored):
+
+```sql
+SELECT substr(created_at,1,10) AS day,
+       sum(CASE WHEN json_extract(details,'$.planned')=1 THEN 1 ELSE 0 END) AS would_make,
+       sum(CASE WHEN json_extract(details,'$.planned')=0 THEN 1 ELSE 0 END) AS would_not_make,
+       count(*) AS responses
+FROM product_events
+WHERE event_name='recipe_intent_recorded'
+GROUP BY day ORDER BY day DESC;
 ```
 
 Count paid founding orders and current recognized revenue from the authoritative purchase ledger:

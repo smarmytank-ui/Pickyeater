@@ -505,6 +505,15 @@ test('funnel measurement separates browser intent from authoritative purchases',
   assert.match(docs,/currently_active_sales_usd/);
 });
 
+test('generated recipes collect a privacy-minimized make-it intent signal',async()=>{
+  const [html,script,telemetry]=await Promise.all([read('index.html'),read('app.js'),read('functions/_shared/telemetry.mjs')]);
+  assert.match(html,/Would you make this\?/);
+  assert.match(html,/data-recipe-intent="true"/);
+  assert.match(html,/never send the recipe or your ingredients/i);
+  assert.match(script,/track\('recipe_intent_recorded',\{planned\}\)/);
+  assert.match(telemetry,/recipe_intent_recorded/);
+});
+
 test('customer-facing product chrome consistently uses Food My Way',async()=>{
   const [html,script,legacy]=await Promise.all([read('index.html'),read('app.js'),read('generator.html')]);
   assert.doesNotMatch(html,/Shared from Picky Eater|apple-mobile-web-app-title" content="Picky Eater"/);
