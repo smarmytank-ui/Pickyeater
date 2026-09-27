@@ -22,6 +22,8 @@ The account backend uses passwordless email links, Cloudflare D1, and Resend. It
 5. Set `AUTH_ORIGIN` to the exact HTTPS origin. Use the private Pages URL for preview and `https://foodmyway.app` for production.
 6. Redeploy after bindings or secrets change and complete the preview test matrix below.
 7. Change `accountsEnabled` to `true` in `config.js` only after preview verification, then redeploy.
+8. Verify that a Stripe test purchase made with the same email returns the `founding` entitlement in the account session.
+9. Change `premiumEnforced` to `true` only after login, entitlement, refund, and account-recovery tests pass.
 
 ## API surface
 
@@ -43,3 +45,5 @@ DELETE FROM sessions WHERE expires_epoch < unixepoch('now');
 ```
 
 Before enabling the UI, test request, consume, session, backup, restore, revision conflict, export, sign-out, expired-link, replayed-link, rate-limit, and deletion flows in preview.
+
+The session endpoint also checks the `PURCHASES` binding for an active founding entitlement. Premium enforcement is a separate public flag so account testing never accidentally locks free beta users out of planning or taste-profile features.

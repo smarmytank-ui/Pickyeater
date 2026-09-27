@@ -17,3 +17,10 @@ test('rejects unknown events and malformed sessions',()=>{
   assert.throws(()=>normalizeTelemetryEvent({event:'ingredients_entered',sessionId:'12345678-1234-4123-8123-123456789abc'}),/Unknown/);
   assert.throws(()=>normalizeTelemetryEvent({event:'page_view',sessionId:'short'}),/session/);
 });
+
+test('allows only named premium-gate features',()=>{
+  const event=normalizeTelemetryEvent({event:'premium_gate_viewed',sessionId:'12345678-1234-4123-8123-123456789abc',details:{feature:'weekly_planning'}});
+  assert.deepEqual(event.details,{feature:'weekly_planning'});
+  const filtered=normalizeTelemetryEvent({event:'premium_gate_viewed',sessionId:'12345678-1234-4123-8123-123456789abc',details:{feature:'secret_feature'}});
+  assert.deepEqual(filtered.details,{});
+});

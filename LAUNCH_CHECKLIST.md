@@ -28,11 +28,13 @@
 - [x] Stripe Payment Link configuration and hostname validation
 - [x] Consent-based founding-lead endpoint and D1 schema
 - [x] Signed, idempotent Stripe fulfillment endpoint and entitlement schema
+- [x] Signed-in email entitlement lookup and feature-flagged premium gates
 - [ ] Stripe account and verified business identity
 - [ ] Stripe $29 founding product and Payment Link
 - [ ] Refund and cancellation policy finalized
 - [ ] Cloudflare D1 `LEADS` binding and live founding-interest verification
 - [ ] Production webhook secret, D1 `PURCHASES` binding, and test-mode fulfillment verification
+- [ ] End-to-end founding purchase, login, premium-access, and refund test
 
 ## Trust and operations
 

@@ -66,7 +66,7 @@ function handleCheckoutReturn(){
   history.replaceState({},'',`${location.pathname}${location.hash}`);
 }
 
-let accountSession={authenticated:false,configured:false,email:''};
+let accountSession={authenticated:false,configured:false,email:'',entitlement:null};
 
 async function accountApi(path,options={}){
   const response=await fetch(path,{...options,headers:{'content-type':'application/json',...(options.headers || {})}});
@@ -90,12 +90,17 @@ function renderAccountState(){
   const signedIn=Boolean(accountSession.authenticated);
   $('accountSignedIn')?.classList.toggle('hidden',!signedIn);
   $('accountSignedOut')?.classList.toggle('hidden',signedIn);
-  if($('accountStatus')) $('accountStatus').textContent=signedIn ? `Signed in as ${accountSession.email}` : 'Sign in to back up and restore your Food My Way data across devices.';
+  const founding=accountSession.entitlement?.plan==='founding' && accountSession.entitlement?.status==='active';
+  if($('accountStatus')) $('accountStatus').textContent=signedIn ? `Signed in as ${accountSession.email}${founding ? ' · Founding member' : ''}` : 'Sign in to back up and restore your Food My Way data across devices.';
+  if(founding && $('founderCta')){
+    $('founderCta').textContent='Founding member ✓';
+    $('founderCta').disabled=true;
+  }
 }
 
 async function refreshAccountSession(){
   try{ accountSession=await accountApi('./api/auth/session'); }
-  catch{ accountSession={authenticated:false,configured:false,email:''}; }
+  catch{ accountSession={authenticated:false,configured:false,email:'',entitlement:null}; }
   renderAccountState();
   return accountSession;
 }
@@ -173,16 +178,32 @@ async function setupAccounts(){
     if(!confirm('Permanently delete your Food My Way cloud account and cloud backup? Local data on this device will remain.')) return;
     try{
       await accountApi('./api/account/data',{method:'DELETE',headers:{'x-confirm-delete':'DELETE'},body:'{}'});
-      accountSession={authenticated:false,configured:true,email:''}; renderAccountState();
+      accountSession={authenticated:false,configured:true,email:'',entitlement:null}; renderAccountState();
       showToast('Cloud account deleted. Local data remains on this device.');
     }catch(error){ showAccountError(error.message); }
   });
+  await refreshAccountSession();
   const loginResult=new URLSearchParams(location.search).get('login');
   if(loginResult){
     if(loginResult==='success'){ await refreshAccountSession(); overlay?.classList.remove('hidden'); showToast('Signed in to Food My Way.'); }
     else showToast(loginResult==='invalid' ? 'That sign-in link is invalid or expired.' : 'Cloud sign-in is unavailable.');
     const clean=new URL(location.href); clean.searchParams.delete('login'); history.replaceState({},'',`${clean.pathname}${clean.search}${clean.hash}`);
   }
+}
+
+function requirePremium(feature){
+  if(!getPublicConfig().premiumEnforced) return true;
+  if(accountSession.entitlement?.plan==='founding' && accountSession.entitlement?.status==='active') return true;
+  const label=feature==='household_profile' ? 'Household taste profiles' : 'Weekly planning and grocery lists';
+  track('premium_gate_viewed',{feature});
+  if(getPublicConfig().accountsEnabled){
+    $('accountOverlay')?.classList.remove('hidden');
+    showAccountError(`${label} are included with Founding membership. Sign in with the email used at checkout.`);
+  }else{
+    document.querySelector('#pricing')?.scrollIntoView({behavior:'smooth',block:'start'});
+    showToast(`${label} are included with Founding membership.`);
+  }
+  return false;
 }
 
 function validCheckoutUrl(value){
@@ -1278,6 +1299,7 @@ function getWeeklyPlan(){
 }
 
 function toggleWeeklyPlan(recipeId){
+  if(!requirePremium('weekly_planning')) return getWeeklyPlan();
   const plan = getWeeklyPlan();
   const next = plan.includes(recipeId) ? plan.filter(id=>id!==recipeId) : [...plan, recipeId];
   lsSet(WEEKLY_PLAN_KEY, next);
@@ -1963,7 +1985,7 @@ function wireEvents(){
     showCreateView();
   });
   document.getElementById('recipeSearch')?.addEventListener('input', e=>renderRecipeBook(e.target.value));
-  $('openPlanner')?.addEventListener('click', openPlanner);
+  $('openPlanner')?.addEventListener('click', ()=>{ if(requirePremium('weekly_planning')) openPlanner(); });
   $('closePlanner')?.addEventListener('click', ()=>{
     $('plannerCard')?.classList.add('hidden');
     openRecipeBook();
@@ -2057,6 +2079,7 @@ function wireEvents(){
   const profileOverlay = $('profileOverlay');
   const closeProfile = ()=>profileOverlay?.classList.add('hidden');
   $('openProfile')?.addEventListener('click', ()=>{
+    if(!requirePremium('household_profile')) return;
     const profile = getTasteProfile();
     if($('profileName')) $('profileName').value = profile.name;
     if($('avoidFoods')) $('avoidFoods').value = profile.avoids.join('\n');

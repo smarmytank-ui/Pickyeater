@@ -39,3 +39,11 @@ test('Cloudflare headers protect dynamic and sensitive responses',async()=>{
   }
   assert.match(headers,/\/api\/\*[\s\S]*Cache-Control: no-store/);
 });
+
+test('unverified paid and account integrations stay disabled by default',async()=>{
+  const config=await read('config.js');
+  assert.match(config,/commerceEnabled:\s*false/);
+  assert.match(config,/accountsEnabled:\s*false/);
+  assert.match(config,/premiumEnforced:\s*false/);
+  assert.match(config,/telemetryEnabled:\s*false/);
+});

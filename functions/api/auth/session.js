@@ -5,7 +5,14 @@ const json=(body,status=200,headers={})=>new Response(JSON.stringify(body),{stat
 export async function onRequestGet({request,env}){
   if(!env.ACCOUNTS) return json({authenticated:false,configured:false});
   const account=await currentAccount(request,env.ACCOUNTS);
-  return json(account ? {authenticated:true,email:account.email} : {authenticated:false,configured:true});
+  if(!account) return json({authenticated:false,configured:true});
+  let entitlement=null;
+  if(env.PURCHASES){
+    const row=await env.PURCHASES.prepare("SELECT plan,status FROM entitlements WHERE email=?1 AND status='active' ORDER BY updated_at DESC LIMIT 1")
+      .bind(account.email).first();
+    if(row) entitlement={plan:row.plan,status:row.status};
+  }
+  return json({authenticated:true,email:account.email,entitlement});
 }
 
 export async function onRequestPost({request,env}){

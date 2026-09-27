@@ -33,6 +33,8 @@ The browser success redirect is never treated as proof of purchase. Stripe recom
 
 A full Stripe refund changes the matching entitlement to `refunded`. Partial refunds do not remove access automatically and must be reviewed by support. A refunded entitlement cannot be reactivated by a payment-event replay; any legitimate repurchase after a refund requires support review.
 
+When cloud accounts are enabled, `GET /api/auth/session` looks up an active entitlement by the normalized signed-in email. The account UI then displays “Founding member,” and the optional premium gate recognizes that access. Customers must sign in using the same email used at Stripe Checkout; support handles legitimate email changes.
+
 ## Founding-interest storage
 
 `POST /api/founding-interest` is a Cloudflare Pages Function. It requires a D1 binding named `LEADS`. Until that binding exists, the endpoint fails closed and the browser tells the user that interest is saved only on that device.
