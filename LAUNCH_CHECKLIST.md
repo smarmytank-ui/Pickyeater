@@ -65,6 +65,7 @@
 - [x] robots.txt and sitemap.xml
 - [x] Focused SEO pages for picky adults, families, sensory preferences, and easy weeknights
 - [x] Production security and cache headers
+- [x] Monitoring-only DMARC policy published for foodmyway.app
 - [x] Continuous integration and public-deployment verification script
 - [x] Non-mutating paid-launch API readiness gate
 - [x] foodmyway.app connected to production
@@ -149,6 +150,8 @@ Production telemetry was enabled in release `2.62.0` at commit `1273d9e` after i
 The production founding-interest lifecycle was verified after encrypted secret deployment `45c4c40`. A consented `example.com` QA submission returned `201 Created`; D1 showed `consent=1`, `status='active'`, and a 43-character opaque unsubscribe token. The signed GET rendered the confirmation form, the POST changed the record to `consent=0` and `status='unsubscribed'`, and a repeated POST returned the same successful unsubscribed response without another state transition. The disposable QA row was then removed and a zero-row query confirmed cleanup.
 
 Google Search Console domain ownership for `foodmyway.app` was verified through a DNS TXT record on September 27, 2026. Google accepted `https://foodmyway.app/sitemap.xml` with status **Success**, reported eight discovered pages, and added the canonical homepage to its priority crawl queue. The verification TXT record must remain in Cloudflare DNS.
+
+Cloudflare DNS now also publishes `_dmarc.foodmyway.app` as `v=DMARC1; p=none;`. Public resolution through `1.1.1.1` was verified. This monitoring-only policy improves spoofing visibility without rejecting mail while support routing and the future Resend sender are finalized.
 
 On September 26, 2026, release `2.47.0` passed the automated suite and a rendered in-app-browser smoke test against the local HTTP build:
 
