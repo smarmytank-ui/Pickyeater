@@ -1,4 +1,4 @@
-const CACHE_NAME = 'food-my-way-v2-19';
+const CACHE_NAME = 'food-my-way-v2-20';
 const APP_SHELL = [
   './',
   './index.html',
@@ -15,7 +15,12 @@ const APP_SHELL = [
   './privacy.html',
   './terms.html',
   './support.html',
-  './legal.css'
+  './legal.css',
+  './landing.css',
+  './picky-adults.html',
+  './picky-kids.html',
+  './sensory-friendly-meals.html',
+  './easy-weeknight-meals.html'
 ];
 
 self.addEventListener('install', event=>{
@@ -39,10 +44,10 @@ self.addEventListener('fetch', event=>{
       fetch(event.request)
         .then(response=>{
           const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache=>cache.put('./index.html', copy));
+          caches.open(CACHE_NAME).then(cache=>cache.put(event.request, copy));
           return response;
         })
-        .catch(()=>caches.match('./index.html'))
+        .catch(()=>caches.match(event.request).then(cached=>cached || caches.match('./index.html')))
     );
     return;
   }

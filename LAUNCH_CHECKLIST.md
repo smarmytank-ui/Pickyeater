@@ -53,6 +53,7 @@
 - [x] Web manifest and offline shell
 - [x] Search metadata and structured data
 - [x] robots.txt and sitemap.xml
+- [x] Focused SEO pages for picky adults, families, sensory preferences, and easy weeknights
 - [x] Production security and cache headers
 - [x] Continuous integration and public-deployment verification script
 - [ ] foodmyway.app connected to production

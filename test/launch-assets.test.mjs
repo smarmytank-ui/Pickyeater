@@ -6,6 +6,12 @@ import path from 'node:path';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const read=name=>readFile(path.join(root,name),'utf8');
+const audiencePages=[
+  'picky-adults.html',
+  'picky-kids.html',
+  'sensory-friendly-meals.html',
+  'easy-weeknight-meals.html'
+];
 
 test('HTML references required local launch assets that exist',async()=>{
   const html=await read('index.html');
@@ -30,6 +36,30 @@ test('canonical launch files consistently use foodmyway.app',async()=>{
   assert.match(html,/https:\/\/foodmyway\.app\//);
   assert.match(sitemap,/https:\/\/foodmyway\.app\//);
   assert.match(robots,/https:\/\/foodmyway\.app\/sitemap\.xml/);
+});
+
+test('audience landing pages have unique search metadata and sitemap entries',async()=>{
+  const sitemap=await read('sitemap.xml');
+  const titles=new Set();
+  const descriptions=new Set();
+  for(const page of audiencePages){
+    const html=await read(page);
+    const title=html.match(/<title>([^<]+)<\/title>/)?.[1];
+    const description=html.match(/<meta name="description" content="([^"]+)"/i)?.[1];
+    const canonical=`https://foodmyway.app/${page}`;
+    assert.ok(title,`${page} needs a title`);
+    assert.ok(description,`${page} needs a description`);
+    assert.ok(!titles.has(title),`${page} title must be unique`);
+    assert.ok(!descriptions.has(description),`${page} description must be unique`);
+    titles.add(title);
+    descriptions.add(description);
+    assert.match(html,new RegExp(`<link rel="canonical" href="${canonical.replaceAll('.','\\.')}"`));
+    assert.match(html,/class="landing-brand" href="\.\/"/);
+    assert.match(html,/privacy\.html/);
+    assert.match(html,/terms\.html/);
+    assert.match(html,/support\.html/);
+    assert.match(sitemap,new RegExp(canonical.replaceAll('.','\\.')));
+  }
 });
 
 test('Cloudflare headers protect dynamic and sensitive responses',async()=>{
