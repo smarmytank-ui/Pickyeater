@@ -21,6 +21,8 @@ No additional domain action is currently required from the owner.
 - Complete identity, bank-account, tax, and seller-profile onboarding.
 - Accept Stripe's commercial terms.
 - Approve the USD $29 one-time product and the receipt-facing seller name.
+- Configure one item per checkout, no promotion codes, metadata `offer=food_my_way_founding`, and Stripe's `completed_sessions.limit` restriction at exactly `250`.
+- Decide whether to enable Stripe Tax. The webhook now accepts applicable tax above the exact $29 subtotal and rejects discounts or a different subtotal.
 
 ## 4. Transactional email
 
@@ -36,3 +38,14 @@ No additional domain action is currently required from the owner.
 No app-store enrollment is recommended until web retention data justifies native packaging.
 
 You do **not** need to create D1 databases, bindings, API secrets, DNS records, webhook endpoints, redirect rules, deployment settings, or verification scripts manually. Those are deployment-operator tasks after the corresponding account session and commercial approvals are available.
+
+## Exact paid-launch handoff
+
+The strict production gate currently passes 33 checks and fails 10. Those failures require only these four owner inputs:
+
+1. Seller identity, mailing address, governing jurisdiction, and approval of the 14-day refund/founding terms.
+2. Completed Stripe onboarding and approval of the $29 one-time offer described above.
+3. Resend enrollment plus approval of `Food My Way <login@foodmyway.app>` as the account-email sender.
+4. The destination inbox that should receive `support@foodmyway.app` mail.
+
+After those inputs, the deployment operator can publish the approved legal pages, add the Stripe and Resend secrets, configure the webhook and Payment Link, enable accounts and premium enforcement, and run the purchase/refund/account lifecycle without further domain or infrastructure work from the owner.
