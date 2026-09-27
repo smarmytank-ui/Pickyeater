@@ -22,7 +22,7 @@ This positioning avoids competing as a generic recipe generator. The wedge is re
 ### First paid release
 
 - Founding Member: **$29 one time**, limited to the first 250 customers
-- Free: limited creations and saved recipes
+- Free: unlimited recipe creation and ingredient swaps, with up to three saved recipes
 - Plus: **$4.99/month or $39/year**
 - Family, after multi-profile validation: **$59/year**
 

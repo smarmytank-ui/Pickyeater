@@ -57,6 +57,23 @@ async function checkApi(pathname,{method='GET',body,requestHeaders={},statuses=[
   }catch(error){ failures.push(`${method} ${pathname}: ${error.message}`); }
 }
 
+async function checkLaunchCopy(pathname,{contains=[],excludes=[]}){
+  try{
+    const response=await fetch(new URL(pathname,base),{signal:AbortSignal.timeout(15000)});
+    if(!response.ok){ failures.push(`${pathname} launch copy: HTTP ${response.status}`); return; }
+    const body=await response.text();
+    for(const value of contains){
+      if(!body.toLowerCase().includes(value.toLowerCase())) failures.push(`${pathname}: paid-launch copy is missing ${value}`);
+      else passed.push(`${pathname} copy: ${value}`);
+    }
+    for(const value of excludes){
+      if(body.toLowerCase().includes(value.toLowerCase())) failures.push(`${pathname}: paid-launch copy still contains ${value}`);
+      else passed.push(`${pathname} excludes: ${value}`);
+    }
+    if(body.includes('[[')) failures.push(`${pathname}: unresolved legal placeholder`);
+  }catch(error){ failures.push(`${pathname} launch copy: ${error.message}`); }
+}
+
 await checkPath('/',{
   contains:'Food My Way',
   headers:{
@@ -96,6 +113,18 @@ if(launchMode){
       failures.push('/config.js: a valid Stripe founderCheckoutUrl is required for paid launch');
     }else passed.push('/config.js founderCheckoutUrl');
   }catch(error){ failures.push(`/config.js launch settings: ${error.message}`); }
+  await checkLaunchCopy('/',{
+    contains:['First 250 paid members','$29'],
+    excludes:['private beta is free while we finish accounts and payments']
+  });
+  await checkLaunchCopy('/terms.html',{
+    contains:['Food My Way Founding Member','14 calendar days','$29'],
+    excludes:['These terms cover the Food My Way private beta','must be finalized before checkout opens']
+  });
+  await checkLaunchCopy('/privacy.html',{
+    contains:['Cloudflare','Resend','Stripe','90 days'],
+    excludes:['before their material data collection is enabled']
+  });
 }
 
 const noStore={'cache-control':/no-store/i};
