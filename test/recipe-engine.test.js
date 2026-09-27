@@ -24,8 +24,19 @@ const {
   MAX_SHARED_RECIPE_CHARS,
   lsSet,
   restoreCloudSnapshot,
-  boundedDiaryNumber
+  boundedDiaryNumber,
+  uncheckedGroceryEntries
 } = require('../app.js');
+
+test('grocery handoff excludes items already checked off',()=>{
+  const entries=[
+    ['eggs|count',{name:'eggs',quantity:4,unit:'count'}],
+    ['milk|cup',{name:'milk',quantity:2,unit:'cup'}],
+    ['bread|count',{name:'bread',quantity:1,unit:'count'}]
+  ];
+  assert.deepEqual(uncheckedGroceryEntries(entries,{'milk|cup':true}),[entries[0],entries[2]]);
+  assert.deepEqual(uncheckedGroceryEntries(entries,{'eggs|count':true,'milk|cup':true,'bread|count':true}),[]);
+});
 
 test('quick diary nutrition accepts only bounded nonnegative numbers', () => {
   assert.equal(boundedDiaryNumber('-10',10000),0);

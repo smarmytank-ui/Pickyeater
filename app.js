@@ -1690,6 +1690,10 @@ function plannedGroceryItems(){
   return [...combined.entries()].sort((a,b)=>a[1].name.localeCompare(b[1].name));
 }
 
+function uncheckedGroceryEntries(entries,checks={}){
+  return entries.filter(([key])=>!checks[key]);
+}
+
 function renderPlanner(){
   const recipeMap = new Map(getRecipeBook().map(recipe=>[recipe.id, recipe]));
   const recipes = getWeeklyPlan().map(id=>recipeMap.get(id)).filter(Boolean);
@@ -1733,6 +1737,7 @@ function renderPlanner(){
   $('shopGroceries')?.classList.toggle('hidden',!commerceAvailable);
   $('commerceDisclosure')?.classList.toggle('hidden',!commerceAvailable);
   const checks=lsGet(GROCERY_CHECKS_KEY, {});
+  if($('shopGroceries')) $('shopGroceries').disabled=commerceAvailable && uncheckedGroceryEntries(combined,checks).length===0;
   combined.forEach(([key,item])=>{
     const label=document.createElement('label');
     label.className=`grocery-item${checks[key]?' checked':''}`;
@@ -1749,6 +1754,7 @@ function renderPlanner(){
         return;
       }
       label.classList.toggle('checked',checkbox.checked);
+      if($('shopGroceries')) $('shopGroceries').disabled=uncheckedGroceryEntries(combined,updated).length===0;
       track('grocery_item_checked',{checked:checkbox.checked});
     };
     label.append(checkbox,text);
@@ -1757,11 +1763,15 @@ function renderPlanner(){
 }
 
 async function shopPlannedGroceries(){
-  const items=plannedGroceryItems().map(([,item])=>({
+  const checks=lsGet(GROCERY_CHECKS_KEY,{});
+  const items=uncheckedGroceryEntries(plannedGroceryItems(),checks).map(([,item])=>({
     name:item.name,quantity:item.quantity,unit:item.unit,
     displayText:`${groceryQuantity(item.quantity,item.unit)} ${pretty(item.name)}`
   }));
-  if(!items.length){ showToast('Plan at least one saved recipe first.'); return; }
+  if(!items.length){
+    showToast(plannedGroceryItems().length ? 'Everything on this grocery list is already checked off.' : 'Plan at least one saved recipe first.');
+    return;
+  }
   if(!confirm('Send this grocery list to Instacart? You’ll review all product matches, quantities, prices, substitutions, pickup, and delivery options there.')) return;
   const button=$('shopGroceries');
   try{
@@ -1776,7 +1786,7 @@ async function shopPlannedGroceries(){
     track('grocery_shop_failed',{item_count:items.length});
     showToast(error.message || 'The grocery list could not be created.');
   }finally{
-    if(button){ button.disabled=false; button.textContent='Shop ingredients'; }
+    if(button){ button.disabled=uncheckedGroceryEntries(plannedGroceryItems(),lsGet(GROCERY_CHECKS_KEY,{})).length===0; button.textContent='Shop ingredients'; }
   }
 }
 
@@ -2779,6 +2789,7 @@ if(typeof module !== 'undefined' && module.exports){
     MAX_SHARED_RECIPE_CHARS,
     lsSet,
     restoreCloudSnapshot,
-    boundedDiaryNumber
+    boundedDiaryNumber,
+    uncheckedGroceryEntries
   };
 }
