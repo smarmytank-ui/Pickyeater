@@ -1,5 +1,11 @@
 # Food My Way operations runbook
 
+## Production availability monitor
+
+GitHub Actions runs `.github/workflows/production-monitor.yml` at minute 17 of every hour and on manual dispatch. It executes the public deployment verifier against `https://foodmyway.app`, covering the application shell, legal and search pages, missing-route behavior, and the protected API failure modes. A failure opens one GitHub issue titled `[monitor] Food My Way production verification failed`; later failures add comments to that same open issue instead of creating duplicates.
+
+For an alert, open the linked workflow run, reproduce with `node scripts/verify-deployment.mjs https://foodmyway.app`, check the Cloudflare Pages deployment and binding state, and keep payments disabled if fulfillment or entitlement storage is unhealthy. Close the incident only after the verifier passes against production again.
+
 Updated: September 26, 2026
 
 ## Support standard

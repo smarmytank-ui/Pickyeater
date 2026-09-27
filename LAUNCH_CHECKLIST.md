@@ -67,6 +67,7 @@
 - [x] Production security and cache headers
 - [x] Monitoring-only DMARC policy published for foodmyway.app
 - [x] Continuous integration and public-deployment verification script
+- [x] Hourly production availability monitor with deduplicated GitHub incident creation
 - [x] Non-mutating paid-launch API readiness gate
 - [x] foodmyway.app connected to production
 - [x] PickyEaterCookbook.com canonical redirect configured
