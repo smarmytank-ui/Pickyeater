@@ -1,0 +1,45 @@
+import { normalizeAccountEmail, randomToken, sha256Hex } from '../../_shared/account.mjs';
+
+const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store'}});
+
+export async function onRequestPost({request,env}){
+  if(!env.ACCOUNTS || !env.RESEND_API_KEY || !env.AUTH_FROM_EMAIL || !env.AUTH_ORIGIN) return json({error:'Cloud accounts are not configured.'},503);
+  const length=Number(request.headers.get('content-length') || 0);
+  if(length>4000) return json({error:'Request is too large.'},413);
+  let input;
+  try{ input=await request.json(); }catch{ return json({error:'Invalid JSON request.'},400); }
+  let email;
+  try{ email=normalizeAccountEmail(input?.email); }catch(error){ return json({error:error.message},400); }
+  const now=Math.floor(Date.now()/1000);
+  const recent=await env.ACCOUNTS.prepare('SELECT count(*) AS count FROM login_challenges WHERE email=?1 AND created_epoch>?2')
+    .bind(email,now-3600).first();
+  if(Number(recent?.count || 0)>=5) return json({error:'Too many sign-in requests. Try again later.'},429);
+
+  const token=randomToken();
+  const tokenHash=await sha256Hex(token);
+  const id=crypto.randomUUID();
+  await env.ACCOUNTS.prepare('INSERT INTO login_challenges (id,email,token_hash,created_epoch,expires_epoch) VALUES (?1,?2,?3,?4,?5)')
+    .bind(id,email,tokenHash,now,now+900).run();
+  let link;
+  try{
+    const origin=new URL(env.AUTH_ORIGIN);
+    if(origin.protocol!=='https:') throw new Error('HTTPS required');
+    link=new URL('/api/auth/consume',origin);
+  }catch{
+    await env.ACCOUNTS.prepare('DELETE FROM login_challenges WHERE id=?1').bind(id).run().catch(()=>{});
+    return json({error:'Cloud account origin is invalid.'},503);
+  }
+  link.searchParams.set('token',token);
+  const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{
+    authorization:`Bearer ${env.RESEND_API_KEY}`,'content-type':'application/json'
+  },body:JSON.stringify({
+    from:env.AUTH_FROM_EMAIL,to:[email],subject:'Sign in to Food My Way',
+    text:`Use this secure link to sign in to Food My Way. It expires in 15 minutes and can be used once:\n\n${link.href}\n\nIf you did not request this, you can ignore this email.`,
+    html:`<p>Use this secure link to sign in to Food My Way. It expires in 15 minutes and can be used once.</p><p><a href="${link.href}">Sign in to Food My Way</a></p><p>If you did not request this, you can ignore this email.</p>`
+  })});
+  if(!response.ok){
+    await env.ACCOUNTS.prepare('DELETE FROM login_challenges WHERE id=?1').bind(id).run().catch(()=>{});
+    return json({error:'Sign-in email could not be sent.'},503);
+  }
+  return json({ok:true,message:'Check your email for a secure sign-in link.'});
+}
