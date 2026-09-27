@@ -54,6 +54,16 @@
 - [ ] TikTok, Instagram, and YouTube handles reserved
 - [ ] Apple/Google store packaging decision after web retention proof
 
+## Grocery commerce
+
+- [x] Instacart selected as first commerce integration
+- [x] Server-side shopping-list adapter and validation tests
+- [x] Cloudflare endpoint fails closed until a secret is configured
+- [ ] Instacart development application and API key
+- [ ] Ingredient-match QA across at least 25 representative lists
+- [ ] Instacart-approved CTA and production review
+- [ ] Impact affiliate enrollment and attribution test
+
 ## Human-required items
 
 These steps require the owner because they involve legal identity, banking, taxes, or accepting third-party commercial terms:
