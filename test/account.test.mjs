@@ -15,9 +15,9 @@ test('creates high-entropy tokens and stable hashes',async()=>{
 });
 
 test('cloud snapshots discard unknown local keys and reject oversized data',()=>{
-  const normalized=normalizeCloudSnapshot({data:{pickyRecipeBook:[{id:'1'}],pickyAuth:{email:'private@example.com'},unknown:'drop'}});
-  assert.deepEqual(normalized.snapshot,{version:1,data:{pickyRecipeBook:[{id:'1'}]}});
-  assert.throws(()=>normalizeCloudSnapshot({data:{pickyRecipeBook:['x'.repeat(260_000)]}}),/too large/);
+  const normalized=normalizeCloudSnapshot({data:{pickyRecipesV2:[{id:'1'}],pickyRecipeBook:[{id:'legacy'}],pickyAuth:{email:'private@example.com'},unknown:'drop'}});
+  assert.deepEqual(normalized.snapshot,{version:1,data:{pickyRecipesV2:[{id:'1'}],pickyRecipeBook:[{id:'legacy'}]}});
+  assert.throws(()=>normalizeCloudSnapshot({data:{pickyRecipesV2:['x'.repeat(260_000)]}}),/too large/);
 });
 
 test('session cookies are secure, HttpOnly, and clearable',()=>{

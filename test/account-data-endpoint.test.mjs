@@ -71,21 +71,21 @@ test('cloud backup writes require founding access while export and deletion rema
   assert.equal(initialGet.status,200);
   assert.deepEqual((await initialGet.json()).snapshot,{version:1,data:{}});
 
-  const denied=await onRequestPut({request:request('PUT',cookie,{data:{pickyRecipeBook:[{id:'meal_1'}]},baseRevision:null}),env});
+  const denied=await onRequestPut({request:request('PUT',cookie,{data:{pickyRecipesV2:[{id:'meal_1'}]},baseRevision:null}),env});
   assert.equal(denied.status,403);
   assert.equal((await denied.json()).code,'PREMIUM_REQUIRED');
 
   grantFounding(purchases);
-  const saved=await onRequestPut({request:request('PUT',cookie,{data:{pickyRecipeBook:[{id:'meal_1'}]},baseRevision:null}),env});
+  const saved=await onRequestPut({request:request('PUT',cookie,{data:{pickyRecipesV2:[{id:'meal_1'}]},baseRevision:null}),env});
   assert.equal(saved.status,200);
   assert.equal((await saved.json()).revision,1);
 
   purchases.prepare("UPDATE entitlements SET status='refunded'").run();
   const exportResponse=await onRequestGet({request:request('GET',cookie),env});
   assert.equal(exportResponse.status,200);
-  assert.deepEqual((await exportResponse.json()).snapshot.data.pickyRecipeBook,[{id:'meal_1'}]);
+  assert.deepEqual((await exportResponse.json()).snapshot.data.pickyRecipesV2,[{id:'meal_1'}]);
 
-  const deniedAfterRefund=await onRequestPut({request:request('PUT',cookie,{data:{pickyRecipeBook:[]},baseRevision:1}),env});
+  const deniedAfterRefund=await onRequestPut({request:request('PUT',cookie,{data:{pickyRecipesV2:[]},baseRevision:1}),env});
   assert.equal(deniedAfterRefund.status,403);
 
   const deleted=await onRequestDelete({request:request('DELETE',cookie,{}, {'x-confirm-delete':'DELETE'}),env});

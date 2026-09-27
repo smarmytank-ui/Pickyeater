@@ -144,10 +144,12 @@ function downloadCloudExport(payload){
 
 function restoreCloudSnapshot(snapshot){
   const data=snapshot?.data && typeof snapshot.data==='object' ? snapshot.data : {};
+  let failed=false;
   for(const key of CLOUD_DATA_KEYS){
-    if(Object.prototype.hasOwnProperty.call(data,key)) lsSet(key,data[key]);
+    if(Object.prototype.hasOwnProperty.call(data,key)) failed=!lsSet(key,data[key]) || failed;
     else localStorage.removeItem(key);
   }
+  if(failed) throw new Error('This browser could not store the restored backup. Export the cloud data and free browser storage before trying again.');
 }
 
 async function setupAccounts(){
@@ -1473,7 +1475,7 @@ function getRecipeBook(){
 }
 
 function setRecipeBook(recipes){
-  lsSet(RECIPE_BOOK_KEY, recipes);
+  return lsSet(RECIPE_BOOK_KEY, recipes);
 }
 
 function getWeeklyPlan(){
@@ -1485,7 +1487,10 @@ function toggleWeeklyPlan(recipeId){
   if(!requirePremium('weekly_planning')) return getWeeklyPlan();
   const plan = getWeeklyPlan();
   const next = plan.includes(recipeId) ? plan.filter(id=>id!==recipeId) : [...plan, recipeId];
-  lsSet(WEEKLY_PLAN_KEY, next);
+  if(!lsSet(WEEKLY_PLAN_KEY,next)){
+    showStorageFailure();
+    return plan;
+  }
   track('weekly_plan_toggled', { planned:next.includes(recipeId), plan_size:next.length });
   return next;
 }
@@ -1566,7 +1571,11 @@ function renderPlanner(){
     checkbox.onchange=()=>{
       const updated=lsGet(GROCERY_CHECKS_KEY,{});
       updated[key]=checkbox.checked;
-      lsSet(GROCERY_CHECKS_KEY,updated);
+      if(!lsSet(GROCERY_CHECKS_KEY,updated)){
+        checkbox.checked=!checkbox.checked;
+        showStorageFailure();
+        return;
+      }
       label.classList.toggle('checked',checkbox.checked);
       track('grocery_item_checked',{checked:checkbox.checked});
     };
@@ -1633,7 +1642,10 @@ function saveRecipe(recipe, options = {}){
   }
   if(existingIndex >= 0) recipes[existingIndex] = { ...normalized, id: options.replaceId };
   else recipes.unshift(normalized);
-  setRecipeBook(recipes);
+  if(!setRecipeBook(recipes)){
+    showStorageFailure();
+    return null;
+  }
   return normalized;
 }
 
@@ -1652,6 +1664,11 @@ function showToast(message){
   toast.classList.remove('hidden');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(()=>toast.classList.add('hidden'), 2400);
+}
+
+function showStorageFailure(){
+  showToast('This browser could not save that change. Export important data and free browser storage, then try again.');
+  track('storage_write_failed');
 }
 
 function showCreateView(){
@@ -1729,7 +1746,7 @@ function renderRecipeBook(query = ''){
       const all = getRecipeBook();
       const match = all.find(item=>item.id===recipe.id);
       if(match) match.favorite = !match.favorite;
-      setRecipeBook(all);
+      if(!setRecipeBook(all)) showStorageFailure();
       renderRecipeBook($('recipeSearch')?.value || '');
     };
     head.append(copy, favorite);
@@ -1742,7 +1759,7 @@ function renderRecipeBook(query = ''){
       [isPlanned ? '✓ In weekly plan' : 'Add to week', ()=>{ toggleWeeklyPlan(recipe.id); renderRecipeBook($('recipeSearch')?.value || ''); }, isPlanned ? 'primary' : ''],
       ['Share', ()=>shareRecipe(recipe), ''],
       ['Duplicate', ()=>{ const duplicate={...safeClone(recipe), id:uid(), title:`${recipe.title} Copy`, savedAt:new Date().toISOString()}; if(saveRecipe(duplicate)) renderRecipeBook(); }, ''],
-      ['Delete', ()=>{ if(confirm(`Delete “${recipe.title}”?`)){ setRecipeBook(getRecipeBook().filter(item=>item.id!==recipe.id)); renderRecipeBook($('recipeSearch')?.value || ''); } }, 'ghost']
+      ['Delete', ()=>{ if(confirm(`Delete “${recipe.title}”?`)){ if(!setRecipeBook(getRecipeBook().filter(item=>item.id!==recipe.id))) showStorageFailure(); renderRecipeBook($('recipeSearch')?.value || ''); } }, 'ghost']
     ];
     buttons.forEach(([label, handler, style])=>{
       const btn=document.createElement('button');
@@ -1867,7 +1884,10 @@ function lsGet(k, fallback){
   try { return JSON.parse(localStorage.getItem(k) || 'null') ?? fallback; }
   catch(e){ return fallback; }
 }
-function lsSet(k, v){ localStorage.setItem(k, JSON.stringify(v)); }
+function lsSet(k,v){
+  try{ localStorage.setItem(k,JSON.stringify(v)); return true; }
+  catch{ return false; }
+}
 
 function todayKey(){
   return dateKeyForOffset(0);
@@ -1883,7 +1903,7 @@ function dateKeyForOffset(offset){
 }
 
 function getDiary(){ return lsGet('pickyDiaryMeals', {}); }
-function setDiary(d){ lsSet('pickyDiaryMeals', d); }
+function setDiary(d){ return lsSet('pickyDiaryMeals',d); }
 
 function ensureDay(diary, dateKey){
   if(!diary[dateKey]){
@@ -1917,7 +1937,8 @@ function addEntryToDiary(meal, entry){
   const key = todayKey();
   ensureDay(diary, key);
   diary[key][meal].push(entry);
-  setDiary(diary);
+  if(!setDiary(diary)){ showStorageFailure(); return false; }
+  return true;
 }
 
 function deleteEntry(meal, idx){
@@ -1925,7 +1946,8 @@ function deleteEntry(meal, idx){
   const key = dateKeyForOffset(diaryDayOffset);
   ensureDay(diary, key);
   diary[key][meal].splice(idx, 1);
-  setDiary(diary);
+  if(!setDiary(diary)){ showStorageFailure(); return false; }
+  return true;
 }
 
 function updateDiarySub(){
@@ -2009,9 +2031,10 @@ function setDiaryDay(offset){
 }
 
 function quickAddDiaryEntry(){
-  const name = document.getElementById('qaName')?.value.trim();
-  if(!name) return alert('Add a food name');
-  addEntryToDiary(activeMeal, {
+  const nameInput=document.getElementById('qaName');
+  const name = nameInput?.value.trim();
+  if(!name){ showToast('Add a food name first.'); nameInput?.focus(); return; }
+  const saved=addEntryToDiary(activeMeal, {
     title:name,
     source:'Quick add',
     macros:{
@@ -2023,6 +2046,7 @@ function quickAddDiaryEntry(){
     localOnly:true,
     time:new Date().toISOString()
   });
+  if(!saved) return;
   ['qaName','qaCal','qaP','qaC','qaF'].forEach(id=>{ const input=document.getElementById(id); if(input) input.value=''; });
   renderDiary();
 }
@@ -2060,13 +2084,14 @@ function addCurrentRecipeToMeal(meal){
   const c = parseNum(document.getElementById('carbs')?.textContent);
   const f = parseNum(document.getElementById('fat')?.textContent);
 
-  addEntryToDiary(meal, {
+  const saved=addEntryToDiary(meal, {
     title: state.title,
     source: 'Picky recipe',
     macros: { cal, p, c, f },
     localOnly:true,
     time: new Date().toISOString()
   });
+  if(!saved) return;
 
   setActiveMeal(meal);
   showDiaryView();
@@ -2273,7 +2298,7 @@ function wireEvents(){
     showRecipeBookView();
   });
   $('clearGroceryChecks')?.addEventListener('click', ()=>{
-    lsSet(GROCERY_CHECKS_KEY,{});
+    if(!lsSet(GROCERY_CHECKS_KEY,{})){ showStorageFailure(); return; }
     renderPlanner();
     showToast('Grocery checks cleared.');
   });
@@ -2360,7 +2385,12 @@ function wireEvents(){
         return;
       }
     }
-    lsSet('foodMyWayFounderInterest', { email, consent:true, synced, savedAt:new Date().toISOString() });
+    const stored=lsSet('foodMyWayFounderInterest',{email,consent:true,synced,savedAt:new Date().toISOString()});
+    if(!stored && !synced){
+      if(button){ button.disabled=false; button.textContent='Save my spot'; }
+      showStorageFailure();
+      return;
+    }
     closeFounder();
     if(button){ button.disabled=false; button.textContent='Save my spot'; }
     showToast(synced ? 'You’re on the founding list.' : 'Saved on this device; online signup is not connected yet.');
@@ -2389,7 +2419,7 @@ function wireEvents(){
       texture:$('preferredTexture')?.value,
       servingStyle:$('servingStyle')?.value
     });
-    lsSet(TASTE_PROFILE_KEY, profile);
+    if(!lsSet(TASTE_PROFILE_KEY,profile)){ showStorageFailure(); return; }
     closeProfile();
     showToast('Preferences saved.');
     track('taste_profile_saved', { avoid_count:profile.avoids.length });
@@ -2503,6 +2533,7 @@ if(typeof module !== 'undefined' && module.exports){
     encodeSharedRecipe,
     decodeSharedRecipe,
     normalizeSavedRecipe,
-    MAX_SHARED_RECIPE_CHARS
+    MAX_SHARED_RECIPE_CHARS,
+    lsSet
   };
 }

@@ -217,6 +217,13 @@ test('cloud backup writes are authorized on the server, not only hidden in the U
   assert.match(docs,/independently repeats that authorization server-side/);
 });
 
+test('cloud backup accepts the current Recipe Book storage key',async()=>{
+  const [script,account]=await Promise.all([read('app.js'),read('functions/_shared/account.mjs')]);
+  assert.match(script,/const RECIPE_BOOK_KEY = 'pickyRecipesV2'/);
+  assert.match(script,/CLOUD_DATA_KEYS = \['pickyRecipesV2'/);
+  assert.match(account,/'pickyRecipesV2'/);
+});
+
 test('magic-link GET is read-only and explicit POST creates the session',async()=>{
   const [endpoint,docs]=await Promise.all([
     readFile(path.join(root,'functions/api/auth/consume.js'),'utf8'),

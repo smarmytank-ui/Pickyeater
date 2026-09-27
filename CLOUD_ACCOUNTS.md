@@ -10,6 +10,7 @@ The account backend uses passwordless email links, Cloudflare D1, and Resend. It
 - A unique database constraint prevents concurrent reuse of one login challenge.
 - Sign-in requests are limited to five per email per hour.
 - Cloud snapshots accept only known Food My Way storage keys and are limited to 250 KB.
+- The canonical Recipe Book key is `pickyRecipesV2`; `pickyRecipeBook`, `pickyFavorites`, and `picky_saved_recipes` remain accepted only for legacy migration. Keep the browser and server allowlists covered by the key-parity test whenever storage keys change.
 - Cloud backup writes require an active founding entitlement and fail closed when purchase verification is unavailable.
 - Every cloud snapshot has an optimistic-lock revision; conflicting device writes return HTTP 409 instead of silently overwriting data.
 - Account deletion requires an authenticated session and an explicit `X-Confirm-Delete: DELETE` header.

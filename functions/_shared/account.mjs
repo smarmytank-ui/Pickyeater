@@ -1,6 +1,6 @@
 const encoder=new TextEncoder();
 const SYNC_KEYS=new Set([
-  'pickyRecipeBook','foodMyWayWeeklyPlan','foodMyWayGroceryChecks','foodMyWayTasteProfile',
+  'pickyRecipesV2','pickyRecipeBook','foodMyWayWeeklyPlan','foodMyWayGroceryChecks','foodMyWayTasteProfile',
   'pickyDiaryMeals','pickyFavorites','picky_saved_recipes'
 ]);
 

@@ -20,7 +20,8 @@ const {
   encodeSharedRecipe,
   decodeSharedRecipe,
   normalizeSavedRecipe,
-  MAX_SHARED_RECIPE_CHARS
+  MAX_SHARED_RECIPE_CHARS,
+  lsSet
 } = require('../app.js');
 
 test('free plan has the advertised three-recipe save allowance', () => {
@@ -208,4 +209,19 @@ test('shared recipes are bounded and recomputed before display or saving', () =>
   assert.doesNotMatch(decoded.steps.map(step=>step.text).join(' '),/raw/i);
   assert.match(decoded.steps.map(step=>step.text).join(' '),/165°F \(74°C\)/);
   assert.match(decoded.steps.at(-1).text,/own section of the plate/);
+});
+
+test('local persistence reports restricted or full browser storage', () => {
+  const previous=global.localStorage;
+  try{
+    global.localStorage={setItem(){ throw new Error('QuotaExceededError'); }};
+    assert.equal(lsSet('test',{value:1}),false);
+    let written='';
+    global.localStorage={setItem(key,value){ written=`${key}:${value}`; }};
+    assert.equal(lsSet('test',{value:1}),true);
+    assert.equal(written,'test:{"value":1}');
+  }finally{
+    if(previous===undefined) delete global.localStorage;
+    else global.localStorage=previous;
+  }
 });
