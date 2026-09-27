@@ -25,7 +25,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="manifest" href="./site.webmanifest">
-  <link rel="stylesheet" href="./styles.css?v=2.25.0" />
+  <link rel="stylesheet" href="./styles.css?v=2.26.1" />
 </head>
 <body>
 <div class="page">
@@ -145,6 +145,17 @@
     <button id="saveBtn" class="btn primary full">⭐ Save to Favorites</button>
     <button id="shareBtn" class="btn full">Share this recipe</button>
     <button id="addDiaryBtn" class="btn full">➕ Add to Diary</button>
+  </div>
+
+  <div id="savedNextStep" class="saved-next-step hidden" role="status">
+    <div>
+      <strong>One less dinner decision.</strong>
+      <span>This exact version is waiting in your Recipe Book.</span>
+    </div>
+    <div class="saved-next-actions">
+      <button id="savedOpenBook" class="btn small" type="button">View Recipe Book</button>
+      <button id="savedFounderCta" class="btn ghost small" type="button">Get founding updates</button>
+    </div>
   </div>
 
   <p class="ownership">This is your version now.</p>
@@ -306,7 +317,7 @@
     <button id="founderClose" class="modal-close" type="button" aria-label="Close">×</button>
     <div class="eyebrow">Founding member list</div>
     <div id="founderTitle" class="modal-title">Be first in when checkout opens.</div>
-    <div class="modal-sub">Founding access will be $29 once, not another monthly bill. Enter your email and we’ll remember your interest on this device while the secure signup connection is completed.</div>
+    <div class="modal-sub">Founding access will be $29 once, not another monthly bill. Join the email list and we’ll tell you when secure checkout opens.</div>
     <label class="modal-label" for="founderEmail">Email</label>
     <input id="founderEmail" class="field" type="email" autocomplete="email" placeholder="you@example.com" />
     <label class="consent-row"><input id="founderConsent" type="checkbox" /> <span>Email me about founding access and major Food My Way updates. I can unsubscribe anytime.</span></label>
@@ -370,6 +381,6 @@
 </script>
 
 <script src="./config.js"></script>
-<script src="./app.js?v=2.25.0"></script>
+<script src="./app.js?v=2.26.1"></script>
 </body>
 </html>

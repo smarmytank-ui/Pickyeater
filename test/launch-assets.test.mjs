@@ -123,6 +123,21 @@ test('pricing copy matches the enforced free save allowance',async()=>{
   assert.match(script,/requirePremium\('unlimited_saves'\)/);
 });
 
+test('a successful recipe save exposes a useful conversion next step',async()=>{
+  const [html,script,styles]=await Promise.all([
+    readFile(path.join(root,'index.html'),'utf8'),
+    readFile(path.join(root,'app.js'),'utf8'),
+    readFile(path.join(root,'styles.css'),'utf8')
+  ]);
+  assert.match(html,/id="savedNextStep"[^>]*class="saved-next-step hidden"/);
+  assert.match(html,/id="savedOpenBook"/);
+  assert.match(html,/id="savedFounderCta"/);
+  assert.doesNotMatch(html,/secure signup connection is completed/i);
+  assert.match(script,/\$\('savedNextStep'\)\?\.classList\.remove\('hidden'\)/);
+  assert.match(script,/savedFounderCta\?\.addEventListener\('click', openFounderOffer\)/);
+  assert.match(styles,/\.saved-next-step\.hidden\s*\{display:none\}/);
+});
+
 test('founding-list consent includes a secure unsubscribe path',async()=>{
   const [privacy,support,pkg]=await Promise.all([read('privacy.html'),read('support.html'),read('package.json')]);
   await access(path.join(root,'functions/api/founding-unsubscribe.js'));

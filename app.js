@@ -1508,6 +1508,7 @@ function openSavedRecipe(recipe){
   $('sharedRecipeCard')?.classList.add('hidden');
   $('resultCard')?.classList.remove('hidden');
   $('saveRow')?.classList.remove('hidden');
+  $('savedNextStep')?.classList.add('hidden');
   render();
   track('saved_recipe_opened', { recipe_title:normalized.title });
   window.scrollTo({ top:0, behavior:'smooth' });
@@ -1989,6 +1990,7 @@ function wireEvents(){
 
       const sr = $('saveRow');
       if(sr) sr.classList.remove('hidden');
+      $('savedNextStep')?.classList.add('hidden');
       if(saveBtn) saveBtn.textContent = '⭐ Save to Favorites';
 
       render();
@@ -2020,6 +2022,7 @@ function wireEvents(){
       const saved=saveRecipe(snapshotCurrentRecipe());
       if(!saved) return;
       saveBtn.textContent = '✓ Saved';
+      $('savedNextStep')?.classList.remove('hidden');
       showToast('Saved to your Recipe Book.');
       track('recipe_saved', { recipe_title:state.title });
     });
@@ -2042,6 +2045,7 @@ function wireEvents(){
       $('resultCard')?.classList.add('hidden');
       $('inputCard')?.classList.remove('hidden');
       $('saveRow')?.classList.add('hidden');
+      $('savedNextStep')?.classList.add('hidden');
       if($('saveBtn')) $('saveBtn').textContent = '⭐ Save to Favorites';
     });
   }
@@ -2099,13 +2103,14 @@ function wireEvents(){
   const founderOverlay = $('founderOverlay');
   const founderEmail = $('founderEmail');
   const founderCta = $('founderCta');
+  const savedFounderCta = $('savedFounderCta');
   const checkoutUrl = getPublicConfig().founderCheckoutUrl;
   if(founderCta && validCheckoutUrl(checkoutUrl)) founderCta.textContent='Become a founding member — $29';
   const closeFounder = ()=>{
     founderOverlay?.classList.add('hidden');
     $('founderError')?.classList.add('hidden');
   };
-  founderCta?.addEventListener('click', ()=>{
+  const openFounderOffer = ()=>{
     if(validCheckoutUrl(checkoutUrl)){
       track('founder_checkout_started',{price:29,currency:'USD'});
       location.assign(checkoutUrl);
@@ -2114,7 +2119,10 @@ function wireEvents(){
     founderOverlay?.classList.remove('hidden');
     founderEmail?.focus();
     track('founder_interest_opened');
-  });
+  };
+  founderCta?.addEventListener('click', openFounderOffer);
+  savedFounderCta?.addEventListener('click', openFounderOffer);
+  $('savedOpenBook')?.addEventListener('click', showRecipeBookView);
   $('founderClose')?.addEventListener('click', closeFounder);
   founderOverlay?.addEventListener('click', event=>{ if(event.target===founderOverlay) closeFounder(); });
   $('founderSave')?.addEventListener('click', async()=>{
