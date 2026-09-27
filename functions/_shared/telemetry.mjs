@@ -3,10 +3,11 @@ const ALLOWED_EVENTS=new Set([
   'weekly_planner_opened','saved_recipe_opened','recipe_book_opened','recipe_shared','recipe_generated',
   'recipe_saved','founder_checkout_started','founder_checkout_returned','founder_interest_opened',
   'founder_interest_saved','taste_profile_opened','taste_profile_saved','local_data_deleted',
-  'install_prompt_result','app_installed','premium_gate_viewed'
+  'install_prompt_result','app_installed','premium_gate_viewed','grocery_shop_started',
+  'grocery_shop_link_created','grocery_shop_failed'
 ]);
 
-const NUMBER_KEYS=new Set(['ingredient_count','saved_count','plan_size','avoid_count','price']);
+const NUMBER_KEYS=new Set(['ingredient_count','saved_count','plan_size','avoid_count','price','item_count']);
 const BOOLEAN_KEYS=new Set(['planned','checked','synced']);
 const STRING_VALUES={
   currency:new Set(['USD']),

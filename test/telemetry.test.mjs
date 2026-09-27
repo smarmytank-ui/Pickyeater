@@ -24,3 +24,8 @@ test('allows only named premium-gate features',()=>{
   const filtered=normalizeTelemetryEvent({event:'premium_gate_viewed',sessionId:'12345678-1234-4123-8123-123456789abc',details:{feature:'secret_feature'}});
   assert.deepEqual(filtered.details,{});
 });
+
+test('keeps a bounded grocery item count without grocery content',()=>{
+  const event=normalizeTelemetryEvent({event:'grocery_shop_started',sessionId:'12345678-1234-4123-8123-123456789abc',details:{item_count:12,items:['private food']}});
+  assert.deepEqual(event.details,{item_count:12});
+});

@@ -1313,6 +1313,23 @@ function groceryQuantity(value, unit){
   return `${quantity} ${unit}`;
 }
 
+function plannedGroceryItems(){
+  const recipeMap=new Map(getRecipeBook().map(recipe=>[recipe.id,recipe]));
+  const recipes=getWeeklyPlan().map(id=>recipeMap.get(id)).filter(Boolean);
+  const combined=new Map();
+  recipes.forEach(recipe=>recipe.ingredients
+    .filter(item=>item.name!=='skip it' && Number(item.base?.v)>0)
+    .forEach(item=>{
+      const unit=item.base?.u || '';
+      const key=`${canonName(item.name)}|${unit}`;
+      const amount=Number(item.base.v)*(Number(recipe.servings)||2)/2;
+      const current=combined.get(key) || {name:canonName(item.name),unit,quantity:0};
+      current.quantity+=amount;
+      combined.set(key,current);
+    }));
+  return [...combined.entries()].sort((a,b)=>a[1].name.localeCompare(b[1].name));
+}
+
 function renderPlanner(){
   const recipeMap = new Map(getRecipeBook().map(recipe=>[recipe.id, recipe]));
   const recipes = getWeeklyPlan().map(id=>recipeMap.get(id)).filter(Boolean);
@@ -1330,6 +1347,8 @@ function renderPlanner(){
     const groceryEmpty = empty.cloneNode(true);
     groceryEmpty.textContent='Your grocery list will appear when you plan a meal.';
     groceriesHost.appendChild(groceryEmpty);
+    $('shopGroceries')?.classList.add('hidden');
+    $('commerceDisclosure')?.classList.add('hidden');
     return;
   }
 
@@ -1349,25 +1368,18 @@ function renderPlanner(){
     mealsHost.appendChild(row);
   });
 
-  const combined = new Map();
-  recipes.forEach(recipe=>recipe.ingredients
-    .filter(item=>item.name!=='skip it' && Number(item.base?.v)>0)
-    .forEach(item=>{
-      const unit=item.base?.u || '';
-      const key=`${canonName(item.name)}|${unit}`;
-      const amount=Number(item.base.v)*(Number(recipe.servings)||2)/2;
-      const current=combined.get(key) || { name:canonName(item.name), unit, amount:0 };
-      current.amount += amount;
-      combined.set(key,current);
-    }));
+  const combined=plannedGroceryItems();
+  const commerceAvailable=Boolean(getPublicConfig().commerceEnabled && combined.length);
+  $('shopGroceries')?.classList.toggle('hidden',!commerceAvailable);
+  $('commerceDisclosure')?.classList.toggle('hidden',!commerceAvailable);
   const checks=lsGet(GROCERY_CHECKS_KEY, {});
-  [...combined.entries()].sort((a,b)=>a[1].name.localeCompare(b[1].name)).forEach(([key,item])=>{
+  combined.forEach(([key,item])=>{
     const label=document.createElement('label');
     label.className=`grocery-item${checks[key]?' checked':''}`;
     const checkbox=document.createElement('input');
     checkbox.type='checkbox'; checkbox.checked=Boolean(checks[key]);
     const text=document.createElement('span');
-    text.textContent=`${groceryQuantity(item.amount,item.unit)} ${pretty(item.name)}`;
+    text.textContent=`${groceryQuantity(item.quantity,item.unit)} ${pretty(item.name)}`;
     checkbox.onchange=()=>{
       const updated=lsGet(GROCERY_CHECKS_KEY,{});
       updated[key]=checkbox.checked;
@@ -1378,6 +1390,30 @@ function renderPlanner(){
     label.append(checkbox,text);
     groceriesHost.appendChild(label);
   });
+}
+
+async function shopPlannedGroceries(){
+  const items=plannedGroceryItems().map(([,item])=>({
+    name:item.name,quantity:item.quantity,unit:item.unit,
+    displayText:`${groceryQuantity(item.quantity,item.unit)} ${pretty(item.name)}`
+  }));
+  if(!items.length){ showToast('Plan at least one saved recipe first.'); return; }
+  if(!confirm('Send this grocery list to Instacart? You’ll review all product matches, quantities, prices, substitutions, pickup, and delivery options there.')) return;
+  const button=$('shopGroceries');
+  try{
+    if(button){ button.disabled=true; button.textContent='Creating list…'; }
+    track('grocery_shop_started',{item_count:items.length});
+    const response=await fetch('./api/shop',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({title:'Food My Way weekly groceries',items})});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok || typeof result.url!=='string') throw new Error(result.error || 'The grocery list could not be created.');
+    track('grocery_shop_link_created',{item_count:items.length});
+    location.assign(result.url);
+  }catch(error){
+    track('grocery_shop_failed',{item_count:items.length});
+    showToast(error.message || 'The grocery list could not be created.');
+  }finally{
+    if(button){ button.disabled=false; button.textContent='Shop ingredients'; }
+  }
 }
 
 function openPlanner(){
@@ -1995,6 +2031,7 @@ function wireEvents(){
     renderPlanner();
     showToast('Grocery checks cleared.');
   });
+  $('shopGroceries')?.addEventListener('click', shopPlannedGroceries);
   document.getElementById('viewToday')?.addEventListener('click', ()=>setDiaryDay(0));
   document.getElementById('viewYesterday')?.addEventListener('click', ()=>setDiaryDay(-1));
   document.getElementById('qaAdd')?.addEventListener('click', quickAddDiaryEntry);

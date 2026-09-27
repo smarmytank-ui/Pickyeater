@@ -38,11 +38,13 @@ The endpoint safely returns HTTP 503 until `INSTACART_API_KEY` is configured. `I
 
 ## Product behavior
 
-The future action is **Shop ingredients**, placed at the top of the generated grocery list. The customer must review product matches, quantities, prices, substitutions, pickup/delivery availability, and the final cart on Instacart. Food My Way must not imply that it sells groceries or guarantees availability or delivery speed.
+The feature-flagged action is **Shop ingredients**, placed at the top of the generated grocery list. It is visible only when `commerceEnabled` is true. Before transmission, the customer confirms that the grocery list will be sent to Instacart. The customer must review product matches, quantities, prices, substitutions, pickup/delivery availability, and the final cart on Instacart. Food My Way does not imply that it sells groceries or guarantees availability or delivery speed.
 
 `SHOP_LINKBACK_ORIGIN` is a required server setting. The API ignores browser-supplied linkbacks so an attacker cannot use the Food My Way credential to generate Instacart pages that link to an arbitrary site. Set it to the private preview origin during development and `https://foodmyway.app` in production.
 
 Instacart documents pantry-item controls only for recipe links, so Food My Way does not send `enable_pantry_items` on its shopping-list payload.
+
+Do not change `commerceEnabled` to true until the CTA wording/brand treatment is approved and all 25 fixtures have passed live development-catalog review.
 
 ## Revenue model
 
