@@ -6,7 +6,7 @@ Status: owner and legal review required. Replace every `[[BRACKETED_FIELD]]` bef
 
 **Effective:** `[[EFFECTIVE_DATE]]`
 
-These Terms of Use form an agreement between you and **TP Biz Op LLC, doing business as Food My Way**, located at `[[MAILING_ADDRESS]]` (“Food My Way,” “we,” “us,” or “our”). They govern your access to Food My Way websites, applications, accounts, and related services.
+These Terms of Use form an agreement between you and **TP Biz Op LLC, doing business as Food My Way**, located at **22365 El Toro Road, Unit 2088, Lake Forest, CA 92630** (“Food My Way,” “we,” “us,” or “our”). They govern your access to Food My Way websites, applications, accounts, and related services.
 
 ### Using Food My Way
 
@@ -80,4 +80,4 @@ We may update these terms as the service changes. We will revise the effective d
 
 ### Contact
 
-Questions, refund requests, and account support may be sent to `support@foodmyway.app`. Legal notices may be sent to `[[MAILING_ADDRESS]]`.
+Questions, refund requests, and account support may be sent to `support@foodmyway.app`. Legal notices may be sent to **TP Biz Op LLC, doing business as Food My Way, 22365 El Toro Road, Unit 2088, Lake Forest, CA 92630**.

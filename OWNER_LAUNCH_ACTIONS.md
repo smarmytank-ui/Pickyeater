@@ -13,17 +13,19 @@ No additional domain action is currently required from the owner.
 ## 2. Seller and support identity
 
 - [x] Legal seller supplied: **TP Biz Op LLC, doing business as Food My Way**.
-- Provide its public business/mailing address and governing jurisdiction.
-- Name the existing inbox that should receive mail sent to `support@foodmyway.app`.
+- [x] Public business/mailing address supplied: **22365 El Toro Road, Unit 2088, Lake Forest, CA 92630**.
+- Provide the governing jurisdiction for the Terms of Use.
+- [x] `support@foodmyway.app` routes to the owner's verified Gmail inbox and passed a live delivery test.
 - Approve the recommended 14-day refund policy and founding-offer definition in `LEGAL_LAUNCH_PACKET.md`.
 
 ## 3. Stripe
 
-- Complete identity, bank-account, tax, and seller-profile onboarding.
-- Accept Stripe's commercial terms.
-- Approve the USD $29 one-time product and the receipt-facing seller name.
-- Configure one item per checkout, no promotion codes, metadata `offer=food_my_way_founding`, and Stripe's `completed_sessions.limit` restriction at exactly `250`.
-- Decide whether to enable Stripe Tax. The webhook now accepts applicable tax above the exact $29 subtotal and rejects discounts or a different subtotal.
+- [x] Stripe onboarding submitted for **TP Biz Op LLC** with `support@foodmyway.app`, two-factor authentication, statement descriptor `FOOD MY WAY`, and the supplied business address.
+- [x] Stripe's commercial terms accepted during account activation.
+- [x] USD $29 one-time **Food My Way Founding Member** product created under the receipt-facing seller name **Food My Way**.
+- [x] Payment Link configured for one item per checkout, no promotion codes, metadata `offer=food_my_way_founding`, and exactly 250 completed sessions.
+- [x] Stripe Tax automatic collection enabled. The webhook accepts applicable tax above the exact $29 subtotal and rejects discounts or a different subtotal.
+- [x] Production webhook created for completed payments, delayed-payment success, and full refunds; its signing secret is stored as an encrypted Cloudflare production secret.
 
 ## 4. Transactional email
 
@@ -42,11 +44,9 @@ You do **not** need to create D1 databases, bindings, API secrets, DNS records, 
 
 ## Exact paid-launch handoff
 
-The strict production gate currently passes 33 checks and fails 10. Those failures require only these four owner inputs:
+The remaining owner-only inputs are:
 
-1. Seller identity, mailing address, governing jurisdiction, and approval of the 14-day refund/founding terms.
-2. Completed Stripe onboarding and approval of the $29 one-time offer described above.
-3. Resend enrollment plus approval of `Food My Way <login@foodmyway.app>` as the account-email sender.
-4. The destination inbox that should receive `support@foodmyway.app` mail.
+1. Governing jurisdiction and approval of the 14-day refund/founding terms.
+2. Resend enrollment plus approval of `Food My Way <login@foodmyway.app>` as the account-email sender.
 
-After those inputs, the deployment operator can publish the approved legal pages, add the Stripe and Resend secrets, configure the webhook and Payment Link, enable accounts and premium enforcement, and run the purchase/refund/account lifecycle without further domain or infrastructure work from the owner.
+After those inputs, the deployment operator can publish the approved legal pages, add the Resend secret, enable accounts and premium enforcement, and run the purchase/refund/account lifecycle without further domain or infrastructure work from the owner.

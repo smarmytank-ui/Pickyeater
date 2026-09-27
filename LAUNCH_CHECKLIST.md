@@ -37,7 +37,7 @@
 - [x] Tax-tolerant $29 subtotal validation and discount rejection
 - [x] Signed-in email entitlement lookup and feature-flagged premium gates
 - [ ] Stripe account and verified business identity
-- [ ] Stripe $29 founding product and Payment Link
+- [x] Stripe $29 founding product and Payment Link
 - [ ] Refund and cancellation policy finalized
 - [x] Cloudflare D1 `LEADS` database, schema, and preview binding
 - [x] Live founding-interest verification
@@ -53,9 +53,9 @@
 - [x] Complete paid-launch terms draft with owner/counsel placeholders
 - [x] Support page
 - [x] Nutrition and medical disclaimers
-- [ ] Legal operator name/address inserted
+- [x] Legal operator name/address inserted in the approval-ready paid terms draft
 - [ ] Professional legal review
-- [ ] support@foodmyway.app routing verified
+- [x] support@foodmyway.app routing verified
 - [x] Customer-support response templates
 - [x] Incident, refund, and deletion procedures
 

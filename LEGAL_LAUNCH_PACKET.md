@@ -7,7 +7,7 @@ This is operational drafting, not legal advice. A qualified attorney should revi
 ## Required identity fields
 
 - Legal seller: **TP Biz Op LLC, doing business as Food My Way**
-- Public business or mailing address: `[[MAILING_ADDRESS]]`
+- Public business or mailing address: **22365 El Toro Road, Unit 2088, Lake Forest, CA 92630**
 - Governing jurisdiction: `[[JURISDICTION]]`
 - Effective date: `[[EFFECTIVE_DATE]]`
 - Support email: `support@foodmyway.app`
@@ -52,7 +52,7 @@ The final policy must identify:
 
 ## Owner approval record
 
-- [ ] Legal identity and address completed
+- [x] Legal identity and address completed
 - [ ] Fourteen-day refund policy approved
 - [ ] Founding “lifetime” definition approved
 - [ ] Included premium features approved
