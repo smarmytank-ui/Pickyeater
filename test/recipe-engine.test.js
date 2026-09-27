@@ -21,7 +21,8 @@ const {
   decodeSharedRecipe,
   normalizeSavedRecipe,
   MAX_SHARED_RECIPE_CHARS,
-  lsSet
+  lsSet,
+  restoreCloudSnapshot
 } = require('../app.js');
 
 test('free plan has the advertised three-recipe save allowance', () => {
@@ -220,6 +221,34 @@ test('local persistence reports restricted or full browser storage', () => {
     global.localStorage={setItem(key,value){ written=`${key}:${value}`; }};
     assert.equal(lsSet('test',{value:1}),true);
     assert.equal(written,'test:{"value":1}');
+  }finally{
+    if(previous===undefined) delete global.localStorage;
+    else global.localStorage=previous;
+  }
+});
+
+test('cloud restore rolls local keys back when a browser write fails', () => {
+  const previous=global.localStorage;
+  const values=new Map([
+    ['pickyRecipesV2','[{"id":"local"}]'],
+    ['foodMyWayWeeklyPlan','["local"]']
+  ]);
+  let failNextPlanWrite=true;
+  global.localStorage={
+    getItem:key=>values.has(key) ? values.get(key) : null,
+    setItem(key,value){
+      if(key==='foodMyWayWeeklyPlan' && failNextPlanWrite){ failNextPlanWrite=false; throw new Error('quota'); }
+      values.set(key,String(value));
+    },
+    removeItem:key=>values.delete(key)
+  };
+  try{
+    assert.throws(()=>restoreCloudSnapshot({data:{
+      pickyRecipesV2:[{id:'cloud'}],
+      foodMyWayWeeklyPlan:['cloud']
+    }}),/previous local data was preserved/);
+    assert.equal(values.get('pickyRecipesV2'),'[{"id":"local"}]');
+    assert.equal(values.get('foodMyWayWeeklyPlan'),'["local"]');
   }finally{
     if(previous===undefined) delete global.localStorage;
     else global.localStorage=previous;

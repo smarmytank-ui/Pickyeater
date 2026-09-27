@@ -144,12 +144,24 @@ function downloadCloudExport(payload){
 
 function restoreCloudSnapshot(snapshot){
   const data=snapshot?.data && typeof snapshot.data==='object' ? snapshot.data : {};
-  let failed=false;
-  for(const key of CLOUD_DATA_KEYS){
-    if(Object.prototype.hasOwnProperty.call(data,key)) failed=!lsSet(key,data[key]) || failed;
-    else localStorage.removeItem(key);
+  const previous=new Map();
+  try{
+    for(const key of CLOUD_DATA_KEYS) previous.set(key,localStorage.getItem(key));
+    for(const key of CLOUD_DATA_KEYS){
+      if(Object.prototype.hasOwnProperty.call(data,key)){
+        if(!lsSet(key,data[key])) throw new Error('write failed');
+      }else localStorage.removeItem(key);
+    }
+  }catch{
+    for(const [key,value] of previous){
+      try{
+        if(value===null) localStorage.removeItem(key);
+        else localStorage.setItem(key,value);
+      }catch{}
+    }
+    throw new Error('This browser could not store the restored backup. Your previous local data was preserved when possible. Export the cloud data and free browser storage before trying again.');
   }
-  if(failed) throw new Error('This browser could not store the restored backup. Export the cloud data and free browser storage before trying again.');
+  return true;
 }
 
 async function setupAccounts(){
@@ -2534,6 +2546,7 @@ if(typeof module !== 'undefined' && module.exports){
     decodeSharedRecipe,
     normalizeSavedRecipe,
     MAX_SHARED_RECIPE_CHARS,
-    lsSet
+    lsSet,
+    restoreCloudSnapshot
   };
 }
