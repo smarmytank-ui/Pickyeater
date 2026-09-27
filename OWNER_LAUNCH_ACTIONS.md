@@ -44,6 +44,8 @@ You do **not** need to create D1 databases, bindings, API secrets, DNS records, 
 
 ## Exact paid-launch handoff
 
+On September 27, 2026, the live core deployment passed all 26 checks. The stricter paid-launch gate passed 35 checks and has eight intentional failures: two disabled account/premium flags, five beta-Terms checks that await owner approval, and transactional login email returning `503` until Resend is configured.
+
 The remaining owner-only inputs are:
 
 1. Governing jurisdiction and approval of the 14-day refund/founding terms.
