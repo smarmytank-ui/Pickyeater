@@ -61,6 +61,7 @@
 - [x] Focused SEO pages for picky adults, families, sensory preferences, and easy weeknights
 - [x] Production security and cache headers
 - [x] Continuous integration and public-deployment verification script
+- [x] Non-mutating paid-launch API readiness gate
 - [ ] foodmyway.app connected to production
 - [ ] PickyEaterCookbook.com redirect configured
 - [x] Production social-share image

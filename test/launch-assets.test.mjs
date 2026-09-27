@@ -105,6 +105,11 @@ test('deployment verifier covers the complete public funnel',async()=>{
   const verifier=await read('scripts/verify-deployment.mjs');
   for(const page of audiencePages) assert.match(verifier,new RegExp(`/${page.replaceAll('.','\\.')}`));
   assert.match(verifier,/\/service-worker\.js/);
+  for(const endpoint of ['auth/session','auth/consume','auth/request','stripe-webhook','founding-interest','founding-unsubscribe','account/data','events','shop']){
+    assert.match(verifier,new RegExp(`/api/${endpoint.replaceAll('/','\\/')}`));
+  }
+  assert.match(verifier,/process\.argv\.includes\('--launch'\)/);
+  for(const setting of ['accountsEnabled','premiumEnforced','telemetryEnabled','founderCheckoutUrl']) assert.match(verifier,new RegExp(setting));
 });
 
 test('unverified paid and account integrations stay disabled by default',async()=>{
