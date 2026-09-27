@@ -366,7 +366,8 @@ function requirePremium(feature){
   const labels={
     household_profile:'Household taste profiles',
     weekly_planning:'Weekly planning and grocery lists',
-    unlimited_saves:'Unlimited saved recipes'
+    unlimited_saves:'Unlimited saved recipes',
+    grocery_checkout:'Recipe-to-cart grocery handoff'
   };
   const label=labels[feature] || 'This feature';
   track('premium_gate_viewed',{feature});
@@ -1694,6 +1695,19 @@ function uncheckedGroceryEntries(entries,checks={}){
   return entries.filter(([key])=>!checks[key]);
 }
 
+function recipeCommerceItems(recipe){
+  if(!recipe || !Array.isArray(recipe.ingredients)) return [];
+  const recipeServings=Number(recipe.servings) || 2;
+  return recipe.ingredients.filter(isActiveIngredient).map(item=>{
+    const unit=item.base?.u || '';
+    const quantity=Number(item.base?.v)*(recipeServings/2);
+    return {
+      name:canonName(item.name),quantity,unit,
+      displayText:`${groceryQuantity(quantity,unit)} ${pretty(item.name)}`
+    };
+  });
+}
+
 function renderPlanner(){
   const recipeMap = new Map(getRecipeBook().map(recipe=>[recipe.id, recipe]));
   const recipes = getWeeklyPlan().map(id=>recipeMap.get(id)).filter(Boolean);
@@ -1787,6 +1801,30 @@ async function shopPlannedGroceries(){
     showToast(error.message || 'The grocery list could not be created.');
   }finally{
     if(button){ button.disabled=uncheckedGroceryEntries(plannedGroceryItems(),lsGet(GROCERY_CHECKS_KEY,{})).length===0; button.textContent='Shop ingredients'; }
+  }
+}
+
+async function shopCurrentRecipe(){
+  if(!state || !getPublicConfig().commerceEnabled) return;
+  if(!requirePremium('grocery_checkout')) return;
+  const recipe=snapshotCurrentRecipe();
+  const items=recipeCommerceItems(recipe);
+  if(!items.length){ showToast('This recipe has no ingredients to shop.'); return; }
+  if(!confirm('Send this recipe’s ingredient list to Instacart? You’ll review all product matches, quantities, prices, substitutions, pickup, and delivery options there.')) return;
+  const button=$('shopRecipe');
+  try{
+    if(button){ button.disabled=true; button.textContent='Creating list…'; }
+    track('grocery_shop_started',{item_count:items.length});
+    const response=await fetchWithTimeout('./api/shop',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({title:`Food My Way — ${recipe.title}`,items})});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok || !validCommerceUrl(result.url)) throw new Error(result.error || 'The grocery service returned an invalid link.');
+    track('grocery_shop_link_created',{item_count:items.length});
+    location.assign(result.url);
+  }catch(error){
+    track('grocery_shop_failed',{item_count:items.length});
+    showToast(error.message || 'The grocery list could not be created.');
+  }finally{
+    if(button){ button.disabled=false; button.textContent='Shop this recipe'; }
   }
 }
 
@@ -2370,6 +2408,7 @@ function wireEvents(){
   const shareBtn = $('shareBtn');
   const backBtn = $('backBtn');
   const ingredientsInput = $('ingredientsInput');
+  $('shopRecipe')?.classList.toggle('hidden',!getPublicConfig().commerceEnabled);
   const wireClick = (id,handler)=>{
     const element=$(id);
     if(!element || element.dataset.wired) return;
@@ -2511,6 +2550,8 @@ function wireEvents(){
       if(recipe) shareRecipe(recipe);
     });
   }
+
+  wireClick('shopRecipe',shopCurrentRecipe);
 
   if(backBtn && !backBtn.dataset.wired){
     backBtn.dataset.wired='1';
@@ -2790,6 +2831,7 @@ if(typeof module !== 'undefined' && module.exports){
     lsSet,
     restoreCloudSnapshot,
     boundedDiaryNumber,
-    uncheckedGroceryEntries
+    uncheckedGroceryEntries,
+    recipeCommerceItems
   };
 }

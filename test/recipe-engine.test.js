@@ -25,7 +25,8 @@ const {
   lsSet,
   restoreCloudSnapshot,
   boundedDiaryNumber,
-  uncheckedGroceryEntries
+  uncheckedGroceryEntries,
+  recipeCommerceItems
 } = require('../app.js');
 
 test('grocery handoff excludes items already checked off',()=>{
@@ -36,6 +37,18 @@ test('grocery handoff excludes items already checked off',()=>{
   ];
   assert.deepEqual(uncheckedGroceryEntries(entries,{'milk|cup':true}),[entries[0],entries[2]]);
   assert.deepEqual(uncheckedGroceryEntries(entries,{'eggs|count':true,'milk|cup':true,'bread|count':true}),[]);
+});
+
+test('single recipe commerce scales quantities to the current servings',()=>{
+  const items=recipeCommerceItems({servings:4,ingredients:[
+    {name:'chicken breast',role:'protein',base:{v:1,u:'lb'}},
+    {name:'rice',role:'carb',base:{v:1,u:'cup'}},
+    {name:'skip it',role:'vegetable',base:{v:0,u:''}}
+  ]});
+  assert.deepEqual(items.map(({name,quantity,unit})=>({name,quantity,unit})),[
+    {name:'chicken breast',quantity:2,unit:'lb'},
+    {name:'rice',quantity:2,unit:'cup'}
+  ]);
 });
 
 test('quick diary nutrition accepts only bounded nonnegative numbers', () => {

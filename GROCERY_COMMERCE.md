@@ -60,7 +60,7 @@ The commerce feature itself is a premium retention benefit: a free customer can 
 
 The customer outcome is **recipe to local cart**, not merely a grocery-list export. Build it in three measured stages:
 
-1. **Recipe cart:** let a customer send the currently open recipe to the grocery provider, with a confirmation screen showing exactly which items and quantities will be shared.
+1. **Recipe cart:** the feature-flagged **Shop this recipe** action sends the currently open recipe at its selected serving count to the grocery provider after explicit confirmation.
 2. **Weekly cart:** consolidate planned recipes, combine duplicate ingredients, and let the customer remove pantry items before the handoff.
 3. **Household convenience:** remember non-sensitive shopping preferences locally, surface pickup or delivery as choices on the provider page, and add another approved provider only where coverage materially improves.
 

@@ -15,7 +15,7 @@ const STRING_VALUES={
   outcome:new Set(['accepted','dismissed']),
   result:new Set(['success','cancel']),
   source:new Set(['runtime','promise']),
-  feature:new Set(['weekly_planning','household_profile','unlimited_saves'])
+  feature:new Set(['weekly_planning','household_profile','unlimited_saves','grocery_checkout'])
 };
 
 export function normalizeTelemetryEvent(input){

@@ -202,6 +202,18 @@ test('pricing copy matches the enforced free save allowance',async()=>{
   assert.doesNotMatch(plan,/Free: limited creations/);
 });
 
+test('single recipe grocery checkout is feature flagged and premium gated',async()=>{
+  const [html,script,telemetry]=await Promise.all([
+    read('index.html'),read('app.js'),read('functions/_shared/telemetry.mjs')
+  ]);
+  assert.match(html,/id="shopRecipe" class="btn full hidden"/);
+  assert.match(script,/classList\.toggle\('hidden',!getPublicConfig\(\)\.commerceEnabled\)/);
+  assert.match(script,/requirePremium\('grocery_checkout'\)/);
+  assert.match(script,/Send this recipe’s ingredient list to Instacart\?/);
+  assert.match(script,/title:`Food My Way — \$\{recipe\.title\}`/);
+  assert.match(telemetry,/grocery_checkout/);
+});
+
 test('editing a saved recipe replaces it without consuming another free slot',async()=>{
   const script=await read('app.js');
   assert.match(script,/let loadedRecipeId = null/);
