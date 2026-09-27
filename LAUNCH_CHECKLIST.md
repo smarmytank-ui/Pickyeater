@@ -52,8 +52,8 @@
 - [ ] foodmyway.app connected to production
 - [ ] PickyEaterCookbook.com redirect configured
 - [x] Production social-share image
-- [ ] Analytics provider configured
-- [ ] Error monitoring configured
+- [x] Privacy-minimized first-party analytics and generic client-error endpoint
+- [ ] Cloudflare D1 `TELEMETRY` binding, retention job, and live event verification
 - [ ] Search-engine verification and sitemap submission
 - [ ] TikTok, Instagram, and YouTube handles reserved
 - [ ] Apple/Google store packaging decision after web retention proof

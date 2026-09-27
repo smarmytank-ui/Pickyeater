@@ -33,6 +33,38 @@ function getPublicConfig(){
   return typeof window!=='undefined' && window.FMW_CONFIG ? window.FMW_CONFIG : {};
 }
 
+function telemetrySessionId(){
+  try{
+    const key='foodMyWayTelemetrySession';
+    let id=sessionStorage.getItem(key);
+    if(!id){ id=crypto.randomUUID(); sessionStorage.setItem(key,id); }
+    return id;
+  }catch{ return null; }
+}
+
+function setupTelemetry(){
+  if(!getPublicConfig().telemetryEnabled) return;
+  const sessionId=telemetrySessionId();
+  if(!sessionId) return;
+  const send=payload=>{
+    const body=JSON.stringify({event:payload.event,details:payload,sessionId,path:location.pathname});
+    fetch('./api/events',{method:'POST',headers:{'content-type':'application/json'},body,keepalive:true}).catch(()=>{});
+  };
+  window.addEventListener('foodmyway:analytics',event=>send(event.detail || {}));
+  window.addEventListener('error',()=>send({event:'client_error',source:'runtime'}));
+  window.addEventListener('unhandledrejection',()=>send({event:'client_error',source:'promise'}));
+  track('page_view');
+}
+
+function handleCheckoutReturn(){
+  const result=new URLSearchParams(location.search).get('founding');
+  if(!['success','cancel'].includes(result)) return;
+  if(result==='success') showToast('Payment received. Your founding access is being confirmed.');
+  else showToast('Checkout canceled. You were not charged.');
+  track('founder_checkout_returned',{result});
+  history.replaceState({},'',`${location.pathname}${location.hash}`);
+}
+
 function validCheckoutUrl(value){
   try{
     const url=new URL(String(value || ''));
@@ -2000,11 +2032,13 @@ function wireEvents(){
 
 // Safe init
 function init(){
+  setupTelemetry();
   wireEvents();
   ensureNutritionDisclosure();
   ensureDiaryButton();
   getRecipeBook();
   loadSharedRecipeFromUrl();
+  handleCheckoutReturn();
   window.addEventListener('hashchange', loadSharedRecipeFromUrl);
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('./service-worker.js').catch(error=>{
