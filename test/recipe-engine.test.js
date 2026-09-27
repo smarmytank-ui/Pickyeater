@@ -17,6 +17,7 @@ const {
   isActiveIngredient,
   FREE_RECIPE_LIMIT,
   canSaveRecipe,
+  validCommerceUrl,
   encodeSharedRecipe,
   decodeSharedRecipe,
   normalizeSavedRecipe,
@@ -24,6 +25,14 @@ const {
   lsSet,
   restoreCloudSnapshot
 } = require('../app.js');
+
+test('browser commerce navigation accepts only exact HTTPS Instacart hosts', () => {
+  assert.equal(validCommerceUrl('https://www.instacart.com/store/products/123'),true);
+  assert.equal(validCommerceUrl('https://www.instacart.ca/store/products/123'),true);
+  assert.equal(validCommerceUrl('https://www.instacart.com.evil.example/phish'),false);
+  assert.equal(validCommerceUrl('javascript:alert(1)'),false);
+  assert.equal(validCommerceUrl('http://www.instacart.com/store'),false);
+});
 
 test('free plan has the advertised three-recipe save allowance', () => {
   assert.equal(FREE_RECIPE_LIMIT,3);

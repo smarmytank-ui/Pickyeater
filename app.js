@@ -304,6 +304,13 @@ function validCheckoutUrl(value){
   }catch{ return false; }
 }
 
+function validCommerceUrl(value){
+  try{
+    const url=new URL(String(value || ''));
+    return url.protocol==='https:' && ['www.instacart.com','www.instacart.ca'].includes(url.hostname);
+  }catch{ return false; }
+}
+
 function sanitizeTasteProfile(profile){
   const source=profile && typeof profile==='object' ? profile : {};
   const texture=['crisp','soft'].includes(source.texture) ? source.texture : 'either';
@@ -1641,7 +1648,7 @@ async function shopPlannedGroceries(){
     track('grocery_shop_started',{item_count:items.length});
     const response=await fetch('./api/shop',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({title:'Food My Way weekly groceries',items})});
     const result=await response.json().catch(()=>({}));
-    if(!response.ok || typeof result.url!=='string') throw new Error(result.error || 'The grocery list could not be created.');
+    if(!response.ok || !validCommerceUrl(result.url)) throw new Error(result.error || 'The grocery service returned an invalid link.');
     track('grocery_shop_link_created',{item_count:items.length});
     location.assign(result.url);
   }catch(error){
@@ -2616,6 +2623,7 @@ if(typeof module !== 'undefined' && module.exports){
     isActiveIngredient,
     FREE_RECIPE_LIMIT,
     canSaveRecipe,
+    validCommerceUrl,
     encodeSharedRecipe,
     decodeSharedRecipe,
     normalizeSavedRecipe,
