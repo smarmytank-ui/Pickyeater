@@ -220,6 +220,16 @@ test('founding-list consent includes a secure unsubscribe path',async()=>{
   assert.match(pkg,/founding-unsubscribe\.js/);
 });
 
+test('locally saved founding consent is retried after a temporary outage',async()=>{
+  const script=await read('app.js');
+  assert.match(script,/async function submitFoundingInterest\(email,source='founding-modal'\)/);
+  assert.match(script,/async function syncPendingFounderInterest\(\)/);
+  assert.match(script,/pending\.consent!==true/);
+  assert.match(script,/current\?\.email===email && current\?\.consent===true/);
+  assert.match(script,/submitFoundingInterest\(email,'founding-retry'\)/);
+  assert.match(script,/syncPendingFounderInterest\(\);/);
+});
+
 test('privacy disclosures cover enabled processors, cloud controls, and retention',async()=>{
   const privacy=await read('privacy.html');
   for(const provider of ['Cloudflare','Resend','Stripe','Instacart']) assert.match(privacy,new RegExp(provider));

@@ -33,6 +33,35 @@ function track(eventName, details = {}){
   window.dispatchEvent(new CustomEvent('foodmyway:analytics', { detail:payload }));
 }
 
+async function submitFoundingInterest(email,source='founding-modal'){
+  const response=await fetch('./api/founding-interest',{
+    method:'POST',
+    headers:{'content-type':'application/json'},
+    body:JSON.stringify({email,consent:true,source,company:''})
+  });
+  if(response.ok) return true;
+  if([404,503].includes(response.status)) return false;
+  const result=await response.json().catch(()=>({}));
+  const failure=new Error(result.error || 'Signup failed.');
+  failure.userFacing=true;
+  throw failure;
+}
+
+async function syncPendingFounderInterest(){
+  const pending=lsGet('foodMyWayFounderInterest',null);
+  const email=String(pending?.email || '').trim();
+  if(!pending || pending.synced || pending.consent!==true || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return false;
+  let synced=false;
+  try{ synced=await submitFoundingInterest(email,'founding-retry'); }catch{ return false; }
+  if(!synced) return false;
+  const current=lsGet('foodMyWayFounderInterest',null);
+  if(current?.email===email && current?.consent===true && current?.synced!==true){
+    lsSet('foodMyWayFounderInterest',{...current,synced:true,syncedAt:new Date().toISOString()});
+    track('founder_interest_synced');
+  }
+  return true;
+}
+
 function getPublicConfig(){
   return typeof window!=='undefined' && window.FMW_CONFIG ? window.FMW_CONFIG : {};
 }
@@ -2430,14 +2459,7 @@ function wireEvents(){
     if(button){ button.disabled=true; button.textContent='Saving…'; }
     let synced=false;
     try{
-      const response=await fetch('./api/founding-interest',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email,consent:true,source:'founding-modal',company:''})});
-      synced=response.ok;
-      if(!response.ok && ![404,503].includes(response.status)){
-        const result=await response.json().catch(()=>({}));
-        const failure=new Error(result.error || 'Signup failed.');
-        failure.userFacing=true;
-        throw failure;
-      }
+      synced=await submitFoundingInterest(email);
     }catch(error){
       if(error.userFacing){
         $('founderError').textContent=error.message;
@@ -2550,6 +2572,7 @@ function wireEvents(){
 // Safe init
 function init(){
   setupTelemetry();
+  syncPendingFounderInterest();
   wireEvents();
   setupAccounts();
   ensureNutritionDisclosure();
