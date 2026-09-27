@@ -1,6 +1,6 @@
 # Food My Way go-to-market plan
 
-Updated: September 26, 2026
+Updated: September 27, 2026
 
 ## Product decision
 
@@ -42,7 +42,9 @@ The long-term convenience promise is **from foods my household will eat to a loc
 
 ## Revenue path
 
-At an average realized recurring revenue of roughly $4.25 per paying household per month:
+The Founding Member offer is a one-time purchase, not a subscription. Selling all 250 places produces **$7,250 gross** before payment fees, taxes, and refunds. Track founding orders, refunds, activation, and 7- and 30-day retention as cohort metrics; do not report founding sales as monthly recurring revenue.
+
+The following recurring targets apply only after the future Plus monthly and annual plans open. At an average realized recurring revenue of roughly $4.25 per paying household per month:
 
 - $10,000 monthly recurring revenue requires about **2,353 paying households**.
 - $20,000 monthly recurring revenue requires about **4,706 paying households**.
@@ -53,8 +55,8 @@ This is achievable only through retention, not one viral post. The operating tar
 - first recipe → saved recipe: 25% or better;
 - activated user → trial/founding interest: 8% or better;
 - trial → paid: 20% or better;
-- paid monthly churn: below 5%;
-- annual-plan mix: above 55%;
+- Plus monthly churn: below 5% after recurring plans launch;
+- Plus annual-plan mix: above 55% after recurring plans launch;
 - customer-acquisition cost: below $20 until retention is proven.
 
 ## Launch sequence

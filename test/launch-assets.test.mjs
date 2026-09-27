@@ -204,6 +204,27 @@ test('pricing copy matches the enforced free save allowance',async()=>{
   assert.doesNotMatch(plan,/Free: limited creations/);
 });
 
+test('the one-time founding offer is distinct from future recurring plans',async()=>{
+  const [html,plan,terms,payments,commerce]=await Promise.all([
+    read('index.html'),
+    read('GO_TO_MARKET.md'),
+    read('PAID_TERMS_DRAFT.md'),
+    read('PAYMENTS_AND_LEADS.md'),
+    read('GROCERY_COMMERCE.md')
+  ]);
+  for(const source of [html,plan,terms,payments]){
+    const plain=source.replace(/<[^>]+>|[*_`]/g,' ' ).replace(/\s+/g,' ');
+    assert.match(plain,/\$29/i);
+    assert.match(plain,/one[ -]time/i);
+  }
+  for(const source of [html,terms,payments,commerce]){
+    assert.doesNotMatch(source,/founding(?: member(?:ship)?|-member)? (?:subscription|monthly plan)/i);
+  }
+  assert.match(plan,/do not report founding sales as monthly recurring revenue/i);
+  assert.match(plan,/future Plus monthly and annual plans/i);
+  assert.doesNotMatch(commerce,/Subscription revenue pays for the product/i);
+});
+
 test('single recipe grocery checkout is feature flagged and premium gated',async()=>{
   const [html,script,telemetry]=await Promise.all([
     read('index.html'),read('app.js'),read('functions/_shared/telemetry.mjs')

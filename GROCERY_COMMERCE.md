@@ -31,7 +31,7 @@ The endpoint also authenticates the Food My Way session and verifies an active F
 
 ## Launch order
 
-1. Complete subscription and retention validation with the existing grocery list.
+1. Complete paid-product retention validation with the existing grocery list.
 2. Apply for Instacart Developer Platform access.
 3. Configure a development key as a Cloudflare secret.
 4. Run the 25-list local payload suite, then test those same fixtures against Instacart's development catalog and manually review product matches.
@@ -54,7 +54,7 @@ Do not change `commerceEnabled` to true until the CTA wording/brand treatment is
 
 ## Revenue model
 
-Grocery commissions are supplemental revenue, not the core business. Subscription revenue pays for the product; attributed grocery orders can improve revenue per active household without putting ads inside recipe decisions.
+Grocery commissions are supplemental revenue, not the core business. Founding-purchase revenue funds the initial paid product; future Plus-plan revenue can sustain it. Attributed grocery orders may improve revenue per active household without putting ads inside recipe decisions.
 
 The commerce feature itself is a premium retention benefit: a free customer can discover a useful meal, while a paid household can move from saved recipes and a weekly plan to one consolidated shopping handoff. Do not promise commission income until an affiliate agreement is approved and tracked conversions have been reconciled with provider reporting.
 
