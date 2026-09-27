@@ -95,3 +95,16 @@ These steps require the owner because they involve legal identity, banking, taxe
 6. Approve Resend enrollment, sending-domain verification, and credential creation.
 
 See `OWNER_LAUNCH_ACTIONS.md` for the minimal owner-only sequence and `LEGAL_LAUNCH_PACKET.md` for recommended approval-ready language.
+
+## Latest local browser evidence
+
+On September 26, 2026, release `2.47.0` passed the automated suite and a rendered in-app-browser smoke test against the local HTTP build:
+
+- loaded a starter while honoring the saved “leave out” preference;
+- generated a complete recipe with ingredient controls, sensory preferences, and thermometer-based chicken guidance;
+- saved the exact recipe and opened it from the Recipe Book;
+- verified dialog focus entry, backward focus wrapping, Escape dismissal, and focus restoration to the opener;
+- verified screen-reader tab state and right-arrow navigation from Breakfast to Lunch in the diary;
+- visually inspected the diary at desktop width with no obvious clipping, overlap, or broken layout.
+
+This is evidence for the local release, not a substitute for the outstanding production-domain tests on mobile Safari, mobile Chrome, desktop Chrome, and desktop Edge.
