@@ -22,6 +22,16 @@ test('HTML references required local launch assets that exist',async()=>{
   for(const reference of new Set(references)) await access(path.join(root,reference));
 });
 
+test('missing routes have a branded recovery page and deployment check',async()=>{
+  const [notFound,verifier]=await Promise.all([read('404.html'),read('scripts/verify-deployment.mjs')]);
+  assert.match(notFound,/<meta name="robots" content="noindex,follow">/);
+  assert.match(notFound,/This page isn’t on the menu\./);
+  assert.match(notFound,/href="\.\/#inputCard"/);
+  assert.match(notFound,/support@foodmyway\.app/);
+  assert.match(verifier,/food-my-way-verifier-missing-page/);
+  assert.match(verifier,/statuses:\[404\],contains:'Food My Way'/);
+});
+
 test('HTML ids do not collide with global function declarations',async()=>{
   const [html,script]=await Promise.all([read('index.html'),read('app.js')]);
   const ids=new Set([...html.matchAll(/\sid="([^"]+)"/g)].map(match=>match[1]));

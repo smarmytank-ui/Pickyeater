@@ -90,6 +90,7 @@ for(const path of [
   '/privacy.html',
   '/terms.html',
   '/support.html',
+  '/404.html',
   '/picky-adults.html',
   '/picky-kids.html',
   '/sensory-friendly-meals.html',
@@ -99,6 +100,7 @@ for(const path of [
 ]){
   await checkPath(path);
 }
+await checkApi('/food-my-way-verifier-missing-page',{statuses:[404],contains:'Food My Way'});
 
 if(launchMode){
   try{
