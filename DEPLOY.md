@@ -1,4 +1,4 @@
-# 🚀 Picky Eater – Deployment Guide (GitHub Pages)
+# Food My Way deployment guide
 
 This project is intentionally simple: plain HTML, CSS, and JavaScript with no production build step or framework.
 
@@ -44,10 +44,10 @@ or
 
 ## Domains
 
-- Primary/canonical domain: `PickyEaterCookbook.com`
-- Short redirect or future installed-app landing domain: `foodmyway.app`
+- Primary/canonical domain: `foodmyway.app`
+- Acquisition redirect: `PickyEaterCookbook.com`
 
-The app generates share links from its current origin. Configure the primary domain only after selecting the production host, then redirect the secondary domain to it.
+The app generates share links from its current origin. Point `foodmyway.app` at the production Cloudflare Pages project, then redirect `PickyEaterCookbook.com` to the primary domain. Do not publish the Cloudflare preview hostname in marketing.
 
 ---
 

@@ -7,7 +7,16 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Picky Eater" />
-  <title>Picky Eater — Make recipes your way</title>
+  <meta name="description" content="Turn familiar foods into simple, flexible recipes for picky eaters. Swap ingredients, adjust servings, save favorites, and cook without the mealtime fight." />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Food My Way — Recipes for picky eaters" />
+  <meta property="og:description" content="Start with foods you already like. Get a simple recipe you can swap, save, and make your way." />
+  <meta property="og:image" content="./android-chrome-512x512.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Food My Way — Recipes for picky eaters" />
+  <meta name="twitter:description" content="Less mealtime pressure. More food that actually works for you." />
+  <title>Food My Way — Recipes for picky eaters</title>
 <link rel="icon" href="./favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
@@ -21,11 +30,14 @@
   <div class="brand">
     <div class="brand-mark"></div>
     <div>
-      <div class="brand-title">Picky Eater</div>
-      <div class="brand-sub">Make recipes your way</div>
+      <div class="brand-title">Food My Way</div>
+      <div class="brand-sub">Picky-eater recipes that work</div>
     </div>
   </div>
   <nav class="topbar-actions" aria-label="App sections">
+    <a class="btn ghost topbar-link" href="#how-it-works">How it works</a>
+    <a class="btn ghost topbar-link" href="#pricing">Pricing</a>
+    <button id="openProfile" class="btn ghost topbar-btn" aria-label="Open food preferences"><span class="nav-icon" aria-hidden="true">♡</span><span class="nav-label">My foods</span></button>
     <button id="openRecipeBook" class="btn ghost topbar-btn" aria-label="Open Recipe Book"><span class="nav-icon" aria-hidden="true">📖</span><span class="nav-label">Recipe Book</span></button>
     <button id="openDiary" class="btn ghost topbar-btn" aria-label="Open food diary"><span class="nav-icon" aria-hidden="true">📓</span><span class="nav-label">Today</span></button>
   </nav>
@@ -35,7 +47,7 @@
 
 <section class="hero card hero-tint">
   <div class="hero-copy">
-    <div class="eyebrow"><span class="eyebrow-dot"></span> Built for picky eaters</div>
+    <div class="eyebrow"><span class="eyebrow-dot"></span> Food My Way · Built for picky eaters</div>
     <h1>Food you’ll actually <span>look forward to.</span></h1>
     <p>Tell us what sounds good. We’ll turn it into a simple recipe you can swap, save, and make your own.</p>
     <div class="hero-promises" aria-label="Picky Eater benefits">
@@ -208,6 +220,47 @@
   </div>
 </section>
 
+<section id="how-it-works" class="marketing-section" aria-labelledby="how-title">
+  <div class="section-kicker">Dinner without the debate</div>
+  <h2 id="how-title">Start with safe foods. Build from there.</h2>
+  <p class="section-intro">No giant recipe catalog to fight through. Food My Way begins with foods that already work for you, then turns them into something practical.</p>
+  <div class="feature-grid">
+    <article class="feature-card"><span>1</span><h3>Name familiar foods</h3><p>Enter a few ingredients you or your family reliably enjoy.</p></article>
+    <article class="feature-card"><span>2</span><h3>Get a flexible recipe</h3><p>See clear quantities, simple instructions, and estimated nutrition.</p></article>
+    <article class="feature-card"><span>3</span><h3>Swap without starting over</h3><p>Replace any ingredient and keep the rest of the meal intact.</p></article>
+  </div>
+</section>
+
+<section id="pricing" class="marketing-section pricing-section" aria-labelledby="pricing-title">
+  <div class="section-kicker">Simple founding pricing</div>
+  <h2 id="pricing-title">Try the core app free. Upgrade when it earns its place.</h2>
+  <p class="section-intro">The private beta is free while we finish accounts and payments. Founding members will lock in lifetime access to the first premium release.</p>
+  <div class="pricing-grid">
+    <article class="price-card">
+      <div class="plan-name">Free</div><div class="plan-price">$0</div><div class="plan-note">A useful taste of Food My Way</div>
+      <ul><li>Recipe creation</li><li>Ingredient swaps</li><li>Serving adjustments</li><li>Limited saved recipes</li></ul>
+      <a class="btn full" href="#inputCard">Make a recipe</a>
+    </article>
+    <article class="price-card featured">
+      <div class="founder-badge">FOUNDING OFFER</div>
+      <div class="plan-name">Founding Member</div><div class="plan-price">$29 <small>one time</small></div><div class="plan-note">Lifetime access to the first premium release</div>
+      <ul><li>Unlimited recipes and saves</li><li>Household taste profiles</li><li>Weekly meal planning</li><li>Smart grocery lists</li><li>Future founding-member perks</li></ul>
+      <button id="founderCta" class="btn primary full" type="button">Join the founding list</button>
+      <div class="price-fineprint">No charge today. We’ll open checkout after the private beta.</div>
+    </article>
+  </div>
+</section>
+
+<section class="marketing-section faq-section" aria-labelledby="faq-title">
+  <div class="section-kicker">Straight answers</div><h2 id="faq-title">Frequently asked questions</h2>
+  <details><summary>Is this only for children?</summary><p>No. It is for picky adults, parents, neurodivergent households, and anyone who wants less pressure around food.</p></details>
+  <details><summary>Does Food My Way provide medical or allergy advice?</summary><p>No. Recipes and nutrition are informational estimates. Always verify labels and speak with a qualified professional about allergies, eating disorders, or medical nutrition needs.</p></details>
+  <details><summary>Where are my recipes stored?</summary><p>During the private beta, recipes stay in your browser unless you share them. Cloud accounts and synchronization are being prepared for the premium release.</p></details>
+</section>
+
+</main>
+</div>
+
 <!-- Soft Auth Modal -->
 <div id="authOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-label="Save your diary">
   <div class="modal">
@@ -257,6 +310,45 @@
     <button id="mealCancel" class="btn ghost full">Cancel</button>
   </div>
 </div>
+
+<div id="founderOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="founderTitle">
+  <div class="modal founder-modal">
+    <button id="founderClose" class="modal-close" type="button" aria-label="Close">×</button>
+    <div class="eyebrow">Founding member list</div>
+    <div id="founderTitle" class="modal-title">Be first in when checkout opens.</div>
+    <div class="modal-sub">Founding access will be $29 once, not another monthly bill. Enter your email and we’ll remember your interest on this device while the secure signup connection is completed.</div>
+    <label class="modal-label" for="founderEmail">Email</label>
+    <input id="founderEmail" class="field" type="email" autocomplete="email" placeholder="you@example.com" />
+    <div id="founderError" class="input-error hidden" role="alert">Enter a valid email address.</div>
+    <button id="founderSave" class="btn primary full" type="button">Save my spot</button>
+    <div class="price-fineprint">No spam. No payment collected yet.</div>
+  </div>
+</div>
+
+<div id="profileOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+  <div class="modal founder-modal">
+    <button id="profileClose" class="modal-close" type="button" aria-label="Close">×</button>
+    <div class="eyebrow">Taste profile</div>
+    <div id="profileTitle" class="modal-title">Make suggestions feel more like you.</div>
+    <div class="modal-sub">These preferences stay on this device during the beta. Food My Way will leave avoided foods out of starter ideas and swap suggestions.</div>
+    <label class="modal-label" for="profileName">Who is this for?</label>
+    <input id="profileName" class="field" type="text" maxlength="40" placeholder="Me, Alex, the whole family…" />
+    <label class="modal-label" for="avoidFoods">Foods to leave out <span>(one per line)</span></label>
+    <textarea id="avoidFoods" class="field preference-textarea" placeholder="mushrooms&#10;tomatoes&#10;mayonnaise"></textarea>
+    <button id="profileSave" class="btn primary full" type="button">Save my foods</button>
+    <div class="price-fineprint">Not an allergy-safety tool. Always check labels and ingredients yourself.</div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div><strong>Food My Way</strong><span>Less pressure. More food that works.</span></div>
+  <nav aria-label="Legal and support"><a href="./privacy.html">Privacy</a><a href="./terms.html">Terms</a><a href="./support.html">Support</a></nav>
+  <small>© <span id="footerYear"></span> Food My Way. Nutrition information is estimated and is not medical advice.</small>
+</footer>
+
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Food My Way","applicationCategory":"LifestyleApplication","operatingSystem":"Web","description":"A flexible recipe and ingredient-swap app built for picky eaters.","offers":[{"@type":"Offer","name":"Free","price":"0","priceCurrency":"USD"},{"@type":"Offer","name":"Founding Member","price":"29","priceCurrency":"USD"}]}
+</script>
 
 <script src="./app.js"></script>
 </body>

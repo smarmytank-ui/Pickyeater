@@ -327,6 +327,36 @@ textarea:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 5px r
 .support{opacity:.88}
 .ingredient-note{font-size:12px;color:var(--muted);margin-left:6px}
 
+/* v2.2 — commercial launch shell */
+.topbar-link{text-decoration:none;color:var(--ink);font-size:13px;padding:10px 14px}
+.marketing-section{margin:56px 0;padding:8px 2px;scroll-margin-top:24px}
+.marketing-section h2{font-size:clamp(30px,5vw,44px);letter-spacing:-.045em;line-height:1.04;margin:10px 0 12px}
+.section-kicker{color:var(--accent);font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+.section-intro{max-width:620px;color:var(--muted);font-size:17px}
+.feature-grid,.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:24px}
+.feature-card,.price-card{background:rgba(255,255,255,.82);border:1px solid var(--border);border-radius:22px;padding:22px;box-shadow:0 14px 36px rgba(31,73,56,.06)}
+.feature-card>span{display:grid;place-items:center;width:34px;height:34px;border-radius:12px;background:var(--lime);font-weight:950;color:#244f40}
+.feature-card h3{font-size:17px;margin:18px 0 8px}.feature-card p{font-size:14px;color:var(--muted)}
+.pricing-grid{grid-template-columns:repeat(2,1fr);align-items:stretch}
+.price-card{position:relative;padding:26px}.price-card.featured{border:2px solid var(--accent);background:linear-gradient(150deg,#fff,#eef7f1)}
+.founder-badge{display:inline-block;background:var(--lime);color:#264d40;border-radius:999px;padding:6px 9px;font-size:10px;font-weight:950;letter-spacing:.1em}
+.plan-name{font-size:17px;font-weight:900;margin-top:12px}.plan-price{font-size:38px;font-weight:950;letter-spacing:-.04em;margin:8px 0}.plan-price small{font-size:13px;font-weight:800;letter-spacing:0;color:var(--muted)}
+.plan-note{color:var(--muted);font-size:13px;min-height:38px}.price-card ul{list-style:none;padding:0;margin:20px 0}.price-card li{padding:7px 0;font-size:14px}.price-card li:before{content:'✓';color:var(--accent);font-weight:950;margin-right:9px}
+.price-card .btn{text-align:center;text-decoration:none;display:block}.price-fineprint{font-size:11px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.4}
+.faq-section details{background:rgba(255,255,255,.75);border:1px solid var(--border);border-radius:16px;padding:17px 18px;margin:10px 0}
+.faq-section summary{cursor:pointer;font-weight:900}.faq-section details p{font-size:14px;color:var(--muted);margin-top:10px}
+.founder-modal{position:relative}.modal-close{position:absolute;right:14px;top:12px;border:0;background:transparent;font-size:27px;color:var(--muted);cursor:pointer}
+.preference-textarea{min-height:105px;resize:vertical}
+.site-footer{max-width:760px;margin:18px auto 0;padding:30px 18px 40px;border-top:1px solid var(--border);color:var(--muted)}
+.site-footer>div{display:flex;flex-direction:column;gap:3px}.site-footer strong{color:var(--ink)}.site-footer nav{display:flex;gap:18px;margin:20px 0}.site-footer a{color:var(--accent-dark);font-weight:800;font-size:13px}.site-footer small{display:block;line-height:1.45}
+
+@media(max-width:760px){
+  .topbar-link{display:none}
+  .feature-grid{grid-template-columns:1fr}
+  .pricing-grid{grid-template-columns:1fr}
+  .marketing-section{margin:42px 0}
+}
+
 /* v1.9.6 — Truth Labels */
 .truth-label {
   font-size: 12px;

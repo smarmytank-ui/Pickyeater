@@ -18,6 +18,37 @@ const $ = (id) => document.getElementById(id);
 let servings = 2;
 let state = null;
 let owned = false;
+const TASTE_PROFILE_KEY = 'foodMyWayTasteProfile';
+
+function track(eventName, details = {}){
+  const payload = { event:eventName, ...details };
+  if(Array.isArray(window.dataLayer)) window.dataLayer.push(payload);
+  window.dispatchEvent(new CustomEvent('foodmyway:analytics', { detail:payload }));
+}
+
+function getTasteProfile(){
+  const profile = lsGet(TASTE_PROFILE_KEY, {});
+  return {
+    name:String(profile.name || '').slice(0, 40),
+    avoids:Array.isArray(profile.avoids) ? profile.avoids.map(canonName).filter(Boolean) : []
+  };
+}
+
+function isAvoidedFood(name){
+  const candidate = canonName(name);
+  return getTasteProfile().avoids.some(avoid=>candidate===avoid || candidate.includes(avoid) || avoid.includes(candidate));
+}
+
+function applyFoodIdea(text){
+  const input = $('ingredientsInput');
+  if(!input) return;
+  const original = parseLines(text);
+  const filtered = original.filter(item=>!isAvoidedFood(item));
+  input.value = (filtered.length ? filtered : original).join('\n');
+  input.dispatchEvent(new Event('input', { bubbles:true }));
+  input.focus();
+  if(filtered.length < original.length) showToast('Your “leave out” foods were removed.');
+}
 
 // -------------------------------
 // Helpers
@@ -869,7 +900,7 @@ function render(){
       const sel = document.createElement('select');
       sel.className = 'swap-select';
 
-      const opts = SWAP_CATALOG[ing.role] || [];
+      const opts = (SWAP_CATALOG[ing.role] || []).filter(option=>!isAvoidedFood(option.name));
       sel.innerHTML =
         `<option value="">Swap</option>` +
         `<option value="__custom__">➕ Enter your own…</option>` +
@@ -1106,6 +1137,7 @@ function openSavedRecipe(recipe){
   $('resultCard')?.classList.remove('hidden');
   $('saveRow')?.classList.remove('hidden');
   render();
+  track('saved_recipe_opened', { recipe_title:normalized.title });
   window.scrollTo({ top:0, behavior:'smooth' });
 }
 
@@ -1183,6 +1215,7 @@ function openRecipeBook(){
   $('recipeBookCard')?.classList.remove('hidden');
   $('diaryCard')?.classList.add('hidden');
   renderRecipeBook($('recipeSearch')?.value || '');
+  track('recipe_book_opened', { saved_count:getRecipeBook().length });
   $('recipeBookCard')?.scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
@@ -1215,6 +1248,7 @@ async function shareRecipe(recipe){
     if(navigator.share) await navigator.share({ title:normalized.title, text:`${normalized.title} from Picky Eater`, url });
     else if(navigator.clipboard) { await navigator.clipboard.writeText(url); alert('Share link copied.'); }
     else prompt('Copy this share link:', url);
+    track('recipe_shared', { recipe_title:normalized.title });
   }catch(error){
     if(error?.name !== 'AbortError') prompt('Copy this share link:', url);
   }
@@ -1493,14 +1527,8 @@ function ensureDiaryButton(){
     btn.dataset.wired = '1';
     btn.addEventListener('click', () => {
       const hasMealOverlay = !!document.getElementById('mealOverlay');
-      const hasAuthOverlay = !!document.getElementById('authOverlay');
-
       if(hasMealOverlay){
-        if(!authKnown() && hasAuthOverlay){
-          showAuthGate();
-        } else {
-          showMealPicker();
-        }
+        showMealPicker();
       } else {
         addCurrentRecipeToMeal('dinner');
       }
@@ -1537,9 +1565,7 @@ function wireEvents(){
     chip.dataset.wired = '1';
     chip.addEventListener('click', ()=>{
       if(!ingredientsInput) return;
-      ingredientsInput.value = chip.dataset.starter || '';
-      updateIngredientCount();
-      ingredientsInput.focus();
+      applyFoodIdea(chip.dataset.starter || '');
       showToast(`${chip.textContent} loaded — make it yours.`);
     });
   });
@@ -1555,9 +1581,7 @@ function wireEvents(){
         'eggs\nbread\ncheddar cheese\nbacon'
       ];
       if(!ingredientsInput) return;
-      ingredientsInput.value = ideas[Math.floor(Math.random() * ideas.length)];
-      updateIngredientCount();
-      ingredientsInput.focus();
+      applyFoodIdea(ideas[Math.floor(Math.random() * ideas.length)]);
       showToast('A comfort-food combo is ready.');
     });
   }
@@ -1596,6 +1620,7 @@ function wireEvents(){
       if(saveBtn) saveBtn.textContent = '⭐ Save to Favorites';
 
       render();
+      track('recipe_generated', { ingredient_count:raw.length, recipe_title:state.title });
       $('resultCard')?.scrollIntoView({ behavior:'smooth', block:'start' });
     });
   }
@@ -1623,6 +1648,7 @@ function wireEvents(){
       saveRecipe(snapshotCurrentRecipe());
       saveBtn.textContent = '✓ Saved';
       showToast('Saved to your Recipe Book.');
+      track('recipe_saved', { recipe_title:state.title });
     });
   }
 
@@ -1703,6 +1729,58 @@ function wireEvents(){
   });
 
   document.getElementById('mealCancel')?.addEventListener('click', hideMealPicker);
+
+  const founderOverlay = $('founderOverlay');
+  const founderEmail = $('founderEmail');
+  const closeFounder = ()=>{
+    founderOverlay?.classList.add('hidden');
+    $('founderError')?.classList.add('hidden');
+  };
+  $('founderCta')?.addEventListener('click', ()=>{
+    founderOverlay?.classList.remove('hidden');
+    founderEmail?.focus();
+    track('founder_interest_opened');
+  });
+  $('founderClose')?.addEventListener('click', closeFounder);
+  founderOverlay?.addEventListener('click', event=>{ if(event.target===founderOverlay) closeFounder(); });
+  $('founderSave')?.addEventListener('click', ()=>{
+    const email = founderEmail?.value.trim() || '';
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      $('founderError')?.classList.remove('hidden');
+      founderEmail?.focus();
+      return;
+    }
+    lsSet('foodMyWayFounderInterest', { email, savedAt:new Date().toISOString() });
+    closeFounder();
+    showToast('Your interest is saved on this device.');
+    track('founder_interest_saved');
+  });
+
+  const profileOverlay = $('profileOverlay');
+  const closeProfile = ()=>profileOverlay?.classList.add('hidden');
+  $('openProfile')?.addEventListener('click', ()=>{
+    const profile = getTasteProfile();
+    if($('profileName')) $('profileName').value = profile.name;
+    if($('avoidFoods')) $('avoidFoods').value = profile.avoids.join('\n');
+    profileOverlay?.classList.remove('hidden');
+    $('profileName')?.focus();
+    track('taste_profile_opened');
+  });
+  $('profileClose')?.addEventListener('click', closeProfile);
+  profileOverlay?.addEventListener('click', event=>{ if(event.target===profileOverlay) closeProfile(); });
+  $('profileSave')?.addEventListener('click', ()=>{
+    const profile = {
+      name:$('profileName')?.value.trim().slice(0, 40) || '',
+      avoids:[...new Set(parseLines($('avoidFoods')?.value).map(canonName).filter(Boolean))]
+    };
+    lsSet(TASTE_PROFILE_KEY, profile);
+    closeProfile();
+    showToast(profile.avoids.length ? `Saved ${profile.avoids.length} foods to leave out.` : 'Taste profile saved.');
+    track('taste_profile_saved', { avoid_count:profile.avoids.length });
+    if(state) render();
+  });
+
+  if($('footerYear')) $('footerYear').textContent = String(new Date().getFullYear());
 
   updateDiarySub();
 }

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'picky-eater-v2-2';
+const CACHE_NAME = 'food-my-way-v2-3';
 const APP_SHELL = [
   './',
   './index.html',
@@ -9,7 +9,11 @@ const APP_SHELL = [
   './favicon.ico',
   './android-chrome-192x192.png',
   './android-chrome-512x512.png',
-  './apple-touch-icon.png'
+  './apple-touch-icon.png',
+  './privacy.html',
+  './terms.html',
+  './support.html',
+  './legal.css'
 ];
 
 self.addEventListener('install', event=>{
