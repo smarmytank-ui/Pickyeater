@@ -1,10 +1,16 @@
-# Picky Eater technical audit
+# Food My Way technical audit
 
 > Historical baseline: this document records the September 19 starting point. Current launch state and remaining gates are maintained in `LAUNCH_CHECKLIST.md`; later architecture intentionally supersedes several recommendations below.
 
 Audit date: 2026-09-19  
 Baseline: `main` at `9f29f81`  
 Development branch: `picky-v2`
+
+## Current architecture
+
+Food My Way is a local-first progressive web app deployed through Cloudflare Pages. The browser experience is served by `index.html`, `styles.css`, and `app.js`; the service worker provides an offline application shell while deliberately excluding API and private account responses from its cache. Cloudflare Pages Functions implement founding-list signup, passwordless accounts, explicit cloud backup and deletion, privacy-minimized product events, Stripe webhook fulfillment, and the feature-flagged grocery-provider handoff. D1 provides server-side persistence, Resend delivers one-time sign-in links, and Stripe remains the authoritative payment source.
+
+The app has automated syntax, behavioral, contract, security, launch-asset, and deployment checks. `LAUNCH_CHECKLIST.md` is the authoritative record of verified launch gates, `DEPLOY.md` is the current deployment procedure, and `OWNER_LAUNCH_ACTIONS.md` contains only the account, identity, and policy decisions that cannot be completed from source code. The remainder of this document records the original baseline and is retained to explain migration decisions; it is not current operating guidance.
 
 ## Baseline application
 

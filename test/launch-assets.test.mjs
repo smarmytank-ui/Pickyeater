@@ -32,6 +32,15 @@ test('missing routes have a branded recovery page and deployment check',async()=
   assert.match(verifier,/statuses:\[404\],contains:'Food My Way'/);
 });
 
+test('the legacy generator route points to the canonical Food My Way experience',async()=>{
+  const html=await read('generator.html');
+  assert.match(html,/http-equiv="refresh" content="0;url=\.\/#inputCard"/);
+  assert.match(html,/rel="canonical" href="https:\/\/foodmyway\.app\/"/);
+  assert.match(html,/name="robots" content="noindex,follow"/);
+  assert.doesNotMatch(html,/<(?:form|textarea|script)\b/i);
+  assert.doesNotMatch(html,/\sonclick=/i);
+});
+
 test('HTML ids do not collide with global function declarations',async()=>{
   const [html,script]=await Promise.all([read('index.html'),read('app.js')]);
   const ids=new Set([...html.matchAll(/\sid="([^"]+)"/g)].map(match=>match[1]));
