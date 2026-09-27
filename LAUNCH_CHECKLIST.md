@@ -112,6 +112,16 @@ On September 27, 2026, the protected Cloudflare preview was revalidated before t
 
 Use those visible pricing and account-control differences as the immediate post-deploy smoke check; do not accept a deployment that still serves the pre-push shell from a stale service-worker cache.
 
+The authorized September 27 deployment then passed that comparison at pushed commit `6b760fb`:
+
+- GitHub Actions run `36336065999` completed successfully for the exact pushed head;
+- a cache-busted authenticated preview showed the new “Up to 3 saved recipes” allowance, the complete Founding feature list, cloud backup copy, five-question FAQ, and SEO guide links;
+- the deployed service worker reported cache `food-my-way-v2-61-0` and asset version `2.61.0`;
+- the deployed configuration kept checkout, commerce, telemetry, accounts, and premium enforcement disabled pending their live external bindings;
+- the live app generated a four-ingredient chicken recipe with six steps and 165°F thermometer guidance, saved it, reopened it from the Recipe Book, and displayed the weekly-planner entry point.
+
+This proves the current private preview shell and local-first core flow. It does not satisfy the separately listed production-domain, D1, Resend, Stripe, or live paid-flow gates.
+
 On September 26, 2026, release `2.47.0` passed the automated suite and a rendered in-app-browser smoke test against the local HTTP build:
 
 - loaded a starter while honoring the saved “leave out” preference;
