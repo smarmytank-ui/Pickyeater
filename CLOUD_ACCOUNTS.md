@@ -49,4 +49,6 @@ DELETE FROM sessions WHERE expires_epoch < unixepoch('now');
 
 Before enabling the UI, test request, consume, session, backup, restore, revision conflict, export, sign-out, expired-link, replayed-link, rate-limit, and deletion flows in preview.
 
+The request endpoint allows at most one email per address per minute, five per address per hour, and 100 total sign-in emails per hour. A newly delivered link invalidates older unused links for that address. These application-level limits protect sender reputation and launch costs; Cloudflare edge rate limiting may be added later as a second layer without storing IP addresses in the application database.
+
 The session endpoint checks the `PURCHASES` binding for an active founding entitlement. The backup endpoint independently repeats that authorization server-side; hiding a browser button is never treated as access control. Authenticated customers without an active entitlement may still retrieve/export an existing snapshot and delete their account, but cannot create or update cloud storage. Premium enforcement is a separate public flag so account testing never accidentally locks free beta users out of planning or taste-profile features.

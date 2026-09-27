@@ -1,6 +1,9 @@
 import { normalizeAccountEmail, randomToken, sha256Hex } from '../../_shared/account.mjs';
 
 const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store'}});
+const EMAIL_REQUESTS_PER_HOUR=5;
+const EMAIL_COOLDOWN_SECONDS=60;
+const GLOBAL_REQUESTS_PER_HOUR=100;
 
 export async function onRequestPost({request,env}){
   if(!env.ACCOUNTS || !env.RESEND_API_KEY || !env.AUTH_FROM_EMAIL || !env.AUTH_ORIGIN) return json({error:'Cloud accounts are not configured.'},503);
@@ -11,9 +14,13 @@ export async function onRequestPost({request,env}){
   let email;
   try{ email=normalizeAccountEmail(input?.email); }catch(error){ return json({error:error.message},400); }
   const now=Math.floor(Date.now()/1000);
-  const recent=await env.ACCOUNTS.prepare('SELECT count(*) AS count FROM login_challenges WHERE email=?1 AND created_epoch>?2')
+  const recent=await env.ACCOUNTS.prepare('SELECT count(*) AS count, max(created_epoch) AS latest FROM login_challenges WHERE email=?1 AND created_epoch>?2')
     .bind(email,now-3600).first();
-  if(Number(recent?.count || 0)>=5) return json({error:'Too many sign-in requests. Try again later.'},429);
+  const globalRecent=await env.ACCOUNTS.prepare('SELECT count(*) AS count FROM login_challenges WHERE created_epoch>?1')
+    .bind(now-3600).first();
+  if(Number(recent?.count || 0)>=EMAIL_REQUESTS_PER_HOUR || now-Number(recent?.latest || 0)<EMAIL_COOLDOWN_SECONDS || Number(globalRecent?.count || 0)>=GLOBAL_REQUESTS_PER_HOUR){
+    return json({error:'Too many sign-in requests. Try again later.'},429);
+  }
 
   const token=randomToken();
   const tokenHash=await sha256Hex(token);
@@ -41,5 +48,7 @@ export async function onRequestPost({request,env}){
     await env.ACCOUNTS.prepare('DELETE FROM login_challenges WHERE id=?1').bind(id).run().catch(()=>{});
     return json({error:'Sign-in email could not be sent.'},503);
   }
+  await env.ACCOUNTS.prepare('UPDATE login_challenges SET expires_epoch=?1 WHERE email=?2 AND id<>?3 AND used_epoch IS NULL AND expires_epoch>?1')
+    .bind(now,email,id).run().catch(()=>{});
   return json({ok:true,message:'Check your email for a secure sign-in link.'});
 }
