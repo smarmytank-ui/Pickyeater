@@ -1,4 +1,4 @@
-const CACHE_NAME = 'food-my-way-v2-5';
+const CACHE_NAME = 'food-my-way-v2-6';
 const APP_SHELL = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ const APP_SHELL = [
   './android-chrome-192x192.png',
   './android-chrome-512x512.png',
   './apple-touch-icon.png',
+  './food-my-way-social.png',
   './privacy.html',
   './terms.html',
   './support.html',

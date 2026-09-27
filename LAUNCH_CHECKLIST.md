@@ -47,7 +47,7 @@
 - [x] robots.txt and sitemap.xml
 - [ ] foodmyway.app connected to production
 - [ ] PickyEaterCookbook.com redirect configured
-- [ ] Production social-share image
+- [x] Production social-share image
 - [ ] Analytics provider configured
 - [ ] Error monitoring configured
 - [ ] Search-engine verification and sitemap submission
