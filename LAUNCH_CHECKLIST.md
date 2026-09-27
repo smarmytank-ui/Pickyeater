@@ -95,16 +95,14 @@
 - [ ] Instacart-approved CTA and production review
 - [ ] Impact affiliate enrollment and attribution test
 
-## Human-required items
+## Human-required items still outstanding
 
-These steps require the owner because they involve legal identity, banking, taxes, or accepting third-party commercial terms:
+These remaining steps require the owner because they involve a financial transaction, banking/tax information, or public representation:
 
-1. Confirm the legal person or business that will sell Food My Way.
-2. Complete Stripe identity, bank, and tax onboarding.
-3. Approve the final refund policy and legal documents.
-4. Confirm the inbox that should receive support@foodmyway.app mail.
-5. Approve public testimonials and creator partnerships before publication.
-6. Approve Resend enrollment, sending-domain verification, and credential creation.
+1. Give action-time approval for the controlled full refund of the verified $29 purchase.
+2. Complete Stripe payout-bank and any remaining payout-tax details.
+3. Approve every public testimonial and creator partnership before publication.
+4. Obtain professional legal review if desired before scaling paid promotion.
 
 See `OWNER_LAUNCH_ACTIONS.md` for the minimal owner-only sequence and `LEGAL_LAUNCH_PACKET.md` for recommended approval-ready language.
 

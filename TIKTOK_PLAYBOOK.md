@@ -76,7 +76,7 @@ Avoid long intros, stock-food footage, generic motivational language, and featur
 - “Comment four foods you actually eat.”
 - “Send this to the person who cooks two dinners.”
 - “Try your safe foods at foodmyway.app.”
-- “Join the first 250 founding members for $29 once.”
+- “Join the first 250 founding members for a one-time $29.”
 
 Use only one call to action per video.
 

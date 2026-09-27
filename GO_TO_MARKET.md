@@ -14,17 +14,17 @@ This positioning avoids competing as a generic recipe generator. The wedge is re
 
 ## Offer and pricing
 
-### Private beta
-
-- Core generator and swaps: free
-- Founding-member reservation: no charge until secure checkout and cloud accounts are ready
-
-### First paid release
+### Current paid release
 
 - Founding Member: **$29 one time**, limited to the first 250 customers
 - Free: unlimited recipe creation and ingredient swaps, with up to three saved recipes
-- Plus: **$4.99/month or $39/year**
-- Family, after multi-profile validation: **$59/year**
+- The live checkout, signed fulfillment webhook, passwordless account recovery, and Founding entitlement have passed a real-payment test.
+- Public promotion waits only for the controlled refund-revocation test and production premium enforcement.
+
+### Planned recurring release after retention proof
+
+- Plus target: **$4.99/month or $39/year**
+- Family target, after multi-profile validation: **$59/year**
 
 Do not advertise “lifetime” without defining it in checkout as the lifetime of the Food My Way premium product, not the buyer’s lifetime, and preserving the right to charge separately for materially different future products.
 
@@ -61,13 +61,14 @@ This is achievable only through retention, not one viral post. The operating tar
 
 ## Launch sequence
 
-### Phase 1 — private proof
+### Phase 1 — private proof and launch validation
 
 - Recruit 25 target households manually.
 - Require each tester to make at least three recipes over seven days.
 - Interview anyone who stops after one recipe.
 - Collect permission before using any quote, name, image, or video publicly.
-- Ask for a real $29 founding purchase only after secure checkout is live.
+- Secure checkout, signed fulfillment, login, and paid entitlement are live and verified with a controlled purchase.
+- Complete the owner-approved refund-revocation test before enforcing premium access for public traffic.
 
 ### Phase 2 — paid founding launch
 
@@ -80,7 +81,8 @@ This is achievable only through retention, not one viral post. The operating tar
 ### Phase 3 — recurring release
 
 - Introduce Plus monthly and annual plans.
-- Add household profiles, “never suggest,” weekly planning, and grocery lists.
+- Use the existing taste profile, “never suggest,” weekly planning, and grocery-list tools as the retention foundation.
+- Add validated multi-person household profiles only after observing how real households share the current account.
 - Publish searchable landing pages for picky adults, parents, sensory preferences, and weeknight meals.
 - Test partnerships with occupational therapists, dietitians, parent creators, and neurodivergent creators without making medical claims.
 - Pilot recipe-to-cart and weekly-plan-to-cart handoffs with an approved grocery provider; measure retention and reconciled order attribution before treating commissions as revenue.
@@ -116,6 +118,8 @@ The public paid launch does not open until all are true:
 - mobile Safari, mobile Chrome, desktop Chrome, and desktop Edge pass the critical flow;
 - backup and rollback procedure is documented;
 - at least 15 private testers complete the core flow without live assistance.
+
+Current technical status: production passes all 26 core checks and 42 of 43 paid-launch checks. The remaining technical gate is `premiumEnforced`; turn it on only after the controlled full refund has revoked the verified founding entitlement. Owner-only operational work is limited to authorizing that refund test and completing Stripe payout-bank/tax details. Professional legal review and public testimonial/creator approvals remain prudent business decisions, not software blockers.
 
 ## Search distribution status
 
