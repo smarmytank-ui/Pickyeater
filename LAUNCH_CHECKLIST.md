@@ -103,6 +103,15 @@ See `OWNER_LAUNCH_ACTIONS.md` for the minimal owner-only sequence and `LEGAL_LAU
 
 Release `2.61.0` passes all 112 automated tests plus direct syntax checks across the browser application, service worker, and every Cloudflare Function. Coverage includes transaction-level account deletion, payment-record retention, multi-device sign-out isolation, corrupted-backup handling, account and entitlement outages, cross-tab checkout recovery, one-time Founding pricing, grocery handoff authorization, legacy-route cleanup, and canonical SEO signals. These checks prove the local implementation; production Cloudflare bindings and live email/payment flows still require the end-to-end verification listed above.
 
+On September 27, 2026, the protected Cloudflare preview was revalidated before the pending source push:
+
+- an unauthenticated HTTPS request returned a Cloudflare Access `302` challenge with private/no-store cache policy;
+- an approved email login reached the Food My Way preview successfully;
+- the deployed UI still showed the earlier private-beta pricing copy, “limited saved recipes,” and no account control, proving that it predates the local `2.61.0` release;
+- `git push --dry-run origin picky-v2` authenticated successfully and reported the exact pending range `ee8b258..ddc2a44` without modifying the remote.
+
+Use those visible pricing and account-control differences as the immediate post-deploy smoke check; do not accept a deployment that still serves the pre-push shell from a stale service-worker cache.
+
 On September 26, 2026, release `2.47.0` passed the automated suite and a rendered in-app-browser smoke test against the local HTTP build:
 
 - loaded a starter while honoring the saved “leave out” preference;
