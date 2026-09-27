@@ -39,8 +39,8 @@
 - [ ] Stripe $29 founding product and Payment Link
 - [ ] Refund and cancellation policy finalized
 - [x] Cloudflare D1 `LEADS` database, schema, and preview binding
-- [ ] Live founding-interest verification
-- [ ] `LEADS_UNSUBSCRIBE_SECRET` and live unsubscribe verification
+- [x] Live founding-interest verification
+- [x] `LEADS_UNSUBSCRIBE_SECRET` and live unsubscribe verification
 - [x] Cloudflare D1 `PURCHASES` database, schema, and preview binding
 - [ ] Production webhook secret and test-mode fulfillment verification
 - [ ] End-to-end founding purchase, login, premium-access, and refund test
@@ -145,6 +145,8 @@ The same day, the public domain rollout was completed and independently verified
 Database presence and binding do not by themselves enable customer-facing accounts, payments, commerce, or email. Keep those public flags off until their separately listed secrets and end-to-end checks pass; telemetry is the only production feature enabled independently after its privacy and retention checks passed.
 
 Production telemetry was enabled in release `2.62.0` at commit `1273d9e` after its binding and privacy controls were verified. Two allowlisted `page_view` events returned `201 Created` from `https://foodmyway.app/api/events` and were visible in the production `food-my-way-telemetry` database. A disposable event dated January 1, 2025 was inserted before the second request; the following database query returned only the two current verification paths and no expired test path, proving the production transaction performed its 90-day cleanup. The production verifier then passed all 26 core checks.
+
+The production founding-interest lifecycle was verified after encrypted secret deployment `45c4c40`. A consented `example.com` QA submission returned `201 Created`; D1 showed `consent=1`, `status='active'`, and a 43-character opaque unsubscribe token. The signed GET rendered the confirmation form, the POST changed the record to `consent=0` and `status='unsubscribed'`, and a repeated POST returned the same successful unsubscribed response without another state transition. The disposable QA row was then removed and a zero-row query confirmed cleanup.
 
 On September 26, 2026, release `2.47.0` passed the automated suite and a rendered in-app-browser smoke test against the local HTTP build:
 

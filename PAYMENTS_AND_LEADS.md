@@ -56,7 +56,7 @@ Cloudflare setup:
 
 Unsubscribe links use opaque HMAC tokens bound to normalized email addresses. The email itself never appears in the URL. The secret stays server-side; never put it in `config.js`, a client bundle, or a campaign export.
 
-Production status, September 27, 2026: `LEADS` is bound and `LEADS_UNSUBSCRIBE_SECRET` is stored as an encrypted Cloudflare Pages production secret. A deployment after this secret was added is required before the live consent and unsubscribe lifecycle can be verified.
+Production status, September 27, 2026: `LEADS` is bound and `LEADS_UNSUBSCRIBE_SECRET` is stored as an encrypted Cloudflare Pages production secret. Deployment `45c4c40` passed the complete live lifecycle: consented signup, opaque-token storage, read-only confirmation GET, state-changing POST, idempotent repeated POST, D1 consent/status verification, and removal of the disposable QA row.
 
 ## Required owner actions
 
