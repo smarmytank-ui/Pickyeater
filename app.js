@@ -97,16 +97,37 @@ function setupTelemetry(){
   track('page_view');
 }
 
+const CHECKOUT_PENDING_KEY='foodMyWayCheckoutPending';
+const CHECKOUT_PENDING_MAX_AGE=24*60*60*1000;
+
+function markCheckoutPending(){
+  try{ localStorage.setItem(CHECKOUT_PENDING_KEY,String(Date.now())); }
+  catch{ try{ sessionStorage.setItem(CHECKOUT_PENDING_KEY,'1'); }catch{} }
+}
+
+function checkoutIsPending(){
+  try{
+    const saved=Number(localStorage.getItem(CHECKOUT_PENDING_KEY));
+    if(Number.isFinite(saved) && saved>0){
+      if(Date.now()-saved<=CHECKOUT_PENDING_MAX_AGE) return true;
+      localStorage.removeItem(CHECKOUT_PENDING_KEY);
+    }
+  }catch{}
+  try{ return sessionStorage.getItem(CHECKOUT_PENDING_KEY)==='1'; }catch{ return false; }
+}
+
+function clearCheckoutPending(){
+  try{ localStorage.removeItem(CHECKOUT_PENDING_KEY); }catch{}
+  try{ sessionStorage.removeItem(CHECKOUT_PENDING_KEY); }catch{}
+}
+
 function handleCheckoutReturn(){
   const result=new URLSearchParams(location.search).get('founding');
-  let pending=false;
-  try{ pending=sessionStorage.getItem('foodMyWayCheckoutPending')==='1'; }catch{}
   if(result==='success'){
-    try{ sessionStorage.setItem('foodMyWayCheckoutPending','1'); }catch{}
-    pending=true;
+    markCheckoutPending();
     showToast('Payment received. Sign in to unlock founding access.');
   }else if(result==='cancel') showToast('Checkout canceled. You were not charged.');
-  if(pending) $('checkoutStatus')?.classList.remove('hidden');
+  if(checkoutIsPending()) $('checkoutStatus')?.classList.remove('hidden');
   if(['success','cancel'].includes(result)){
     track('founder_checkout_returned',{result});
     history.replaceState({},'',`${location.pathname}${location.hash}`);
@@ -157,7 +178,7 @@ function renderAccountState(){
     $('checkoutStatusMessage').textContent='Your premium Food My Way features are unlocked on this account.';
     $('checkoutSignIn')?.classList.add('hidden');
     $('checkoutStatus').dataset.entitlementActive='1';
-    try{ sessionStorage.removeItem('foodMyWayCheckoutPending'); }catch{}
+    clearCheckoutPending();
   }else if(signedIn && !$('checkoutStatus')?.classList.contains('hidden')){
     $('checkoutStatusTitle').textContent=entitlementUnavailable ? 'Membership check is temporarily unavailable.' : 'Payment confirmation is processing.';
     $('checkoutStatusMessage').textContent=entitlementUnavailable ? 'Your payment remains recorded. Try checking your account again shortly, or contact support if this continues.' : 'You are signed in with no active founding entitlement yet. Reopen Account shortly, or contact support if this continues.';
@@ -178,6 +199,20 @@ async function refreshAccountSession({reportError=false}={}){
   }
   renderAccountState();
   return accountSession;
+}
+
+async function refreshPendingEntitlement({attempts=6,delayMs=2500}={}){
+  if(!getPublicConfig().accountsEnabled || !checkoutIsPending()) return false;
+  for(let attempt=0;attempt<attempts;attempt+=1){
+    const session=await refreshAccountSession();
+    if(session?.entitlement?.plan==='founding' && session.entitlement?.status==='active'){
+      showToast('Founding access is active. Welcome to Food My Way!');
+      return true;
+    }
+    if(session && !session.authenticated) return false;
+    if(attempt<attempts-1) await new Promise(resolve=>setTimeout(resolve,delayMs));
+  }
+  return false;
 }
 
 function downloadCloudExport(payload){
@@ -293,6 +328,7 @@ async function setupAccounts(){
       if(session?.authenticated){
         showToast('Signed in to Food My Way.');
         track('account_signed_in',{founding:session.entitlement?.plan==='founding' && session.entitlement?.status==='active'});
+        if(!session.entitlement) refreshPendingEntitlement();
       }else showToast('Sign-in completed, but account status is temporarily unavailable. Try again shortly.');
     }
     else showToast(loginResult==='invalid' ? 'That sign-in link is invalid or expired.' : 'Cloud sign-in is unavailable.');
@@ -2672,6 +2708,7 @@ function init(){
   getRecipeBook();
   loadSharedRecipeFromUrl();
   handleCheckoutReturn();
+  refreshPendingEntitlement();
   window.addEventListener('hashchange', loadSharedRecipeFromUrl);
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('./service-worker.js').catch(error=>{

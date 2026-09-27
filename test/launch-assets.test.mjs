@@ -262,6 +262,11 @@ test('a successful checkout has a durable account-unlock path',async()=>{
   assert.match(html,/id="checkoutStatus"[^>]*class="checkout-status hidden"/);
   assert.match(html,/id="checkoutSignIn"/);
   assert.match(script,/foodMyWayCheckoutPending/);
+  assert.match(script,/localStorage\.setItem\(CHECKOUT_PENDING_KEY,String\(Date\.now\(\)\)\)/);
+  assert.match(script,/CHECKOUT_PENDING_MAX_AGE=24\*60\*60\*1000/);
+  assert.match(script,/async function refreshPendingEntitlement\(\{attempts=6,delayMs=2500\}=\{\}\)/);
+  assert.match(script,/Founding access is active\. Welcome to Food My Way!/);
+  assert.match(script,/handleCheckoutReturn\(\);\s*refreshPendingEntitlement\(\);/);
   assert.match(script,/Founding access is active\./);
   assert.match(script,/\$\('checkoutSignIn'\)\?\.addEventListener\('click'/);
   assert.match(script,/Your payment is recorded; contact support if this continues\./);
