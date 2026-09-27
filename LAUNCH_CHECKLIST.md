@@ -68,9 +68,10 @@
 
 - [x] Instacart selected as first commerce integration
 - [x] Server-side shopping-list adapter and validation tests
+- [x] Payload QA across 25 representative picky-eater grocery lists
 - [x] Cloudflare endpoint fails closed until a secret is configured
 - [ ] Instacart development application and API key
-- [ ] Ingredient-match QA across at least 25 representative lists
+- [ ] Live Instacart development-catalog match QA across the 25 fixtures
 - [ ] Instacart-approved CTA and production review
 - [ ] Impact affiliate enrollment and attribution test
 
