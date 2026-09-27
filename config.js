@@ -3,5 +3,5 @@ window.FMW_CONFIG = Object.freeze({
   commerceEnabled: false,
   telemetryEnabled: true,
   accountsEnabled: true,
-  premiumEnforced: false
+  premiumEnforced: true
 });
