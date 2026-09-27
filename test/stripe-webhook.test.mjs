@@ -41,6 +41,15 @@ test('rejects a mismatched founding price',()=>{
   assert.throws(()=>foundingEntitlementFromEvent(event),/amount/);
 });
 
+test('rejects a paid checkout that cannot be safely revoked later',()=>{
+  const session={
+    id:'cs_refs',mode:'payment',payment_status:'paid',currency:'usd',amount_total:2900,
+    customer_details:{email:'buyer@example.com'},metadata:{offer:'food_my_way_founding'}
+  };
+  assert.throws(()=>foundingEntitlementFromEvent({type:'checkout.session.completed',data:{object:session}}),/Stripe references/);
+  assert.throws(()=>foundingEntitlementFromEvent({type:'checkout.session.completed',data:{object:{...session,payment_intent:'pi_refs',id:''}}}),/Stripe references/);
+});
+
 test('recognizes only a full refund with a payment-intent reference',()=>{
   const event={type:'charge.refunded',data:{object:{
     payment_intent:'pi_refund',amount:2900,amount_refunded:2900,refunded:true

@@ -29,14 +29,21 @@ export async function onRequestPost({request,env}){
       .bind(event.id,event.type,now)];
     if(entitlement){
       statements.push(env.PURCHASES.prepare(`INSERT INTO entitlements (email,plan,status,stripe_customer_id,stripe_session_id,stripe_payment_intent_id,amount,currency,stripe_event_created,created_at,updated_at)
-        VALUES (?1,'founding',?2,?3,?4,?5,?6,?7,?8,?9,?9)
+        SELECT ?1,'founding',?2,?3,?4,?5,?6,?7,?8,?9,?9
+        WHERE NOT EXISTS (SELECT 1 FROM refunded_payments WHERE stripe_payment_intent_id=?5 AND stripe_event_created>=?8)
         ON CONFLICT(email,plan) DO UPDATE SET status=excluded.status, stripe_customer_id=excluded.stripe_customer_id,
         stripe_session_id=excluded.stripe_session_id, stripe_payment_intent_id=excluded.stripe_payment_intent_id,
         amount=excluded.amount, currency=excluded.currency, stripe_event_created=excluded.stripe_event_created, updated_at=excluded.updated_at
-        WHERE entitlements.status!='refunded' AND excluded.stripe_event_created>=entitlements.stripe_event_created`)
+        WHERE entitlements.status!='refunded' AND excluded.stripe_event_created>=entitlements.stripe_event_created
+          AND NOT EXISTS (SELECT 1 FROM refunded_payments WHERE stripe_payment_intent_id=excluded.stripe_payment_intent_id AND stripe_event_created>=excluded.stripe_event_created)`)
         .bind(entitlement.email,entitlement.status,entitlement.stripeCustomerId,entitlement.stripeSessionId,
           entitlement.stripePaymentIntentId,entitlement.amount,entitlement.currency,eventCreated,now));
     }else{
+      statements.push(env.PURCHASES.prepare(`INSERT INTO refunded_payments (stripe_payment_intent_id,stripe_event_created,created_at,updated_at)
+        VALUES (?3,?1,?2,?2)
+        ON CONFLICT(stripe_payment_intent_id) DO UPDATE SET stripe_event_created=excluded.stripe_event_created,updated_at=excluded.updated_at
+        WHERE excluded.stripe_event_created>=refunded_payments.stripe_event_created`)
+        .bind(eventCreated,now,refund.stripePaymentIntentId));
       statements.push(env.PURCHASES.prepare("UPDATE entitlements SET status='refunded', stripe_event_created=?1, updated_at=?2 WHERE stripe_payment_intent_id=?3 AND ?1>=stripe_event_created")
         .bind(eventCreated,now,refund.stripePaymentIntentId));
     }

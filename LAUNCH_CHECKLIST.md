@@ -29,6 +29,7 @@
 - [x] Consent-based founding-lead endpoint and D1 schema
 - [x] Signed founding-list unsubscribe endpoint and consent-state update
 - [x] Signed, idempotent Stripe fulfillment endpoint and entitlement schema
+- [x] Out-of-order refund protection with payment-intent tombstones
 - [x] Signed-in email entitlement lookup and feature-flagged premium gates
 - [ ] Stripe account and verified business identity
 - [ ] Stripe $29 founding product and Payment Link

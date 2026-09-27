@@ -22,7 +22,7 @@ The app accepts only `buy.stripe.com` or `checkout.stripe.com` HTTPS URLs, preve
 
 `POST /api/stripe-webhook` verifies Stripe's signed raw request before recording access. It accepts only a paid, one-time USD $29 Checkout Session carrying the founding-offer metadata above. Duplicate events are safe to replay.
 
-1. Create a D1 database and run `migrations/0002_purchase_entitlements.sql`.
+1. Create a D1 database and run `migrations/0002_purchase_entitlements.sql` and `migrations/0006_refund_tombstones.sql` in order.
 2. Bind it to the Pages project as `PURCHASES` in production.
 3. Add `/api/stripe-webhook` as a Stripe webhook endpoint.
 4. Subscribe to `checkout.session.completed`, `checkout.session.async_payment_succeeded`, and `charge.refunded`.
@@ -31,7 +31,7 @@ The app accepts only `buy.stripe.com` or `checkout.stripe.com` HTTPS URLs, preve
 
 The browser success redirect is never treated as proof of purchase. Stripe recommends server-side webhook fulfillment because customers may not return to the landing page after payment.
 
-A full Stripe refund changes the matching entitlement to `refunded`. Partial refunds do not remove access automatically and must be reviewed by support. A refunded entitlement cannot be reactivated by a payment-event replay; any legitimate repurchase after a refund requires support review.
+A full Stripe refund changes the matching entitlement to `refunded`. Partial refunds do not remove access automatically and must be reviewed by support. The refund is also retained as a payment-intent tombstone so a delayed or replayed checkout event cannot restore access, even if Stripe delivers the refund first. Any legitimate repurchase after a refund requires a new Payment Intent and normal support review.
 
 When cloud accounts are enabled, `GET /api/auth/session` looks up an active entitlement by the normalized signed-in email. The account UI then displays “Founding member,” and the optional premium gate recognizes that access. Customers must sign in using the same email used at Stripe Checkout; support handles legitimate email changes.
 

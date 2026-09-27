@@ -34,11 +34,14 @@ export function foundingEntitlementFromEvent(event){
   if(session.currency!=='usd' || session.amount_total!==2900) throw new Error('Founding payment amount does not match the configured offer.');
   const email=String(session.customer_details?.email || session.customer_email || '').trim().toLowerCase();
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Paid checkout is missing a valid customer email.');
+  const stripeSessionId=String(session.id || '').trim();
+  const stripePaymentIntentId=String(session.payment_intent || '').trim();
+  if(!stripeSessionId || !stripePaymentIntentId) throw new Error('Paid checkout is missing the Stripe references required for fulfillment.');
   return {
     email,
     stripeCustomerId:String(session.customer || ''),
-    stripeSessionId:String(session.id || ''),
-    stripePaymentIntentId:String(session.payment_intent || ''),
+    stripeSessionId,
+    stripePaymentIntentId,
     amount:session.amount_total,
     currency:session.currency,
     status:'active'

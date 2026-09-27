@@ -147,6 +147,18 @@ test('founding-list consent includes a secure unsubscribe path',async()=>{
   assert.match(pkg,/founding-unsubscribe\.js/);
 });
 
+test('payment fulfillment preserves refunds delivered before checkout completion',async()=>{
+  const [endpoint,migration,docs]=await Promise.all([
+    readFile(path.join(root,'functions/api/stripe-webhook.js'),'utf8'),
+    readFile(path.join(root,'migrations/0006_refund_tombstones.sql'),'utf8'),
+    readFile(path.join(root,'PAYMENTS_AND_LEADS.md'),'utf8')
+  ]);
+  assert.match(endpoint,/INSERT INTO refunded_payments/);
+  assert.match(endpoint,/NOT EXISTS \(SELECT 1 FROM refunded_payments/);
+  assert.match(migration,/stripe_payment_intent_id TEXT PRIMARY KEY/);
+  assert.match(docs,/0006_refund_tombstones\.sql/);
+});
+
 test('customer-facing product chrome consistently uses Food My Way',async()=>{
   const [html,script,legacy]=await Promise.all([read('index.html'),read('app.js'),read('generator.html')]);
   assert.doesNotMatch(html,/Shared from Picky Eater|apple-mobile-web-app-title" content="Picky Eater"/);
