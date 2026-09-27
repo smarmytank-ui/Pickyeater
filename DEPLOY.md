@@ -14,7 +14,7 @@ Deploy the complete repository so icons, the web manifest, offline support, and 
 4. Configure secrets only in Cloudflare: Resend credentials and sender, the Stripe webhook secret, and the founding-list unsubscribe secret. Never put secrets in `config.js` or Git.
 5. Run `npm run verify:release` before deployment. CI runs the same syntax and behavioral checks on `main` and `picky-v2`.
 6. Run `node scripts/verify-deployment.mjs https://foodmyway.app` after every deployment. This checks the public funnel, security headers, assets, and fail-closed APIs without creating customer data.
-7. Before accepting money, run `node scripts/verify-deployment.mjs https://foodmyway.app --launch`. Launch mode requires enabled account, premium, and telemetry flags; a valid Stripe URL; configured live APIs; and published launch-ready legal copy.
+7. Before accepting money, run `node scripts/verify-deployment.mjs https://foodmyway.app --launch`. Launch mode requires enabled account, premium, and telemetry flags; a valid Stripe URL; configured live core APIs; and published launch-ready legal copy. Grocery commerce may remain disabled for the core paid launch; if `commerceEnabled` is true, the verifier also requires the protected shop endpoint to be live.
 8. Complete the manual production matrix in `LAUNCH_CHECKLIST.md`: recipe creation, save/edit/share, install/offline reload, account email, backup/restore/export/deletion, purchase/activation/refund, and supported mobile/desktop browsers.
 
 That’s it.

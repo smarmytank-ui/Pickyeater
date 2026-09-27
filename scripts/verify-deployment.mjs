@@ -9,6 +9,7 @@ const base=new URL(baseArg);
 if(base.protocol!=='https:') throw new Error('Deployment verification requires HTTPS.');
 const failures=[];
 const passed=[];
+let commerceLaunchEnabled=false;
 
 async function checkPath(pathname,{contains,headers={}}={}){
   const url=new URL(pathname,base);
@@ -106,6 +107,7 @@ if(launchMode){
   try{
     const response=await fetch(new URL('/config.js',base),{signal:AbortSignal.timeout(15000)});
     const config=await response.text();
+    commerceLaunchEnabled=/commerceEnabled:\s*true/.test(config);
     const requiredFlags=['accountsEnabled','premiumEnforced','telemetryEnabled'];
     for(const flag of requiredFlags){
       if(!new RegExp(`${flag}:\\s*true`).test(config)) failures.push(`/config.js: ${flag} must be true for paid launch`);
@@ -160,7 +162,7 @@ await checkApi('/api/events',{
 });
 await checkApi('/api/shop',{
   method:'POST',body:'{"items":[]}',requestHeaders:{'content-type':'application/json'},
-  statuses:launchMode ? [401] : [400,401,503],headers:jsonNoStore
+  statuses:launchMode && commerceLaunchEnabled ? [401] : launchMode ? [401,503] : [400,401,503],headers:jsonNoStore
 });
 
 console.log(`Passed ${passed.length} checks: ${passed.join(', ') || 'none'}`);

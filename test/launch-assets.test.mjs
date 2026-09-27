@@ -175,6 +175,8 @@ test('deployment verifier covers the complete public funnel',async()=>{
   }
   assert.match(verifier,/process\.argv\.includes\('--launch'\)/);
   for(const setting of ['accountsEnabled','premiumEnforced','telemetryEnabled','founderCheckoutUrl']) assert.match(verifier,new RegExp(setting));
+  assert.match(verifier,/commerceLaunchEnabled=\/commerceEnabled:/);
+  assert.match(verifier,/launchMode && commerceLaunchEnabled \? \[401\]/);
 });
 
 test('unverified paid and account integrations stay disabled by default',async()=>{
