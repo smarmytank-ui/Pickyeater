@@ -38,6 +38,8 @@ They are not buying recipes. They are buying:
 4. a repeatable way to adapt one meal instead of cooking separate meals;
 5. a judgment-free tool that starts with safe and familiar foods.
 
+The long-term convenience promise is **from foods my household will eat to a local grocery cart for pickup or delivery**. Grocery fulfillment should strengthen the paid plan after the core recipe and weekly-planning loop proves retention; it is not a substitute for product-market fit and must remain a user-confirmed handoff to an approved provider.
+
 ## Revenue path
 
 At an average realized recurring revenue of roughly $4.25 per paying household per month:
@@ -79,6 +81,7 @@ This is achievable only through retention, not one viral post. The operating tar
 - Add household profiles, “never suggest,” weekly planning, and grocery lists.
 - Publish searchable landing pages for picky adults, parents, sensory preferences, and weeknight meals.
 - Test partnerships with occupational therapists, dietitians, parent creators, and neurodivergent creators without making medical claims.
+- Pilot recipe-to-cart and weekly-plan-to-cart handoffs with an approved grocery provider; measure retention and reconciled order attribution before treating commissions as revenue.
 
 ## Market evidence reviewed
 

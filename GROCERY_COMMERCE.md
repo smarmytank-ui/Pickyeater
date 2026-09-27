@@ -56,6 +56,18 @@ Grocery commissions are supplemental revenue, not the core business. Subscriptio
 
 The commerce feature itself is a premium retention benefit: a free customer can discover a useful meal, while a paid household can move from saved recipes and a weekly plan to one consolidated shopping handoff. Do not promise commission income until an affiliate agreement is approved and tracked conversions have been reconciled with provider reporting.
 
+## Paid-product rollout
+
+The customer outcome is **recipe to local cart**, not merely a grocery-list export. Build it in three measured stages:
+
+1. **Recipe cart:** let a customer send the currently open recipe to the grocery provider, with a confirmation screen showing exactly which items and quantities will be shared.
+2. **Weekly cart:** consolidate planned recipes, combine duplicate ingredients, and let the customer remove pantry items before the handoff.
+3. **Household convenience:** remember non-sensitive shopping preferences locally, surface pickup or delivery as choices on the provider page, and add another approved provider only where coverage materially improves.
+
+The provider remains responsible for retailer selection, product matching, availability, pricing, substitutions, fulfillment windows, checkout, payment, pickup, and delivery. Food My Way must never imply that a generated recipe has already been purchased or that every ingredient is available locally.
+
+Measure `grocery_shop_started`, successful link creation, provider click-through, and—only when contractually available—attributed orders and commission. Compare paid retention for households that use commerce with those that do not. Keep the feature only if it improves retention or produces meaningful, reconciled contribution margin after support costs.
+
 ## Do not do
 
 - Do not expose the API key in `app.js` or any browser-visible file.
