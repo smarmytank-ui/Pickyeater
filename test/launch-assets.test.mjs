@@ -74,6 +74,24 @@ test('canonical launch files consistently use foodmyway.app',async()=>{
   assert.match(robots,/https:\/\/foodmyway\.app\/sitemap\.xml/);
 });
 
+test('homepage structured data describes the app, offers, and visible FAQ',async()=>{
+  const html=await read('index.html');
+  const source=html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
+  assert.ok(source,'homepage needs JSON-LD');
+  const data=JSON.parse(source);
+  assert.equal(data['@context'],'https://schema.org');
+  const app=data['@graph'].find(item=>item['@type']==='SoftwareApplication');
+  const faq=data['@graph'].find(item=>item['@type']==='FAQPage');
+  assert.equal(app.name,'Food My Way');
+  assert.deepEqual(app.offers.map(offer=>offer.price),['0','29']);
+  assert.equal(app.offers[1].availability,'https://schema.org/PreOrder');
+  assert.equal(faq.mainEntity.length,5);
+  for(const question of faq.mainEntity){
+    assert.match(html,new RegExp(question.name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));
+    assert.ok(question.acceptedAnswer.text.length>40);
+  }
+});
+
 test('audience landing pages have unique search metadata and sitemap entries',async()=>{
   const sitemap=await read('sitemap.xml');
   const titles=new Set();
