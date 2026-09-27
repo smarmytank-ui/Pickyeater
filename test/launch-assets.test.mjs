@@ -114,3 +114,12 @@ test('pricing copy matches the enforced free save allowance',async()=>{
   assert.match(script,/const FREE_RECIPE_LIMIT = 3/);
   assert.match(script,/requirePremium\('unlimited_saves'\)/);
 });
+
+test('customer-facing product chrome consistently uses Food My Way',async()=>{
+  const [html,script,legacy]=await Promise.all([read('index.html'),read('app.js'),read('generator.html')]);
+  assert.doesNotMatch(html,/Shared from Picky Eater|apple-mobile-web-app-title" content="Picky Eater"/);
+  assert.doesNotMatch(script,/from Picky Eater/);
+  assert.doesNotMatch(legacy,/Open Picky Eater|current Picky Eater experience/);
+  assert.match(script,/aria-label',`Decrease \$\{pretty\(ing\.name\)\} amount`/);
+  assert.match(script,/aria-label',`Swap \$\{pretty\(ing\.name\)\}`/);
+});

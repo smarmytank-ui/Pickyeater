@@ -1,5 +1,5 @@
 // =======================================================
-// Picky Eater — LOCKED FOUNDATION (STABLE)
+// Food My Way — recipe and meal-planning application
 // ✅ Generator works
 // ✅ Swapper + Jackpot ("Enter your own…")
 // ✅ Amount controls (+ / -) with intent-aware steps
@@ -1091,11 +1091,13 @@ function render(){
       dec.type = 'button';
       dec.className = 'btn ghost small';
       dec.textContent = '−';
+      dec.setAttribute('aria-label',`Decrease ${pretty(ing.name)} amount`);
 
       const inc = document.createElement('button');
       inc.type = 'button';
       inc.className = 'btn ghost small';
       inc.textContent = '+';
+      inc.setAttribute('aria-label',`Increase ${pretty(ing.name)} amount`);
 
       dec.onclick = ()=>{
         const step = stepFor(ing);
@@ -1119,6 +1121,7 @@ function render(){
       // Swap dropdown
       const sel = document.createElement('select');
       sel.className = 'swap-select';
+      sel.setAttribute('aria-label',`Swap ${pretty(ing.name)}`);
 
       const opts = (SWAP_CATALOG[ing.role] || []).filter(option=>!isAvoidedFood(option.name));
       sel.innerHTML =
@@ -1617,7 +1620,7 @@ async function shareRecipe(recipe){
   if(!normalized) return;
   const url = `${location.origin}${location.pathname}#recipe=${encodeSharedRecipe(normalized)}`;
   try{
-    if(navigator.share) await navigator.share({ title:normalized.title, text:`${normalized.title} from Picky Eater`, url });
+    if(navigator.share) await navigator.share({ title:normalized.title, text:`${normalized.title} from Food My Way`, url });
     else if(navigator.clipboard) { await navigator.clipboard.writeText(url); alert('Share link copied.'); }
     else prompt('Copy this share link:', url);
     track('recipe_shared', { recipe_title:normalized.title });
