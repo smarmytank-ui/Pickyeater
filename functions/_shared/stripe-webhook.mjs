@@ -44,3 +44,11 @@ export function foundingEntitlementFromEvent(event){
     status:'active'
   };
 }
+
+export function foundingRefundFromEvent(event){
+  if(event?.type!=='charge.refunded') return null;
+  const charge=event.data?.object;
+  const fullyRefunded=charge?.refunded===true || (Number.isInteger(charge?.amount) && charge.amount>0 && charge.amount_refunded===charge.amount);
+  if(!fullyRefunded || !charge?.payment_intent) return null;
+  return {stripePaymentIntentId:String(charge.payment_intent),status:'refunded'};
+}

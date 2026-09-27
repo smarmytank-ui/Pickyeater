@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS entitlements (
   stripe_payment_intent_id TEXT,
   amount INTEGER NOT NULL,
   currency TEXT NOT NULL,
+  stripe_event_created INTEGER NOT NULL,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
   UNIQUE(email,plan),

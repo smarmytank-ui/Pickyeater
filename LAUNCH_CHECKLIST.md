@@ -40,8 +40,8 @@
 - [ ] Legal operator name/address inserted
 - [ ] Professional legal review
 - [ ] support@foodmyway.app routing verified
-- [ ] Customer-support response templates
-- [ ] Incident, refund, and deletion procedures
+- [x] Customer-support response templates
+- [x] Incident, refund, and deletion procedures
 
 ## Distribution
 

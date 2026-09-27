@@ -25,11 +25,13 @@ The app accepts only `buy.stripe.com` or `checkout.stripe.com` HTTPS URLs, preve
 1. Create a D1 database and run `migrations/0002_purchase_entitlements.sql`.
 2. Bind it to the Pages project as `PURCHASES` in production.
 3. Add `/api/stripe-webhook` as a Stripe webhook endpoint.
-4. Subscribe to `checkout.session.completed` and `checkout.session.async_payment_succeeded`.
+4. Subscribe to `checkout.session.completed`, `checkout.session.async_payment_succeeded`, and `charge.refunded`.
 5. Save its signing secret as the encrypted Pages secret `STRIPE_WEBHOOK_SECRET`.
 6. Use Stripe test mode to confirm a $29 purchase produces one active `founding` entitlement.
 
 The browser success redirect is never treated as proof of purchase. Stripe recommends server-side webhook fulfillment because customers may not return to the landing page after payment.
+
+A full Stripe refund changes the matching entitlement to `refunded`. Partial refunds do not remove access automatically and must be reviewed by support. A refunded entitlement cannot be reactivated by a payment-event replay; any legitimate repurchase after a refund requires support review.
 
 ## Founding-interest storage
 

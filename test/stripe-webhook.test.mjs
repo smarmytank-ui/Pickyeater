@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { foundingEntitlementFromEvent, stripeSignatureIsValid } from '../functions/_shared/stripe-webhook.mjs';
+import { foundingEntitlementFromEvent, foundingRefundFromEvent, stripeSignatureIsValid } from '../functions/_shared/stripe-webhook.mjs';
 
 async function signature(payload,secret,timestamp){
   const encoder=new TextEncoder();
@@ -39,4 +39,13 @@ test('rejects a mismatched founding price',()=>{
     customer_details:{email:'buyer@example.com'},metadata:{offer:'food_my_way_founding'}
   }}};
   assert.throws(()=>foundingEntitlementFromEvent(event),/amount/);
+});
+
+test('recognizes only a full refund with a payment-intent reference',()=>{
+  const event={type:'charge.refunded',data:{object:{
+    payment_intent:'pi_refund',amount:2900,amount_refunded:2900,refunded:true
+  }}};
+  assert.deepEqual(foundingRefundFromEvent(event),{stripePaymentIntentId:'pi_refund',status:'refunded'});
+  assert.equal(foundingRefundFromEvent({...event,data:{object:{...event.data.object,amount_refunded:100,refunded:false}}}),null);
+  assert.equal(foundingRefundFromEvent({...event,type:'charge.updated'}),null);
 });
