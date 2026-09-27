@@ -11,9 +11,20 @@ const {
   titleFrom,
   recipeMacros,
   isActiveIngredient,
+  FREE_RECIPE_LIMIT,
+  canSaveRecipe,
   encodeSharedRecipe,
   decodeSharedRecipe
 } = require('../app.js');
+
+test('free plan has the advertised three-recipe save allowance', () => {
+  assert.equal(FREE_RECIPE_LIMIT,3);
+  assert.equal(canSaveRecipe({premiumEnforced:true,foundingAccess:false,savedCount:2}),true);
+  assert.equal(canSaveRecipe({premiumEnforced:true,foundingAccess:false,savedCount:3}),false);
+  assert.equal(canSaveRecipe({premiumEnforced:true,foundingAccess:true,savedCount:30}),true);
+  assert.equal(canSaveRecipe({premiumEnforced:true,foundingAccess:false,savedCount:3,replacing:true}),true);
+  assert.equal(canSaveRecipe({premiumEnforced:false,foundingAccess:false,savedCount:30}),true);
+});
 
 test('omits empty optional ingredient slots from customer-facing recipes', () => {
   assert.equal(isActiveIngredient({name:'skip it',base:{v:0,u:''}}),false);

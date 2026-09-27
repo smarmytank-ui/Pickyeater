@@ -106,3 +106,11 @@ test('unverified paid and account integrations stay disabled by default',async()
   assert.match(config,/premiumEnforced:\s*false/);
   assert.match(config,/telemetryEnabled:\s*false/);
 });
+
+test('pricing copy matches the enforced free save allowance',async()=>{
+  const [html,script]=await Promise.all([read('index.html'),read('app.js')]);
+  assert.match(html,/Up to 3 saved recipes/);
+  assert.match(html,/Unlimited saved recipes/);
+  assert.match(script,/const FREE_RECIPE_LIMIT = 3/);
+  assert.match(script,/requirePremium\('unlimited_saves'\)/);
+});

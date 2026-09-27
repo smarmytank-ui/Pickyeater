@@ -22,6 +22,7 @@ const TASTE_PROFILE_KEY = 'foodMyWayTasteProfile';
 const WEEKLY_PLAN_KEY = 'foodMyWayWeeklyPlan';
 const GROCERY_CHECKS_KEY = 'foodMyWayGroceryChecks';
 const CLOUD_DATA_KEYS = ['pickyRecipesV2', WEEKLY_PLAN_KEY, GROCERY_CHECKS_KEY, TASTE_PROFILE_KEY, 'pickyDiaryMeals', 'pickyFavorites', 'picky_saved_recipes'];
+const FREE_RECIPE_LIMIT = 3;
 let deferredInstallPrompt = null;
 
 function track(eventName, details = {}){
@@ -194,7 +195,12 @@ async function setupAccounts(){
 function requirePremium(feature){
   if(!getPublicConfig().premiumEnforced) return true;
   if(accountSession.entitlement?.plan==='founding' && accountSession.entitlement?.status==='active') return true;
-  const label=feature==='household_profile' ? 'Household taste profiles' : 'Weekly planning and grocery lists';
+  const labels={
+    household_profile:'Household taste profiles',
+    weekly_planning:'Weekly planning and grocery lists',
+    unlimited_saves:'Unlimited saved recipes'
+  };
+  const label=labels[feature] || 'This feature';
   track('premium_gate_viewed',{feature});
   if(getPublicConfig().accountsEnabled){
     $('accountOverlay')?.classList.remove('hidden');
@@ -1431,6 +1437,10 @@ function showPlannerView(){
   track('weekly_planner_opened',{plan_size:getWeeklyPlan().length});
 }
 
+function canSaveRecipe({premiumEnforced,foundingAccess,savedCount,replacing=false}){
+  return replacing || !premiumEnforced || foundingAccess || savedCount < FREE_RECIPE_LIMIT;
+}
+
 function saveRecipe(recipe, options = {}){
   const normalized = normalizeSavedRecipe(recipe);
   if(!normalized) return null;
@@ -1438,6 +1448,16 @@ function saveRecipe(recipe, options = {}){
   const existingIndex = options.replaceId
     ? recipes.findIndex(item=>item.id === options.replaceId)
     : -1;
+  const foundingAccess=accountSession.entitlement?.plan==='founding' && accountSession.entitlement?.status==='active';
+  if(!canSaveRecipe({
+    premiumEnforced:Boolean(getPublicConfig().premiumEnforced),
+    foundingAccess,
+    savedCount:recipes.length,
+    replacing:existingIndex >= 0
+  })){
+    requirePremium('unlimited_saves');
+    return null;
+  }
   if(existingIndex >= 0) recipes[existingIndex] = { ...normalized, id: options.replaceId };
   else recipes.unshift(normalized);
   setRecipeBook(recipes);
@@ -1546,7 +1566,7 @@ function renderRecipeBook(query = ''){
       ['Open', ()=>openSavedRecipe(recipe), 'primary'],
       [isPlanned ? '✓ In weekly plan' : 'Add to week', ()=>{ toggleWeeklyPlan(recipe.id); renderRecipeBook($('recipeSearch')?.value || ''); }, isPlanned ? 'primary' : ''],
       ['Share', ()=>shareRecipe(recipe), ''],
-      ['Duplicate', ()=>{ const duplicate={...safeClone(recipe), id:uid(), title:`${recipe.title} Copy`, savedAt:new Date().toISOString()}; saveRecipe(duplicate); renderRecipeBook(); }, ''],
+      ['Duplicate', ()=>{ const duplicate={...safeClone(recipe), id:uid(), title:`${recipe.title} Copy`, savedAt:new Date().toISOString()}; if(saveRecipe(duplicate)) renderRecipeBook(); }, ''],
       ['Delete', ()=>{ if(confirm(`Delete “${recipe.title}”?`)){ setRecipeBook(getRecipeBook().filter(item=>item.id!==recipe.id)); renderRecipeBook($('recipeSearch')?.value || ''); } }, 'ghost']
     ];
     buttons.forEach(([label, handler, style])=>{
@@ -1627,7 +1647,7 @@ function showSharedRecipe(recipe){
   });
   $('sharedInstructions').replaceChildren();
   recipe.steps.forEach(step=>{ const li=document.createElement('li'); li.textContent=step.text || String(step); $('sharedInstructions').appendChild(li); });
-  $('saveSharedRecipe').onclick=()=>{ saveRecipe({ ...recipe, id:uid(), savedAt:new Date().toISOString() }); $('saveSharedRecipe').textContent='✓ Saved to Recipe Book'; };
+  $('saveSharedRecipe').onclick=()=>{ if(saveRecipe({ ...recipe, id:uid(), savedAt:new Date().toISOString() })) $('saveSharedRecipe').textContent='✓ Saved to Recipe Book'; };
 }
 
 function qtyStrForServings(ing, recipeServings){
@@ -1994,7 +2014,8 @@ function wireEvents(){
     saveBtn.dataset.wired='1';
     saveBtn.addEventListener('click', ()=>{
       if(!state) return;
-      saveRecipe(snapshotCurrentRecipe());
+      const saved=saveRecipe(snapshotCurrentRecipe());
+      if(!saved) return;
       saveBtn.textContent = '✓ Saved';
       showToast('Saved to your Recipe Book.');
       track('recipe_saved', { recipe_title:state.title });
@@ -2234,6 +2255,8 @@ if(typeof module !== 'undefined' && module.exports){
     gramsFor,
     recipeMacros,
     isActiveIngredient,
+    FREE_RECIPE_LIMIT,
+    canSaveRecipe,
     encodeSharedRecipe,
     decodeSharedRecipe
   };
