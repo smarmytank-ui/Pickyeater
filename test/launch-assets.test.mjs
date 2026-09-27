@@ -376,6 +376,14 @@ test('magic-link GET is read-only and explicit POST creates the session',async()
   assert.match(docs,/email-security scanners do not consume access/);
 });
 
+test('auth retention cleanup cannot cascade-delete an active session',async()=>{
+  const [endpoint,docs]=await Promise.all([read('functions/api/auth/request.js'),read('CLOUD_ACCOUNTS.md')]);
+  assert.match(endpoint,/DELETE FROM sessions WHERE expires_epoch<=\?1/);
+  assert.match(endpoint,/NOT EXISTS \(SELECT 1 FROM sessions WHERE sessions\.challenge_id=login_challenges\.id\)/);
+  assert.match(docs,/delete expired sessions first/i);
+  assert.match(docs,/ON DELETE CASCADE/);
+});
+
 test('funnel measurement separates browser intent from authoritative purchases',async()=>{
   const [telemetry,script,docs]=await Promise.all([
     readFile(path.join(root,'functions/_shared/telemetry.mjs'),'utf8'),

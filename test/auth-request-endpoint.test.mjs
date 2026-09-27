@@ -18,6 +18,13 @@ class Statement{
 class D1{
   constructor(database){ this.database=database; }
   prepare(sql){ return new Statement(this.database,sql); }
+  async batch(statements){
+    this.database.exec('BEGIN');
+    try{
+      for(const statement of statements) await statement.run();
+      this.database.exec('COMMIT');
+    }catch(error){ this.database.exec('ROLLBACK'); throw error; }
+  }
 }
 
 async function setup(){
@@ -75,5 +82,27 @@ test('the endpoint caps aggregate hourly email volume',async()=>{
     const response=await onRequestPost({request:request('new@example.com'),env});
     assert.equal(response.status,429);
     assert.equal(sends,0);
+  }finally{ globalThis.fetch=originalFetch; database.close(); }
+});
+
+test('auth cleanup preserves the expired challenge behind an active session',async()=>{
+  const {database,env}=await setup();
+  database.exec('PRAGMA foreign_keys=ON');
+  const now=Math.floor(Date.now()/1000);
+  database.prepare('INSERT INTO users (id,email,created_epoch) VALUES (?,?,?)').run('user_1','member@example.com',now-1000);
+  database.prepare('INSERT INTO login_challenges (id,email,token_hash,created_epoch,expires_epoch,used_epoch) VALUES (?,?,?,?,?,?)')
+    .run('active_challenge','member@example.com','active_challenge_hash',now-1000,now-900,now-950);
+  database.prepare('INSERT INTO sessions (id,user_id,challenge_id,token_hash,created_epoch,expires_epoch) VALUES (?,?,?,?,?,?)')
+    .run('active_session','user_1','active_challenge','active_session_hash',now-950,now+1000);
+  database.prepare('INSERT INTO login_challenges (id,email,token_hash,created_epoch,expires_epoch) VALUES (?,?,?,?,?)')
+    .run('stale_challenge','stale@example.com','stale_hash',now-1000,now-900);
+  const originalFetch=globalThis.fetch;
+  globalThis.fetch=async()=>new Response('{}',{status:200});
+  try{
+    const response=await onRequestPost({request:request('new@example.com'),env});
+    assert.equal(response.status,200);
+    assert.equal(database.prepare('SELECT count(*) AS count FROM sessions WHERE id=?').get('active_session').count,1);
+    assert.equal(database.prepare('SELECT count(*) AS count FROM login_challenges WHERE id=?').get('active_challenge').count,1);
+    assert.equal(database.prepare('SELECT count(*) AS count FROM login_challenges WHERE id=?').get('stale_challenge').count,0);
   }finally{ globalThis.fetch=originalFetch; database.close(); }
 });

@@ -40,12 +40,18 @@ The account backend uses passwordless email links, Cloudflare D1, and Resend. It
 
 ## Operations
 
-Delete expired challenges and sessions periodically:
+The sign-in request endpoint opportunistically performs this cleanup in a transaction. For manual maintenance, delete expired sessions first, then delete only expired challenges that are no longer referenced by a session:
 
 ```sql
-DELETE FROM login_challenges WHERE expires_epoch < unixepoch('now');
 DELETE FROM sessions WHERE expires_epoch < unixepoch('now');
+DELETE FROM login_challenges
+WHERE expires_epoch < unixepoch('now')
+  AND NOT EXISTS (
+    SELECT 1 FROM sessions WHERE sessions.challenge_id = login_challenges.id
+  );
 ```
+
+Do not delete every expired challenge before deleting sessions. `sessions.challenge_id` uses `ON DELETE CASCADE`; a challenge expires after 15 minutes while its successful session can remain valid for 30 days.
 
 Before enabling the UI, test request, consume, session, backup, restore, revision conflict, export, sign-out, expired-link, replayed-link, rate-limit, and deletion flows in preview.
 

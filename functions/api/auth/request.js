@@ -14,6 +14,11 @@ export async function onRequestPost({request,env}){
   let email;
   try{ email=normalizeAccountEmail(input?.email); }catch(error){ return json({error:error.message},400); }
   const now=Math.floor(Date.now()/1000);
+  await env.ACCOUNTS.batch([
+    env.ACCOUNTS.prepare('DELETE FROM sessions WHERE expires_epoch<=?1').bind(now),
+    env.ACCOUNTS.prepare(`DELETE FROM login_challenges WHERE expires_epoch<=?1
+      AND NOT EXISTS (SELECT 1 FROM sessions WHERE sessions.challenge_id=login_challenges.id)`).bind(now)
+  ]).catch(()=>{});
   const recent=await env.ACCOUNTS.prepare('SELECT count(*) AS count, max(created_epoch) AS latest FROM login_challenges WHERE email=?1 AND created_epoch>?2')
     .bind(email,now-3600).first();
   const globalRecent=await env.ACCOUNTS.prepare('SELECT count(*) AS count FROM login_challenges WHERE created_epoch>?1')
