@@ -123,6 +123,15 @@ test('pricing copy matches the enforced free save allowance',async()=>{
   assert.match(script,/requirePremium\('unlimited_saves'\)/);
 });
 
+test('founding-list consent includes a secure unsubscribe path',async()=>{
+  const [privacy,support,pkg]=await Promise.all([read('privacy.html'),read('support.html'),read('package.json')]);
+  await access(path.join(root,'functions/api/founding-unsubscribe.js'));
+  await access(path.join(root,'migrations/0005_founding_unsubscribe.sql'));
+  assert.match(privacy,/unsubscribe through a link/i);
+  assert.match(support,/Email preferences/);
+  assert.match(pkg,/founding-unsubscribe\.js/);
+});
+
 test('customer-facing product chrome consistently uses Food My Way',async()=>{
   const [html,script,legacy]=await Promise.all([read('index.html'),read('app.js'),read('generator.html')]);
   assert.doesNotMatch(html,/Shared from Picky Eater|apple-mobile-web-app-title" content="Picky Eater"/);

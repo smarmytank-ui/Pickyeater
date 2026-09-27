@@ -25,6 +25,7 @@ Everything below requires account login, legal identity, banking/tax information
 - Create or approve the Resend account.
 - Verify the sending domain and create the restricted API credential when prompted.
 - Approve `Food My Way <login@foodmyway.app>` or another verified sender.
+- Add the server-side `LEADS_UNSUBSCRIBE_SECRET` in Cloudflare and require the signed unsubscribe URL in every founding-list campaign.
 
 ## 5. Later grocery-commerce enrollment
 

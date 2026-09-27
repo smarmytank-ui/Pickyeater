@@ -46,7 +46,13 @@ Cloudflare setup:
 3. Bind the database to the Pages project as `LEADS` in preview and production.
 4. Deploy, submit a test email with explicit consent, and verify one row.
 5. Configure a compliant email provider before sending marketing mail.
-6. Add unsubscribe processing that changes `status` to `unsubscribed` before the first broadcast.
+6. Save a random secret of at least 32 characters as the encrypted Pages secret `LEADS_UNSUBSCRIBE_SECRET`.
+7. Run `migrations/0005_founding_unsubscribe.sql`. For pre-existing active leads, generate the recipient token with `createFoundingUnsubscribeToken(email, secret)` and backfill `unsubscribe_token` before any campaign.
+8. For every outgoing marketing message, use the row's opaque token in `https://foodmyway.app/api/founding-unsubscribe?token=TOKEN`.
+9. Configure the email provider's `List-Unsubscribe` and `List-Unsubscribe-Post: List-Unsubscribe=One-Click` headers to POST to that same signed URL.
+10. Test both the confirmation page and one-click POST. Either path must set `consent=0` and `status='unsubscribed'` before the first broadcast.
+
+Unsubscribe links use opaque HMAC tokens bound to normalized email addresses. The email itself never appears in the URL. The secret stays server-side; never put it in `config.js`, a client bundle, or a campaign export.
 
 ## Required owner actions
 

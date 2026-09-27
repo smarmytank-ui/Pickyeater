@@ -1,10 +1,10 @@
 {
   "name": "picky-eater",
-  "version": "2.24.0",
+  "version": "2.25.0",
   "private": true,
   "scripts": {
     "test": "node --test",
-    "check": "node --check app.js && node --check service-worker.js && node --check functions/api/events.js && node --check functions/api/founding-interest.js && node --check functions/api/shop.js && node --check functions/api/stripe-webhook.js && node --check functions/api/auth/request.js && node --check functions/api/auth/consume.js && node --check functions/api/auth/session.js && node --check functions/api/account/data.js && node --test",
+    "check": "node --check app.js && node --check service-worker.js && node --check functions/api/events.js && node --check functions/api/founding-interest.js && node --check functions/api/founding-unsubscribe.js && node --check functions/api/shop.js && node --check functions/api/stripe-webhook.js && node --check functions/api/auth/request.js && node --check functions/api/auth/consume.js && node --check functions/api/auth/session.js && node --check functions/api/account/data.js && node --test",
     "verify:deployment": "node scripts/verify-deployment.mjs"
   }
 }
