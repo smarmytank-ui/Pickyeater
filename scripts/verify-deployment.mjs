@@ -160,7 +160,7 @@ await checkApi('/api/events',{
 });
 await checkApi('/api/shop',{
   method:'POST',body:'{"items":[]}',requestHeaders:{'content-type':'application/json'},
-  statuses:[400,503],headers:jsonNoStore
+  statuses:launchMode ? [401] : [400,401,503],headers:jsonNoStore
 });
 
 console.log(`Passed ${passed.length} checks: ${passed.join(', ') || 'none'}`);

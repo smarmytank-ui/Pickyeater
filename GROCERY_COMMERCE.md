@@ -27,6 +27,8 @@ The browser must never receive the Instacart API key. `POST /api/shop` is a Clou
 
 The endpoint safely returns HTTP 503 until `INSTACART_API_KEY` is configured. `INSTACART_ENV` must remain non-production during development and be set to `production` only after Instacart approval.
 
+The endpoint also authenticates the Food My Way session and verifies an active Founding entitlement against `PURCHASES` before reading or transmitting a grocery list. The browser premium gate is conversion UI, not authorization; direct anonymous, free-account, and refunded-account requests fail closed on the server.
+
 ## Launch order
 
 1. Complete subscription and retention validation with the existing grocery list.

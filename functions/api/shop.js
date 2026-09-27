@@ -1,4 +1,5 @@
 import { buildInstacartListPayload, isAllowedInstacartUrl } from '../_shared/instacart.mjs';
+import { currentAccount } from '../_shared/account.mjs';
 
 function json(body,status=200){
   return new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store'}});
@@ -6,6 +7,17 @@ function json(body,status=200){
 
 export async function onRequestPost({request,env}){
   if(!env.INSTACART_API_KEY || !env.SHOP_LINKBACK_ORIGIN) return json({error:'Grocery checkout is not enabled yet.'},503);
+  if(!env.ACCOUNTS || !env.PURCHASES) return json({error:'Grocery membership verification is not configured.'},503);
+  let account;
+  try{ account=await currentAccount(request,env.ACCOUNTS); }
+  catch{ return json({error:'Cloud accounts are temporarily unavailable.'},503); }
+  if(!account) return json({error:'Sign in required.'},401);
+  let entitlement;
+  try{
+    entitlement=await env.PURCHASES.prepare("SELECT 1 AS allowed FROM entitlements WHERE email=?1 AND plan='founding' AND status='active' LIMIT 1")
+      .bind(account.email).first();
+  }catch{ return json({error:'Founding membership verification is temporarily unavailable.'},503); }
+  if(!entitlement) return json({error:'Founding membership is required for grocery checkout.',code:'PREMIUM_REQUIRED'},403);
   const length=Number(request.headers.get('content-length') || 0);
   if(length>50000) return json({error:'Shopping list is too large.'},413);
   let input;
