@@ -1,10 +1,12 @@
 # Grocery commerce integration
 
-Updated: September 26, 2026
+Updated: September 27, 2026
 
 ## Decision
 
 Instacart Developer Platform is the first integration target. Its shopping-list and recipe APIs fit Food My Way directly: the app sends ingredient names and measurements, receives a hosted Instacart Marketplace URL, and the customer chooses a local store before adding matched products to a cart for pickup or delivery.
+
+The customer promise is retailer-neutral: **turn this recipe or this week into a grocery cart for pickup or delivery**. Instacart is the first fulfillment adapter, not the product identity. Keep normalized grocery items inside Food My Way and isolate provider-specific payloads in server modules so another approved retailer, aggregator, or regional partner can be added without rebuilding recipes or the planner.
 
 Primary documentation:
 
@@ -32,9 +34,11 @@ The endpoint safely returns HTTP 503 until `INSTACART_API_KEY` is configured. `I
 3. Configure a development key as a Cloudflare secret.
 4. Run the 25-list local payload suite, then test those same fixtures against Instacart's development catalog and manually review product matches.
 5. Add the exact approved Instacart CTA design and wording.
-6. Record the integration demonstration required for production approval.
-7. Request a production key.
-8. Apply separately to the Impact affiliate program and verify attribution.
+6. Verify that the generated cart preserves quantities, lets the customer choose a local store, and clearly hands final substitutions and checkout to the provider.
+7. Record the integration demonstration required for production approval.
+8. Request a production key.
+9. Apply separately to the Impact affiliate program and verify attribution.
+10. After demand is proven, evaluate a second provider against coverage, pickup support, attribution, API stability, and brand restrictions before adding another adapter.
 
 ## Product behavior
 
@@ -49,6 +53,8 @@ Do not change `commerceEnabled` to true until the CTA wording/brand treatment is
 ## Revenue model
 
 Grocery commissions are supplemental revenue, not the core business. Subscription revenue pays for the product; attributed grocery orders can improve revenue per active household without putting ads inside recipe decisions.
+
+The commerce feature itself is a premium retention benefit: a free customer can discover a useful meal, while a paid household can move from saved recipes and a weekly plan to one consolidated shopping handoff. Do not promise commission income until an affiliate agreement is approved and tracked conversions have been reconciled with provider reporting.
 
 ## Do not do
 

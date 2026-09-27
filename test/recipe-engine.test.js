@@ -40,13 +40,24 @@ test('cleans common quantities, preparation words, and plurals', () => {
 
 test('preserves explicit quantities and normalizes units', () => {
   assert.deepEqual(parseInputIngredient('2 lbs boneless chicken breasts'), {
-    name:'chicken breast', quantity:2, unit:'lb'
+    name:'chicken breast', quantity:2, unit:'lb', preparation:null
   });
   assert.deepEqual(parseInputIngredient('1/2 cup shredded cheddar'), {
-    name:'cheddar cheese', quantity:0.5, unit:'cups'
+    name:'cheddar cheese', quantity:0.5, unit:'cups', preparation:null
   });
   const ingredients = normalize(['2 lbs chicken breasts', '1 cup bell peppers']);
   assert.deepEqual(ingredients.map(item=>item.base), [{v:2,u:'lb'}, {v:1,u:'cups'}]);
+});
+
+test('already-cooked and frozen proteins receive preparation-safe guidance', () => {
+  assert.equal(parseInputIngredient('2 cups cooked chicken').preparation,'cooked');
+  assert.equal(parseInputIngredient('frozen salmon').preparation,'frozen');
+  const cooked=normalize(['cooked chicken','rice']);
+  const cookedText=buildInstructions(cooked).map(step=>step.text).join(' ');
+  assert.match(cookedText,/cooked Chicken Breast and heat until steaming hot throughout/);
+  assert.doesNotMatch(cookedText,/safely cooked through/);
+  const frozen=normalize(['frozen salmon']);
+  assert.match(buildInstructions(frozen).map(step=>step.text).join(' '),/according to its package directions/);
 });
 
 test('classifies familiar proteins and vegetables', () => {

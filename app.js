@@ -350,8 +350,11 @@ function parseLines(s){
 
 function parseInputIngredient(raw){
   const text = String(raw || '').trim();
+  const preparation = /\b(?:pre[ -]?cooked|cooked|rotisserie|leftovers?)\b/i.test(text)
+    ? 'cooked'
+    : (/\bfrozen\b/i.test(text) ? 'frozen' : null);
   const match = text.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)\s*(lb|lbs|pound|pounds|oz|ounce|ounces|cup|cups|tbsp|tablespoons?|tsp|teaspoons?|cloves?|pieces?|slices?|cans?|medium|large|small)\b/i);
-  if(!match) return { name:canonName(text), quantity:null, unit:null };
+  if(!match) return { name:canonName(text), quantity:null, unit:null, preparation };
   const numberText = match[1];
   let quantity;
   if(numberText.includes(' ')){
@@ -369,7 +372,7 @@ function parseInputIngredient(raw){
     clove:'cloves', piece:'pieces', slice:'slices', can:'count', cans:'count',
     large:'count', small:'count'
   };
-  return { name:canonName(text), quantity, unit:unitMap[rawUnit] || rawUnit };
+  return { name:canonName(text), quantity, unit:unitMap[rawUnit] || rawUnit, preparation };
 }
 
 function pretty(s){
@@ -759,7 +762,7 @@ function isActiveIngredient(ingredient){
 const INSTR = {
   prep: 'Wash and prep everything: chop into bite-sized pieces.',
   use_oil: 'Heat a pan over medium heat and add oil or butter.',
-  cook_meat:  'Add the meat. Cook until fully cooked (no pink remains).',
+  cook_meat:  'Cook raw meat to the safe internal temperature for that cut, using a food thermometer.',
   cook_fish:  'Cook salmon 3–4 minutes per side until it flakes easily.',
   cook_tofu:  'Pat tofu dry, cube it, then cook until lightly browned.',
   warm_beans: 'Rinse beans, then warm gently for 2–3 minutes.',
@@ -805,7 +808,9 @@ function buildInstructions(ingredients){
   proteins.forEach((protein,index)=>{
     const name = pretty(protein.name);
     let text = `Add ${name} and cook until done.`;
-    if(protein.name.includes('salmon')) text = `Cook ${name} for 3–4 minutes per side, until it flakes easily and reaches a safe internal temperature.`;
+    if(protein.preparation==='cooked') text = `Add the cooked ${name} and heat until steaming hot throughout.`;
+    else if(protein.preparation==='frozen') text = `Cook the frozen ${name} according to its package directions and verify it reaches a safe internal temperature.`;
+    else if(protein.name.includes('salmon')) text = `Cook ${name} for 3–4 minutes per side, until it flakes easily and reaches a safe internal temperature.`;
     else if(protein.name.includes('tofu')) text = `Pat ${name} dry, cube it, and cook for 6–8 minutes until lightly browned.`;
     else if(protein.name.includes('bean') || protein.name.includes('lentil')) text = `Rinse ${name}, then add and warm gently for 2–3 minutes.`;
     else if(protein.name.includes('egg')) text = `Whisk ${name} with a pinch of salt, then cook gently until set.`;
@@ -923,6 +928,7 @@ function normalize(names){
       role,
       intent,
       base,
+      preparation: parsed.preparation,
       swapMeta: null
     };
   }).filter(ingredient=>ingredient.name && !seen.has(ingredient.name) && seen.add(ingredient.name));
@@ -1055,7 +1061,9 @@ function applySwap(ingId, opt, optsArg){
   const prevIntent = ing.intent;
   const prevBase = { ...ing.base };
 
-  ing.name = canonName(opt.name);
+  const parsedSwap = parseInputIngredient(opt.name);
+  ing.name = parsedSwap.name;
+  ing.preparation = parsedSwap.preparation;
 
   // Role handling:
   // - Catalog swaps: role follows ingredient
