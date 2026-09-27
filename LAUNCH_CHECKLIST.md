@@ -49,6 +49,7 @@
 - [x] Search metadata and structured data
 - [x] robots.txt and sitemap.xml
 - [x] Production security and cache headers
+- [x] Continuous integration and public-deployment verification script
 - [ ] foodmyway.app connected to production
 - [ ] PickyEaterCookbook.com redirect configured
 - [x] Production social-share image

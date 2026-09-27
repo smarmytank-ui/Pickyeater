@@ -13,6 +13,7 @@ Deploy the complete repository so icons, the web manifest, offline support, and 
 3. Serve the site over HTTPS; installable PWA features and production clipboard sharing require it.
 4. Verify generation, saving, Recipe Book, a shared URL, and one offline reload after each release.
 5. Confirm the deployed response includes the security policy in `_headers`; Cloudflare Pages applies it automatically from the publish root.
+6. Run `npm run verify:deployment -- https://foodmyway.app` and require every check to pass before publishing marketing links.
 
 That’s it.
 
@@ -43,6 +44,7 @@ or
 - `service-worker.js` must be deployed at the repository root
 - Keep `site.webmanifest` and all icon files deployed
 - Keep `_headers` in the publish root; it disables framing, unnecessary device permissions, MIME sniffing, and stale caching of runtime configuration
+- GitHub Actions runs the complete test and syntax suite on `main` and `picky-v2`; do not deploy a failing commit
 
 ## Domains
 
