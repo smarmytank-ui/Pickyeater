@@ -26,11 +26,12 @@ No additional domain action is currently required from the owner.
 - [x] Payment Link configured for one item per checkout, no promotion codes, metadata `offer=food_my_way_founding`, and exactly 250 completed sessions.
 - [x] Stripe Tax automatic collection enabled. The webhook accepts applicable tax above the exact $29 subtotal and rejects discounts or a different subtotal.
 - [x] Production webhook created for completed payments, delayed-payment success, and full refunds; its signing secret is stored as an encrypted Cloudflare production secret.
+- [x] Checkout requires acceptance of the published Food My Way Terms of Service and links both the Terms and Privacy pages.
 
 ## 4. Transactional email
 
 - [x] Resend account creation and its terms approved on September 27, 2026.
-- Complete any account-ownership or domain-ownership confirmation that Resend requires personally.
+- [x] `foodmyway.app` domain ownership and transactional sending verified in Resend.
 - [x] `Food My Way <login@foodmyway.app>` approved as the transactional sender.
 
 ## 5. Later grocery-commerce enrollment
@@ -44,10 +45,6 @@ You do **not** need to create D1 databases, bindings, API secrets, DNS records, 
 
 ## Exact paid-launch handoff
 
-On September 27, 2026, the live core deployment passed all 26 checks. The stricter paid-launch gate passed 35 checks and has eight intentional failures: two disabled account/premium flags, five beta-Terms checks that await owner approval, and transactional login email returning `503` until Resend is configured.
+On September 27, 2026, the approved legal pages were published, Resend domain authentication and live delivery passed, and the scanner-safe passwordless login completed successfully on `foodmyway.app`. Customer accounts are enabled in production. The live founding checkout is active at USD $29, limited to 250 completed payments, requires acceptance of the published Terms, and links the published Terms and Privacy pages.
 
-The remaining owner-only inputs are:
-
-1. Complete any personal verification that Resend requires during the authorized enrollment for `Food My Way <login@foodmyway.app>`.
-
-After those inputs, the deployment operator can publish the approved legal pages, add the Resend secret, enable accounts and premium enforcement, and run the purchase/refund/account lifecycle without further domain or infrastructure work from the owner.
+No remaining owner-only domain, legal-copy, or transactional-email input blocks technical verification. Premium enforcement stays disabled until a controlled Stripe payment, entitlement lookup, full-refund revocation, and account-recovery lifecycle have all passed.

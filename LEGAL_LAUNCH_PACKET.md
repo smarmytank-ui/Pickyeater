@@ -60,4 +60,4 @@ The final policy must identify:
 - [x] Governing jurisdiction completed
 - [ ] Professional review completed or knowingly deferred
 - [x] Published Terms page matches the approved text; Privacy remains the operative processor disclosure
-- [ ] Stripe Checkout links to the published pages
+- [x] Stripe Checkout links to the published pages and requires Terms acceptance

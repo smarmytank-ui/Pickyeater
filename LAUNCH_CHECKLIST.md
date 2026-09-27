@@ -38,6 +38,7 @@
 - [x] Signed-in email entitlement lookup and feature-flagged premium gates
 - [ ] Stripe account and verified business identity
 - [x] Stripe $29 founding product and Payment Link
+- [x] Stripe checkout links published Terms/Privacy and requires Terms acceptance
 - [x] Refund and cancellation policy finalized and owner-approved
 - [x] Cloudflare D1 `LEADS` database, schema, and preview binding
 - [x] Live founding-interest verification
