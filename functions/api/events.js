@@ -13,8 +13,12 @@ export async function onRequestPost({request,env}){
   let event;
   try{ event=normalizeTelemetryEvent(input); }catch(error){ return json({error:error.message},400); }
   try{
-    await env.TELEMETRY.prepare('INSERT INTO product_events (id,event_name,session_id,path,details,created_at) VALUES (?1,?2,?3,?4,?5,?6)')
-      .bind(crypto.randomUUID(),event.event,event.sessionId,event.path,JSON.stringify(event.details),new Date().toISOString()).run();
+    const createdAt=new Date().toISOString();
+    await env.TELEMETRY.batch([
+      env.TELEMETRY.prepare("DELETE FROM product_events WHERE created_at < datetime('now','-90 days')"),
+      env.TELEMETRY.prepare('INSERT INTO product_events (id,event_name,session_id,path,details,created_at) VALUES (?1,?2,?3,?4,?5,?6)')
+        .bind(crypto.randomUUID(),event.event,event.sessionId,event.path,JSON.stringify(event.details),createdAt)
+    ]);
   }catch{ return json({error:'Telemetry storage is unavailable.'},503); }
   return json({ok:true},201);
 }

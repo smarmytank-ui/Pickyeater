@@ -8,11 +8,13 @@ Food My Way can measure its launch funnel without sending recipes or customer co
 2. Bind it to the Pages project as `TELEMETRY` in preview and production.
 3. Change `telemetryEnabled` to `true` in `config.js` and deploy.
 4. Generate and save a test recipe, then confirm only allowlisted events and fields appear in `product_events`.
-5. Schedule the documented 90-day deletion query and verify it periodically.
+5. Verify the endpoint's transactional 90-day cleanup in production. The documented deletion query remains an operational backstop.
 
 ## Data minimization
 
 The endpoint accepts only named product events. It discards recipe titles, ingredients, diary content, email addresses, URLs containing query strings, error messages, stack traces, IP-derived location, and arbitrary properties. A random identifier lives only for the browser tab session.
+
+Every accepted event transaction deletes rows older than 90 days before inserting the new event. Run the same deletion manually during incident recovery or if event ingestion has been inactive for an extended period.
 
 ## Source of truth
 

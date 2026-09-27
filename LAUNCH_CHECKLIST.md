@@ -66,7 +66,7 @@
 - [ ] PickyEaterCookbook.com redirect configured
 - [x] Production social-share image
 - [x] Privacy-minimized first-party analytics and generic client-error endpoint
-- [ ] Cloudflare D1 `TELEMETRY` binding, retention job, and live event verification
+- [ ] Cloudflare D1 `TELEMETRY` binding, live event verification, and production confirmation of transactional 90-day cleanup
 - [ ] Search-engine verification and sitemap submission
 - [ ] TikTok, Instagram, and YouTube handles reserved
 - [ ] Apple/Google store packaging decision after web retention proof
