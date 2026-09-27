@@ -192,7 +192,10 @@ test('diary controls expose names, pressed state, and safe input hints',async()=
 
 test('deployment verifier covers the complete public funnel',async()=>{
   const verifier=await read('scripts/verify-deployment.mjs');
-  for(const page of audiencePages) assert.match(verifier,new RegExp(`/${page.replaceAll('.','\\.')}`));
+  for(const page of audiencePages){
+    const canonicalPath=page.replace(/\.html$/,"");
+    assert.match(verifier,new RegExp(`/${canonicalPath.replaceAll('.','\\.')}`));
+  }
   assert.match(verifier,/\/service-worker\.js/);
   for(const endpoint of ['auth/session','auth/consume','auth/request','stripe-webhook','founding-interest','founding-unsubscribe','account/data','events','shop']){
     assert.match(verifier,new RegExp(`/api/${endpoint.replaceAll('/','\\/')}`));
