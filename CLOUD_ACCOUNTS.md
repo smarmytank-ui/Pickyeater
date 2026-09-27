@@ -10,6 +10,7 @@ The account backend uses passwordless email links, Cloudflare D1, and Resend. It
 - A unique database constraint prevents concurrent reuse of one login challenge.
 - Sign-in requests are limited to five per email per hour.
 - Cloud snapshots accept only known Food My Way storage keys and are limited to 250 KB.
+- Cloud backup writes require an active founding entitlement and fail closed when purchase verification is unavailable.
 - Every cloud snapshot has an optimistic-lock revision; conflicting device writes return HTTP 409 instead of silently overwriting data.
 - Account deletion requires an authenticated session and an explicit `X-Confirm-Delete: DELETE` header.
 
@@ -32,7 +33,7 @@ The account backend uses passwordless email links, Cloudflare D1, and Resend. It
 - `GET /api/auth/session` — return current authentication state.
 - `POST /api/auth/session` — sign out and clear the cookie.
 - `GET /api/account/data` — export the signed-in user's cloud snapshot.
-- `PUT /api/account/data` — replace the bounded cloud snapshot.
+- `PUT /api/account/data` — replace the bounded cloud snapshot for an active founding member.
 - `DELETE /api/account/data` — delete account data, sessions, challenges, and the user record.
 
 ## Operations
@@ -46,4 +47,4 @@ DELETE FROM sessions WHERE expires_epoch < unixepoch('now');
 
 Before enabling the UI, test request, consume, session, backup, restore, revision conflict, export, sign-out, expired-link, replayed-link, rate-limit, and deletion flows in preview.
 
-The session endpoint also checks the `PURCHASES` binding for an active founding entitlement. Premium enforcement is a separate public flag so account testing never accidentally locks free beta users out of planning or taste-profile features.
+The session endpoint checks the `PURCHASES` binding for an active founding entitlement. The backup endpoint independently repeats that authorization server-side; hiding a browser button is never treated as access control. Authenticated customers without an active entitlement may still retrieve/export an existing snapshot and delete their account, but cannot create or update cloud storage. Premium enforcement is a separate public flag so account testing never accidentally locks free beta users out of planning or taste-profile features.

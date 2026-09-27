@@ -175,6 +175,18 @@ test('payment fulfillment preserves refunds delivered before checkout completion
   assert.match(docs,/0006_refund_tombstones\.sql/);
 });
 
+test('cloud backup writes are authorized on the server, not only hidden in the UI',async()=>{
+  const [endpoint,script,docs]=await Promise.all([
+    readFile(path.join(root,'functions/api/account/data.js'),'utf8'),
+    readFile(path.join(root,'app.js'),'utf8'),
+    readFile(path.join(root,'CLOUD_ACCOUNTS.md'),'utf8')
+  ]);
+  assert.match(endpoint,/plan='founding' AND status='active'/);
+  assert.match(endpoint,/code:'PREMIUM_REQUIRED'/);
+  assert.match(script,/accountBackup'\)\?\.classList\.toggle\('hidden',!founding\)/);
+  assert.match(docs,/independently repeats that authorization server-side/);
+});
+
 test('customer-facing product chrome consistently uses Food My Way',async()=>{
   const [html,script,legacy]=await Promise.all([read('index.html'),read('app.js'),read('generator.html')]);
   assert.doesNotMatch(html,/Shared from Picky Eater|apple-mobile-web-app-title" content="Picky Eater"/);

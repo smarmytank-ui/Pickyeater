@@ -7,6 +7,13 @@ async function requireAccount(request,env){
   return account ? {account} : {error:json({error:'Sign in required.'},401)};
 }
 
+async function requirePremiumBackup(account,env){
+  if(!env.PURCHASES) return {error:json({error:'Premium access verification is unavailable.'},503)};
+  const entitlement=await env.PURCHASES.prepare("SELECT 1 AS allowed FROM entitlements WHERE email=?1 AND plan='founding' AND status='active' LIMIT 1")
+    .bind(account.email).first();
+  return entitlement ? {} : {error:json({error:'Founding membership is required for cloud backup.',code:'PREMIUM_REQUIRED'},403)};
+}
+
 export async function onRequestGet({request,env}){
   const auth=await requireAccount(request,env); if(auth.error) return auth.error;
   const row=await env.ACCOUNTS.prepare('SELECT snapshot,revision,updated_epoch FROM account_data WHERE user_id=?1').bind(auth.account.user_id).first();
@@ -15,6 +22,7 @@ export async function onRequestGet({request,env}){
 
 export async function onRequestPut({request,env}){
   const auth=await requireAccount(request,env); if(auth.error) return auth.error;
+  const premium=await requirePremiumBackup(auth.account,env); if(premium.error) return premium.error;
   const length=Number(request.headers.get('content-length') || 0);
   if(length>300_000) return json({error:'Sync data is too large.'},413);
   let input;

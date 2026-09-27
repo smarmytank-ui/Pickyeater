@@ -100,6 +100,7 @@ function renderAccountState(){
   $('accountSignedOut')?.classList.toggle('hidden',signedIn);
   const founding=accountSession.entitlement?.plan==='founding' && accountSession.entitlement?.status==='active';
   if($('accountStatus')) $('accountStatus').textContent=signedIn ? `Signed in as ${accountSession.email}${founding ? ' · Founding member' : ''}` : 'Sign in to back up and restore your Food My Way data across devices.';
+  $('accountBackup')?.classList.toggle('hidden',!founding);
   const founderCta=$('founderCta');
   const savedFounderCta=$('savedFounderCta');
   if(founding){
@@ -178,7 +179,11 @@ async function setupAccounts(){
       const cloud=await accountApi('./api/account/data');
       await accountApi('./api/account/data',{method:'PUT',body:JSON.stringify({data:betaDataSnapshot().data,baseRevision:cloud.revision})});
       showToast('This device is backed up to your cloud account.');
-    }catch(error){ showAccountError(error.code==='SYNC_CONFLICT' ? 'Cloud data changed on another device. Restore it or try the backup again.' : error.message); }
+    }catch(error){
+      if(error.code==='SYNC_CONFLICT') showAccountError('Cloud data changed on another device. Restore it or try the backup again.');
+      else if(error.code==='PREMIUM_REQUIRED') showAccountError('Cloud backup is included with Founding membership.');
+      else showAccountError(error.message);
+    }
   });
   $('accountRestore')?.addEventListener('click',async()=>{
     showAccountError();
