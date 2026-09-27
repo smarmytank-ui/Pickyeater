@@ -24,11 +24,12 @@
 - [x] Conversion-event hooks
 - [x] Stripe Payment Link configuration and hostname validation
 - [x] Consent-based founding-lead endpoint and D1 schema
+- [x] Signed, idempotent Stripe fulfillment endpoint and entitlement schema
 - [ ] Stripe account and verified business identity
 - [ ] Stripe $29 founding product and Payment Link
 - [ ] Refund and cancellation policy finalized
 - [ ] Cloudflare D1 `LEADS` binding and live founding-interest verification
-- [ ] Purchase entitlement and webhook
+- [ ] Production webhook secret, D1 `PURCHASES` binding, and test-mode fulfillment verification
 
 ## Trust and operations
 

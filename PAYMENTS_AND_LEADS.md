@@ -14,8 +14,22 @@ After the owner completes Stripe identity, banking, tax, refund, and business-pr
 4. Link Stripe’s privacy and terms fields to `https://foodmyway.app/privacy.html` and `https://foodmyway.app/terms.html`.
 5. Set the success URL to `https://foodmyway.app/?founding=success` and the cancel URL to `https://foodmyway.app/#pricing`.
 6. Put the resulting `https://buy.stripe.com/...` URL in `config.js` as `founderCheckoutUrl`.
+7. Set Payment Link metadata `offer=food_my_way_founding`. The webhook intentionally ignores any checkout without this exact marker.
 
 The app accepts only `buy.stripe.com` or `checkout.stripe.com` HTTPS URLs, preventing an accidental or malicious arbitrary checkout redirect.
+
+## Payment fulfillment
+
+`POST /api/stripe-webhook` verifies Stripe's signed raw request before recording access. It accepts only a paid, one-time USD $29 Checkout Session carrying the founding-offer metadata above. Duplicate events are safe to replay.
+
+1. Create a D1 database and run `migrations/0002_purchase_entitlements.sql`.
+2. Bind it to the Pages project as `PURCHASES` in production.
+3. Add `/api/stripe-webhook` as a Stripe webhook endpoint.
+4. Subscribe to `checkout.session.completed` and `checkout.session.async_payment_succeeded`.
+5. Save its signing secret as the encrypted Pages secret `STRIPE_WEBHOOK_SECRET`.
+6. Use Stripe test mode to confirm a $29 purchase produces one active `founding` entitlement.
+
+The browser success redirect is never treated as proof of purchase. Stripe recommends server-side webhook fulfillment because customers may not return to the landing page after payment.
 
 ## Founding-interest storage
 
