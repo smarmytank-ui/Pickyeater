@@ -5,7 +5,7 @@ const ALLOWED_EVENTS=new Set([
   'founder_interest_saved','taste_profile_opened','taste_profile_saved','local_data_deleted',
   'install_prompt_result','app_installed','premium_gate_viewed','grocery_shop_started',
   'grocery_shop_link_created','grocery_shop_failed','account_sign_in_requested',
-  'account_signed_in','cloud_backup_completed'
+  'account_signed_in','cloud_backup_completed','storage_write_failed','shared_recipe_invalid'
 ]);
 
 const NUMBER_KEYS=new Set(['ingredient_count','saved_count','plan_size','avoid_count','price','item_count']);

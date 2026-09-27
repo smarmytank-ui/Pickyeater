@@ -52,3 +52,13 @@ SELECT substr(created_at,1,10) AS day,
        count(DISTINCT session_id) AS sessions
 FROM product_events GROUP BY day ORDER BY day DESC;
 ```
+
+Storage and shared-link reliability:
+
+```sql
+SELECT substr(created_at,1,10) AS day, event_name, count(*) AS failures,
+       count(DISTINCT session_id) AS affected_sessions
+FROM product_events
+WHERE event_name IN ('storage_write_failed','shared_recipe_invalid')
+GROUP BY day,event_name ORDER BY day DESC,event_name;
+```
