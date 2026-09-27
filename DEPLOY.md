@@ -6,46 +6,38 @@ Deploy the complete repository so icons, the web manifest, offline support, and 
 
 ---
 
-## ✅ How to Deploy (Recommended)
+## How to deploy
 
-1. Merge an approved `picky-v2` change into the deployment branch.
-2. Configure the host to publish the repository root as a static site.
-3. Serve the site over HTTPS; installable PWA features and production clipboard sharing require it.
-4. Verify generation, saving, Recipe Book, a shared URL, and one offline reload after each release.
-5. Confirm the deployed response includes the security policy in `_headers`; Cloudflare Pages applies it automatically from the publish root.
-6. Run `node scripts/verify-deployment.mjs https://foodmyway.app` after every deployment. This verifies the public funnel, security headers, and that sensitive APIs are present and fail closed without creating data.
-7. Before accepting money or publishing paid-launch marketing, run `node scripts/verify-deployment.mjs https://foodmyway.app --launch`. Launch mode additionally requires live account, purchase, lead, unsubscribe, and telemetry bindings, enabled account/premium/telemetry flags, a valid Stripe checkout URL, and published launch-ready Terms, Privacy, founding-limit, and refund language rather than accepting their safe prelaunch state.
+1. Push an approved commit and let the existing Cloudflare Pages project deploy the repository root. Pages Functions under `functions/` must be included; this is not a static-only GitHub Pages deployment.
+2. Keep the preview hostname protected with Cloudflare Access while testing. Connect `foodmyway.app` only when production launch gates pass.
+3. Apply every numbered migration in `migrations/` to its documented D1 database and configure the `LEADS`, `PURCHASES`, `TELEMETRY`, and `ACCOUNTS` bindings. Follow `CLOUD_ACCOUNTS.md`, `PAYMENTS_AND_LEADS.md`, and `TELEMETRY.md` for the binding-to-migration mapping.
+4. Configure secrets only in Cloudflare: Resend credentials and sender, the Stripe webhook secret, and the founding-list unsubscribe secret. Never put secrets in `config.js` or Git.
+5. Run `npm run verify:release` before deployment. CI runs the same syntax and behavioral checks on `main` and `picky-v2`.
+6. Run `node scripts/verify-deployment.mjs https://foodmyway.app` after every deployment. This checks the public funnel, security headers, assets, and fail-closed APIs without creating customer data.
+7. Before accepting money, run `node scripts/verify-deployment.mjs https://foodmyway.app --launch`. Launch mode requires enabled account, premium, and telemetry flags; a valid Stripe URL; configured live APIs; and published launch-ready legal copy.
+8. Complete the manual production matrix in `LAUNCH_CHECKLIST.md`: recipe creation, save/edit/share, install/offline reload, account email, backup/restore/export/deletion, purchase/activation/refund, and supported mobile/desktop browsers.
 
 That’s it.
 
 ---
 
-## 🧠 How We Work With ChatGPT
+## Release ownership
 
-- Development happens on a feature branch such as `picky-v2`.
-- `main` stays deployable and acts as the rollback branch.
-- Changes are tested before they are merged.
-- Browser data is local until Supabase persistence is introduced.
+- Product and code work stays on a reviewed feature branch such as `picky-v2`; `main` remains the production rollback point.
+- Browser data is local-first. Optional cloud backup uses Cloudflare Pages Functions and D1 passwordless accounts; Supabase is not part of the current architecture.
+- The owner-only identity, banking, legal approval, DNS, and third-party terms steps are isolated in `OWNER_LAUNCH_ACTIONS.md`.
+- Runtime feature flags remain false until their live dependencies pass the launch verifier and manual end-to-end test.
 
-If something changes, ChatGPT will tell you:
-> “Replace styles.css”  
-or  
-> “Replace app.js”  
-or  
-> “Upload this ZIP”
-
----
-
-## 🔒 Rules We Follow
+## Deployment rules
 
 - `index.html` must live at repo root
 - All paths are relative (`./styles.css`, `./app.js`)
 - No secrets or API keys in the repo
-- GitHub Pages serves static files only
+- Cloudflare Pages serves static assets and the Pages Functions API
 - `service-worker.js` must be deployed at the repository root
 - Keep `site.webmanifest` and all icon files deployed
 - Keep `_headers` in the publish root; it disables framing, unnecessary device permissions, MIME sniffing, and stale caching of runtime configuration
-- GitHub Actions runs the complete test and syntax suite on `main` and `picky-v2`; do not deploy a failing commit
+- GitHub Actions runs the complete test and syntax suites on `main` and `picky-v2`; do not deploy a failing commit
 
 ## Domains
 
@@ -56,29 +48,17 @@ The app generates share links from its current origin. Point `foodmyway.app` at 
 
 ---
 
-## 🧭 Versioning
+## Versioning
 
-Each file includes a header like:
-```
-Version: v1.1.0
-Date: YYYY-MM-DD
-```
-
-If something breaks, you can always roll back via GitHub history.
+`package.json`, the `app.js`/`styles.css` query strings in `index.html`, and the service-worker cache name must carry the same release number. The automated asset test enforces this. If production breaks, roll Cloudflare Pages back to the last deployment whose commit passed both automated suites and the deployment verifier.
 
 ---
 
-## 🧑‍🎨 Roles
+## Roles
 
-**You**
-- Vision
-- Taste
-- Decisions
+**Owner:** legal identity, banking/tax onboarding, domain authorization, support inbox, refund/legal approval, and acceptance of third-party commercial terms.
 
-**ChatGPT**
-- Coding
-- Polish
-- Safety
+**Product engineering:** code, migrations, tests, product polish, configuration validation, operational documentation, and deployment verification.
 
 ---
 

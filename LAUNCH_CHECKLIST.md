@@ -101,7 +101,7 @@ See `OWNER_LAUNCH_ACTIONS.md` for the minimal owner-only sequence and `LEGAL_LAU
 
 ## Latest local browser evidence
 
-Release `2.55.0` passes all 98 automated tests, including transaction-level account deletion, payment-record retention, multi-device sign-out isolation, corrupted-backup handling, and account-service-outage behavior. These checks prove the local implementation; the production Cloudflare bindings and live email flow still require the end-to-end verification listed above.
+Release `2.58.0` passes all 100 automated tests, including transaction-level account deletion, payment-record retention, multi-device sign-out isolation, corrupted-backup handling, account and entitlement outage behavior, cross-tab checkout recovery, pricing-state accuracy, and structured-data CSP validation. These checks prove the local implementation; production Cloudflare bindings and live email/payment flows still require the end-to-end verification listed above.
 
 On September 26, 2026, release `2.47.0` passed the automated suite and a rendered in-app-browser smoke test against the local HTTP build:
 
