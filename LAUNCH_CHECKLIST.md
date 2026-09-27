@@ -17,7 +17,8 @@
 - [ ] Real cloud accounts and synchronization
 - [ ] Account export and deletion
 - [x] Passwordless account/session backend and bounded cloud-data API
-- [ ] Account UI, conflict-safe sync, and end-to-end preview verification
+- [x] Feature-flagged account UI and conflict-safe explicit backup/restore
+- [ ] Account email delivery and end-to-end preview verification
 
 ## Commercial
 

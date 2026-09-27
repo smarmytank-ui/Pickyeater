@@ -42,6 +42,7 @@
     <a class="btn ghost topbar-link" href="#how-it-works">How it works</a>
     <a class="btn ghost topbar-link" href="#pricing">Pricing</a>
     <button id="openProfile" class="btn ghost topbar-btn" aria-label="Open food preferences"><span class="nav-icon" aria-hidden="true">♡</span><span class="nav-label">My foods</span></button>
+    <button id="openAccount" class="btn ghost topbar-btn hidden" aria-label="Open account"><span class="nav-icon" aria-hidden="true">●</span><span class="nav-label">Account</span></button>
     <button id="installApp" class="btn primary topbar-btn hidden" type="button" aria-label="Install Food My Way"><span class="nav-icon" aria-hidden="true">↓</span><span class="nav-label">Install</span></button>
     <button id="openRecipeBook" class="btn ghost topbar-btn" aria-label="Open Recipe Book"><span class="nav-icon" aria-hidden="true">📖</span><span class="nav-label">Recipe Book</span></button>
     <button id="openDiary" class="btn ghost topbar-btn" aria-label="Open food diary"><span class="nav-icon" aria-hidden="true">📓</span><span class="nav-label">Today</span></button>
@@ -325,6 +326,32 @@
     <button id="profileSave" class="btn primary full" type="button">Save my foods</button>
     <div class="data-actions"><button id="exportData" class="btn ghost" type="button">Export my beta data</button><button id="clearLocalData" class="btn ghost danger" type="button">Delete local data</button></div>
     <div class="price-fineprint">Not an allergy-safety tool. Always check labels and ingredients yourself.</div>
+  </div>
+</div>
+
+<div id="accountOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+  <div class="modal founder-modal account-modal">
+    <button id="accountClose" class="modal-close" type="button" aria-label="Close">×</button>
+    <div class="eyebrow">Cloud account</div>
+    <div id="accountTitle" class="modal-title">Your Food My Way account</div>
+    <div id="accountStatus" class="modal-sub" role="status">Checking account…</div>
+    <div id="accountSignedOut" class="hidden">
+      <label class="modal-label" for="accountEmail">Email</label>
+      <input id="accountEmail" class="field" type="email" autocomplete="email" placeholder="you@example.com" />
+      <button id="accountRequestLink" class="btn primary full" type="button">Email me a sign-in link</button>
+      <div class="price-fineprint">No password. The secure link expires in 15 minutes.</div>
+    </div>
+    <div id="accountSignedIn" class="hidden">
+      <div class="account-actions">
+        <button id="accountBackup" class="btn primary full" type="button">Back up this device</button>
+        <button id="accountRestore" class="btn ghost full" type="button">Restore cloud data</button>
+        <button id="accountExport" class="btn ghost full" type="button">Download cloud export</button>
+        <button id="accountSignOut" class="btn ghost full" type="button">Sign out</button>
+        <button id="accountDelete" class="btn danger full" type="button">Delete cloud account</button>
+      </div>
+      <div class="price-fineprint">Backup and restore are explicit so another device never silently replaces your recipes.</div>
+    </div>
+    <div id="accountError" class="input-error hidden" role="alert"></div>
   </div>
 </div>
 

@@ -31,5 +31,6 @@ CREATE INDEX IF NOT EXISTS idx_sessions_expiry ON sessions(expires_epoch);
 CREATE TABLE IF NOT EXISTS account_data (
   user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
   snapshot TEXT NOT NULL,
+  revision INTEGER NOT NULL DEFAULT 1,
   updated_epoch INTEGER NOT NULL
 );

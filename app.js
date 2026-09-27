@@ -21,6 +21,7 @@ let owned = false;
 const TASTE_PROFILE_KEY = 'foodMyWayTasteProfile';
 const WEEKLY_PLAN_KEY = 'foodMyWayWeeklyPlan';
 const GROCERY_CHECKS_KEY = 'foodMyWayGroceryChecks';
+const CLOUD_DATA_KEYS = ['pickyRecipesV2', WEEKLY_PLAN_KEY, GROCERY_CHECKS_KEY, TASTE_PROFILE_KEY, 'pickyDiaryMeals', 'pickyFavorites', 'picky_saved_recipes'];
 let deferredInstallPrompt = null;
 
 function track(eventName, details = {}){
@@ -63,6 +64,125 @@ function handleCheckoutReturn(){
   else showToast('Checkout canceled. You were not charged.');
   track('founder_checkout_returned',{result});
   history.replaceState({},'',`${location.pathname}${location.hash}`);
+}
+
+let accountSession={authenticated:false,configured:false,email:''};
+
+async function accountApi(path,options={}){
+  const response=await fetch(path,{...options,headers:{'content-type':'application/json',...(options.headers || {})}});
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok){
+    const error=new Error(result.error || 'Account request failed.');
+    error.status=response.status; error.code=result.code;
+    throw error;
+  }
+  return result;
+}
+
+function showAccountError(message=''){
+  const element=$('accountError');
+  if(!element) return;
+  element.textContent=message;
+  element.classList.toggle('hidden',!message);
+}
+
+function renderAccountState(){
+  const signedIn=Boolean(accountSession.authenticated);
+  $('accountSignedIn')?.classList.toggle('hidden',!signedIn);
+  $('accountSignedOut')?.classList.toggle('hidden',signedIn);
+  if($('accountStatus')) $('accountStatus').textContent=signedIn ? `Signed in as ${accountSession.email}` : 'Sign in to back up and restore your Food My Way data across devices.';
+}
+
+async function refreshAccountSession(){
+  try{ accountSession=await accountApi('./api/auth/session'); }
+  catch{ accountSession={authenticated:false,configured:false,email:''}; }
+  renderAccountState();
+  return accountSession;
+}
+
+function downloadCloudExport(payload){
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const anchor=document.createElement('a');
+  anchor.href=url; anchor.download=`food-my-way-cloud-export-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(anchor); anchor.click(); anchor.remove(); URL.revokeObjectURL(url);
+}
+
+function restoreCloudSnapshot(snapshot){
+  const data=snapshot?.data && typeof snapshot.data==='object' ? snapshot.data : {};
+  for(const key of CLOUD_DATA_KEYS){
+    if(Object.prototype.hasOwnProperty.call(data,key)) lsSet(key,data[key]);
+    else localStorage.removeItem(key);
+  }
+}
+
+async function setupAccounts(){
+  if(!getPublicConfig().accountsEnabled) return;
+  $('openAccount')?.classList.remove('hidden');
+  const overlay=$('accountOverlay');
+  const close=()=>{ overlay?.classList.add('hidden'); showAccountError(); };
+  $('openAccount')?.addEventListener('click',async()=>{
+    overlay?.classList.remove('hidden');
+    if($('accountStatus')) $('accountStatus').textContent='Checking account…';
+    await refreshAccountSession();
+  });
+  $('accountClose')?.addEventListener('click',close);
+  overlay?.addEventListener('click',event=>{ if(event.target===overlay) close(); });
+  $('accountRequestLink')?.addEventListener('click',async()=>{
+    showAccountError();
+    const email=$('accountEmail')?.value.trim() || '';
+    const button=$('accountRequestLink');
+    try{
+      if(button){ button.disabled=true; button.textContent='Sending…'; }
+      const result=await accountApi('./api/auth/request',{method:'POST',body:JSON.stringify({email})});
+      if($('accountStatus')) $('accountStatus').textContent=result.message;
+    }catch(error){ showAccountError(error.message); }
+    finally{ if(button){ button.disabled=false; button.textContent='Email me a sign-in link'; } }
+  });
+  $('accountBackup')?.addEventListener('click',async()=>{
+    showAccountError();
+    try{
+      const cloud=await accountApi('./api/account/data');
+      await accountApi('./api/account/data',{method:'PUT',body:JSON.stringify({data:betaDataSnapshot().data,baseRevision:cloud.revision})});
+      showToast('This device is backed up to your cloud account.');
+    }catch(error){ showAccountError(error.code==='SYNC_CONFLICT' ? 'Cloud data changed on another device. Restore it or try the backup again.' : error.message); }
+  });
+  $('accountRestore')?.addEventListener('click',async()=>{
+    showAccountError();
+    try{
+      const cloud=await accountApi('./api/account/data');
+      const count=Object.keys(cloud.snapshot?.data || {}).length;
+      if(!count){ showAccountError('There is no cloud backup to restore yet.'); return; }
+      if(!confirm('Replace this device’s Food My Way recipes, plans, diary, and preferences with the cloud backup? Export local data first if you may need it.')) return;
+      restoreCloudSnapshot(cloud.snapshot);
+      location.reload();
+    }catch(error){ showAccountError(error.message); }
+  });
+  $('accountExport')?.addEventListener('click',async()=>{
+    showAccountError();
+    try{ downloadCloudExport(await accountApi('./api/account/data')); }
+    catch(error){ showAccountError(error.message); }
+  });
+  $('accountSignOut')?.addEventListener('click',async()=>{
+    showAccountError();
+    try{ await accountApi('./api/auth/session',{method:'POST',body:'{}'}); await refreshAccountSession(); showToast('Signed out. Local data stays on this device.'); }
+    catch(error){ showAccountError(error.message); }
+  });
+  $('accountDelete')?.addEventListener('click',async()=>{
+    showAccountError();
+    if(!confirm('Permanently delete your Food My Way cloud account and cloud backup? Local data on this device will remain.')) return;
+    try{
+      await accountApi('./api/account/data',{method:'DELETE',headers:{'x-confirm-delete':'DELETE'},body:'{}'});
+      accountSession={authenticated:false,configured:true,email:''}; renderAccountState();
+      showToast('Cloud account deleted. Local data remains on this device.');
+    }catch(error){ showAccountError(error.message); }
+  });
+  const loginResult=new URLSearchParams(location.search).get('login');
+  if(loginResult){
+    if(loginResult==='success'){ await refreshAccountSession(); overlay?.classList.remove('hidden'); showToast('Signed in to Food My Way.'); }
+    else showToast(loginResult==='invalid' ? 'That sign-in link is invalid or expired.' : 'Cloud sign-in is unavailable.');
+    const clean=new URL(location.href); clean.searchParams.delete('login'); history.replaceState({},'',`${clean.pathname}${clean.search}${clean.hash}`);
+  }
 }
 
 function validCheckoutUrl(value){
@@ -2000,6 +2120,7 @@ function wireEvents(){
 function init(){
   setupTelemetry();
   wireEvents();
+  setupAccounts();
   ensureNutritionDisclosure();
   ensureDiaryButton();
   getRecipeBook();

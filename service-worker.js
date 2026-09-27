@@ -1,4 +1,4 @@
-const CACHE_NAME = 'food-my-way-v2-13';
+const CACHE_NAME = 'food-my-way-v2-15';
 const APP_SHELL = [
   './',
   './index.html',

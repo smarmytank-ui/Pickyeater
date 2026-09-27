@@ -10,6 +10,7 @@ The account backend uses passwordless email links, Cloudflare D1, and Resend. It
 - A unique database constraint prevents concurrent reuse of one login challenge.
 - Sign-in requests are limited to five per email per hour.
 - Cloud snapshots accept only known Food My Way storage keys and are limited to 250 KB.
+- Every cloud snapshot has an optimistic-lock revision; conflicting device writes return HTTP 409 instead of silently overwriting data.
 - Account deletion requires an authenticated session and an explicit `X-Confirm-Delete: DELETE` header.
 
 ## Cloudflare configuration
@@ -19,7 +20,8 @@ The account backend uses passwordless email links, Cloudflare D1, and Resend. It
 3. Set encrypted secret `RESEND_API_KEY`.
 4. Set `AUTH_FROM_EMAIL` to the verified sender, such as `Food My Way <login@foodmyway.app>`.
 5. Set `AUTH_ORIGIN` to the exact HTTPS origin. Use the private Pages URL for preview and `https://foodmyway.app` for production.
-6. Redeploy after bindings or secrets change.
+6. Redeploy after bindings or secrets change and complete the preview test matrix below.
+7. Change `accountsEnabled` to `true` in `config.js` only after preview verification, then redeploy.
 
 ## API surface
 
@@ -40,4 +42,4 @@ DELETE FROM login_challenges WHERE expires_epoch < unixepoch('now');
 DELETE FROM sessions WHERE expires_epoch < unixepoch('now');
 ```
 
-Before enabling the UI, test request, consume, session, sync, export, sign-out, expired-link, replayed-link, rate-limit, and deletion flows in preview.
+Before enabling the UI, test request, consume, session, backup, restore, revision conflict, export, sign-out, expired-link, replayed-link, rate-limit, and deletion flows in preview.
