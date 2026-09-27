@@ -756,6 +756,16 @@ function isActiveIngredient(ingredient){
   return Boolean(ingredient && ingredient.name!=='skip it' && Number(ingredient.base?.v)>0);
 }
 
+function proteinSafetyGuidance(name, preparation){
+  const normalized=canonName(name);
+  if(preparation==='cooked') return 'heat to 165°F (74°C), measured with a food thermometer';
+  if(/\b(chicken|turkey)\b/.test(normalized)) return 'cook to 165°F (74°C), measured with a food thermometer';
+  if(/\bground (beef|pork|lamb|veal)\b/.test(normalized)) return 'cook to 160°F (71°C), measured with a food thermometer';
+  if(/\b(salmon|fish|cod|tilapia|tuna|trout)\b/.test(normalized)) return 'cook to 145°F (63°C), measured with a food thermometer';
+  if(/\b(steak|beef|pork|lamb|veal)\b/.test(normalized)) return 'cook to 145°F (63°C), measured with a food thermometer, then rest for 3 minutes';
+  return 'cook to the safe internal temperature for that food, measured with a food thermometer';
+}
+
 // -------------------------------
 // Instructions (simple, deterministic)
 // -------------------------------
@@ -808,13 +818,13 @@ function buildInstructions(ingredients){
   proteins.forEach((protein,index)=>{
     const name = pretty(protein.name);
     let text = `Add ${name} and cook until done.`;
-    if(protein.preparation==='cooked') text = `Add the cooked ${name} and heat until steaming hot throughout.`;
-    else if(protein.preparation==='frozen') text = `Cook the frozen ${name} according to its package directions and verify it reaches a safe internal temperature.`;
-    else if(protein.name.includes('salmon')) text = `Cook ${name} for 3–4 minutes per side, until it flakes easily and reaches a safe internal temperature.`;
+    if(protein.preparation==='cooked') text = `Add the cooked ${name} and ${proteinSafetyGuidance(protein.name,'cooked')}.`;
+    else if(protein.preparation==='frozen') text = `Cook the frozen ${name} according to its package directions and ${proteinSafetyGuidance(protein.name)}.`;
+    else if(protein.name.includes('salmon')) text = `Cook ${name} until it flakes easily and reaches 145°F (63°C), measured with a food thermometer.`;
     else if(protein.name.includes('tofu')) text = `Pat ${name} dry, cube it, and cook for 6–8 minutes until lightly browned.`;
     else if(protein.name.includes('bean') || protein.name.includes('lentil')) text = `Rinse ${name}, then add and warm gently for 2–3 minutes.`;
     else if(protein.name.includes('egg')) text = `Whisk ${name} with a pinch of salt, then cook gently until set.`;
-    else text = `Add ${name}. Cook, stirring or turning as needed, until browned and safely cooked through.`;
+    else text = `Add ${name}. Cook, stirring or turning as needed, and ${proteinSafetyGuidance(protein.name)}.`;
     steps.push({ key:`protein-${index}`, text });
   });
 
@@ -2308,6 +2318,7 @@ if(typeof module !== 'undefined' && module.exports){
     roleFor,
     normalize,
     buildInstructions,
+    proteinSafetyGuidance,
     recipeDetails,
     titleFrom,
     gramsFor,

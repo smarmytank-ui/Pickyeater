@@ -7,6 +7,7 @@ const {
   roleFor,
   normalize,
   buildInstructions,
+  proteinSafetyGuidance,
   recipeDetails,
   titleFrom,
   recipeMacros,
@@ -54,10 +55,22 @@ test('already-cooked and frozen proteins receive preparation-safe guidance', () 
   assert.equal(parseInputIngredient('frozen salmon').preparation,'frozen');
   const cooked=normalize(['cooked chicken','rice']);
   const cookedText=buildInstructions(cooked).map(step=>step.text).join(' ');
-  assert.match(cookedText,/cooked Chicken Breast and heat until steaming hot throughout/);
+  assert.match(cookedText,/cooked Chicken Breast and heat to 165°F \(74°C\)/);
   assert.doesNotMatch(cookedText,/safely cooked through/);
   const frozen=normalize(['frozen salmon']);
-  assert.match(buildInstructions(frozen).map(step=>step.text).join(' '),/according to its package directions/);
+  const frozenText=buildInstructions(frozen).map(step=>step.text).join(' ');
+  assert.match(frozenText,/according to its package directions/);
+  assert.match(frozenText,/145°F \(63°C\)/);
+});
+
+test('raw animal proteins use thermometer-based minimum temperatures', () => {
+  assert.match(proteinSafetyGuidance('chicken breast'),/165°F \(74°C\)/);
+  assert.match(proteinSafetyGuidance('ground beef'),/160°F \(71°C\)/);
+  assert.match(proteinSafetyGuidance('steak'),/145°F \(63°C\).*rest for 3 minutes/);
+  assert.match(proteinSafetyGuidance('salmon'),/145°F \(63°C\)/);
+  const text=buildInstructions(normalize(['chicken','ground beef','steak','salmon'])).map(step=>step.text).join(' ');
+  assert.doesNotMatch(text,/no pink|until browned and safely cooked/i);
+  assert.match(text,/food thermometer/);
 });
 
 test('classifies familiar proteins and vegetables', () => {
