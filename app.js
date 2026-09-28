@@ -2507,7 +2507,9 @@ function wireEvents(){
       if(status) status.textContent='Reading the recipe and extracting its ingredients…';
       try{
         const recipe=await requestRecipeImport(url);
-        const allIngredients=Array.isArray(recipe?.ingredients) ? recipe.ingredients : [];
+        const allIngredients=Array.isArray(recipe?.ingredients)
+          ? recipe.ingredients.map(item=>String(item).replace(/,+/g,' ').replace(/\s+/g,' ').trim()).filter(Boolean)
+          : [];
         const ingredients=allIngredients.slice(0,MAX_RECIPE_INGREDIENTS);
         if(!ingredients.length) throw new Error('That page did not provide an ingredient list.');
         applyFoodIdea(ingredients.join('\n'));

@@ -273,6 +273,7 @@ test('recipe links can be securely imported with visible source attribution',asy
   assert.match(html,/id="recipeSource"/);
   assert.match(script,/fetchWithTimeout\('\.\/api\/recipe-import'/);
   assert.match(script,/track\('recipe_imported'/);
+  assert.match(script,/replace\(\/\,\+\/g,' '\)/);
   assert.match(script,/source:sanitizeRecipeSource\(pendingRecipeSource\)/);
   assert.match(endpoint,/redirect:'manual'/);
   assert.match(endpoint,/validateRecipeUrl\(new URL\(location,current\)\.href\)/);
