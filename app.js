@@ -20,6 +20,7 @@ let state = null;
 let owned = false;
 let loadedRecipeId = null;
 let pendingRecipeSource = null;
+let pendingRecipeTitle = '';
 let activeDialog = null;
 let dialogReturnFocus = null;
 const TASTE_PROFILE_KEY = 'foodMyWayTasteProfile';
@@ -1345,7 +1346,7 @@ function render(){
   if(!state) return;
 
   // Keep naming current (swaps/amount edits)
-  state.title = titleFrom(state.ingredients);
+  state.title = cleanPortableText(state.importedTitle,100) || titleFrom(state.ingredients);
   const details = recipeDetails(state.ingredients);
   state.description = details.description;
   state.prepMinutes = details.prepMinutes;
@@ -1946,6 +1947,7 @@ function openSavedRecipe(recipe){
   servings = normalized.servings;
   state = {
     title: normalized.title,
+    importedTitle:normalized.source ? normalized.title : '',
     ingredients: safeClone(normalized.ingredients),
     steps: safeClone(normalized.steps),
     preferences:safeClone(normalized.preferences),
@@ -2487,6 +2489,7 @@ function wireEvents(){
     chip.addEventListener('click', ()=>{
       if(!ingredientsInput) return;
       pendingRecipeSource=null;
+      pendingRecipeTitle='';
       applyFoodIdea(chip.dataset.starter || '');
       showToast(`${chip.textContent} loaded — make it yours.`);
     });
@@ -2514,12 +2517,14 @@ function wireEvents(){
         if(!ingredients.length) throw new Error('That page did not provide an ingredient list.');
         applyFoodIdea(ingredients.join('\n'));
         pendingRecipeSource=sanitizeRecipeSource(recipe.source);
+        pendingRecipeTitle=cleanPortableText(recipe.title,100);
         const omitted=Math.max(0,allIngredients.length-ingredients.length);
         if(status) status.textContent=`Imported ${ingredients.length} ingredients from ${pendingRecipeSource?.name || 'the recipe'}${omitted ? `; ${omitted} more were omitted to keep it practical` : ''}. Review them, then make your recipe.`;
         track('recipe_imported',{ingredient_count:ingredients.length});
         ingredientsInput?.focus();
       }catch(error){
         pendingRecipeSource=null;
+        pendingRecipeTitle='';
         if(status) status.textContent=error?.name==='AbortError' ? 'That recipe site took too long to respond. Try again.' : (error?.message || 'That recipe could not be imported.');
       }finally{
         importRecipeBtn.disabled=false;
@@ -2540,6 +2545,7 @@ function wireEvents(){
       ];
       if(!ingredientsInput) return;
       pendingRecipeSource=null;
+      pendingRecipeTitle='';
       applyFoodIdea(ideas[Math.floor(Math.random() * ideas.length)]);
       showToast('A comfort-food combo is ready.');
     });
@@ -2567,11 +2573,13 @@ function wireEvents(){
       state = {
         ingredients,
         title:titleFrom(ingredients),
+        importedTitle:pendingRecipeTitle,
         steps:[],
         preferences:{texture:profile.texture,servingStyle:profile.servingStyle},
         source:sanitizeRecipeSource(pendingRecipeSource)
       };
       pendingRecipeSource=null;
+      pendingRecipeTitle='';
       state.steps = buildInstructions(state.ingredients,state.preferences);
 
       owned = false;

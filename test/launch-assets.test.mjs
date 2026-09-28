@@ -275,6 +275,8 @@ test('recipe links can be securely imported with visible source attribution',asy
   assert.match(script,/track\('recipe_imported'/);
   assert.match(script,/replace\(\/\,\+\/g,' '\)/);
   assert.match(script,/source:sanitizeRecipeSource\(pendingRecipeSource\)/);
+  assert.match(script,/importedTitle:pendingRecipeTitle/);
+  assert.match(script,/cleanPortableText\(state\.importedTitle,100\) \|\| titleFrom/);
   assert.match(endpoint,/redirect:'manual'/);
   assert.match(endpoint,/validateRecipeUrl\(new URL\(location,current\)\.href\)/);
 });
