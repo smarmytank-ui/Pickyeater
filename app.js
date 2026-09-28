@@ -50,7 +50,12 @@ async function requestRecipeImport(url){
     body:JSON.stringify({url})
   },15000);
   const result=await response.json().catch(()=>({}));
-  if(!response.ok) throw new Error(result.error || 'That recipe could not be imported.');
+  if(!response.ok){
+    const fallback=response.status===502
+      ? 'That recipe site blocked automatic importing. Try another recipe site, or copy its ingredients into the box above.'
+      : 'That recipe could not be imported.';
+    throw new Error(result.error || fallback);
+  }
   return result.recipe;
 }
 

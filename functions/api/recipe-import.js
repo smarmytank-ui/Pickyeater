@@ -11,6 +11,9 @@ export async function onRequestPost({request}){
   try{ input=await request.json(); }catch{ return json({error:'Invalid JSON request.'},400); }
   let current;
   try{ current=validateRecipeUrl(input?.url); }catch(error){ return json({error:error.message},400); }
+  if(current.hostname==='allrecipes.com' || current.hostname.endsWith('.allrecipes.com')){
+    return json({error:'Allrecipes currently blocks automatic imports. Try a recipe link from another site, or copy its ingredients into the box above.'},422);
+  }
   let response;
   try{
     for(let redirects=0;redirects<=3;redirects+=1){

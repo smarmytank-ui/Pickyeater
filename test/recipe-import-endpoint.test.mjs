@@ -51,3 +51,15 @@ test('recipe import endpoint has controlled method and network failures',async()
   try{ assert.equal((await onRequestPost({request:request('https://example.com/recipe')})).status,502); }
   finally{ globalThis.fetch=originalFetch; }
 });
+
+test('recipe import explains when Allrecipes blocks automated access',async()=>{
+  const originalFetch=globalThis.fetch;
+  let called=false;
+  globalThis.fetch=async()=>{ called=true; throw new Error('fetch should not run'); };
+  try{
+    const response=await onRequestPost({request:request('https://www.allrecipes.com/recipe/16330/stuffed-peppers/')});
+    assert.equal(response.status,422);
+    assert.match((await response.json()).error,/Allrecipes currently blocks automatic imports/);
+    assert.equal(called,false);
+  }finally{ globalThis.fetch=originalFetch; }
+});
