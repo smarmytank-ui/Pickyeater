@@ -197,7 +197,7 @@ test('deployment verifier covers the complete public funnel',async()=>{
     assert.match(verifier,new RegExp(`/${canonicalPath.replaceAll('.','\\.')}`));
   }
   assert.match(verifier,/\/service-worker\.js/);
-  for(const endpoint of ['auth/session','auth/consume','auth/request','stripe-webhook','founding-interest','founding-unsubscribe','account/data','events','shop']){
+  for(const endpoint of ['auth/session','auth/consume','auth/request','stripe-webhook','founding-interest','founding-unsubscribe','account/data','events','recipe-import','shop']){
     assert.match(verifier,new RegExp(`/api/${endpoint.replaceAll('/','\\/')}`));
   }
   assert.match(verifier,/process\.argv\.includes\('--launch'\)/);
@@ -262,6 +262,20 @@ test('single recipe grocery checkout is feature flagged and premium gated',async
   assert.match(script,/Send this recipe’s ingredient list to Instacart\?/);
   assert.match(script,/title:`Food My Way — \$\{recipe\.title\}`/);
   assert.match(telemetry,/grocery_checkout/);
+});
+
+test('recipe links can be securely imported with visible source attribution',async()=>{
+  const [html,script,endpoint]=await Promise.all([
+    read('index.html'),read('app.js'),read('functions/api/recipe-import.js')
+  ]);
+  assert.match(html,/id="recipeUrlInput"/);
+  assert.match(html,/id="importRecipeBtn"/);
+  assert.match(html,/id="recipeSource"/);
+  assert.match(script,/fetchWithTimeout\('\.\/api\/recipe-import'/);
+  assert.match(script,/track\('recipe_imported'/);
+  assert.match(script,/source:sanitizeRecipeSource\(pendingRecipeSource\)/);
+  assert.match(endpoint,/redirect:'manual'/);
+  assert.match(endpoint,/validateRecipeUrl\(new URL\(location,current\)\.href\)/);
 });
 
 test('editing a saved recipe replaces it without consuming another free slot',async()=>{
@@ -377,7 +391,7 @@ test('customer-facing network actions have bounded wait times',async()=>{
   ]);
   assert.match(script,/async function fetchWithTimeout\(resource,options=\{\},timeoutMs=12000\)/);
   assert.match(script,/controller\.abort\(\)/);
-  for(const path of ['founding-interest','shop']) assert.match(script,new RegExp(`fetchWithTimeout\\('./api/${path}`));
+  for(const path of ['founding-interest','recipe-import','shop']) assert.match(script,new RegExp(`fetchWithTimeout\\('./api/${path}`));
   assert.match(script,/response=await fetchWithTimeout\(path/);
   assert.match(authRequest,/signal:AbortSignal\.timeout\(12000\)/);
   assert.match(shop,/signal:AbortSignal\.timeout\(12000\)/);

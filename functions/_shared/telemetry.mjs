@@ -1,6 +1,6 @@
 const ALLOWED_EVENTS=new Set([
   'page_view','client_error','beta_data_exported','weekly_plan_toggled','grocery_item_checked',
-  'weekly_planner_opened','saved_recipe_opened','recipe_book_opened','recipe_shared','recipe_generated',
+  'weekly_planner_opened','saved_recipe_opened','recipe_book_opened','recipe_shared','recipe_generated','recipe_imported',
   'recipe_saved','recipe_intent_recorded','founder_checkout_started','founder_checkout_returned','founder_interest_opened',
   'founder_interest_saved','founder_interest_synced','taste_profile_opened','taste_profile_saved','local_data_deleted',
   'install_prompt_result','app_installed','premium_gate_viewed','grocery_shop_started',

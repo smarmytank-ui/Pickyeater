@@ -160,6 +160,11 @@ await checkApi('/api/events',{
   method:'POST',body:'{}',requestHeaders:{'content-type':'application/json'},
   statuses:launchMode ? [400] : [400,503],headers:jsonNoStore
 });
+await checkApi('/api/recipe-import',{statuses:[405],headers:jsonNoStore});
+await checkApi('/api/recipe-import',{
+  method:'POST',body:'{"url":"http://localhost/recipe"}',requestHeaders:{'content-type':'application/json'},
+  statuses:[400],headers:jsonNoStore
+});
 await checkApi('/api/shop',{
   method:'POST',body:'{"items":[]}',requestHeaders:{'content-type':'application/json'},
   statuses:launchMode && commerceLaunchEnabled ? [401] : launchMode ? [401,503] : [400,401,503],headers:jsonNoStore

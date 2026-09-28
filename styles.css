@@ -163,6 +163,11 @@ textarea{width:100%;min-height:120px;border:1px solid var(--border);border-radiu
 .modal-sub{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.35}
 .modal-actions{margin-top:14px;display:flex;flex-direction:column;gap:10px}
 .modal-foot{margin-top:12px}
+.recipe-import{margin:18px 0 14px;padding-top:14px;border-top:1px solid var(--line)}
+.recipe-import-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:stretch}
+.recipe-import-row .field{margin:0;min-width:0}
+.recipe-source{display:inline-flex;margin-top:5px;font-size:13px;font-weight:800;color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+@media (max-width:560px){.recipe-import-row{grid-template-columns:1fr}.recipe-import-row .btn{width:100%}}
 .pill.subtle{background:rgba(100,116,139,.10);color:var(--muted)}
 .modal-label{display:block;margin-top:14px;margin-bottom:8px;font-size:13px;color:var(--muted)}
 .meal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}

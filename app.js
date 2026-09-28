@@ -19,6 +19,7 @@ let servings = 2;
 let state = null;
 let owned = false;
 let loadedRecipeId = null;
+let pendingRecipeSource = null;
 let activeDialog = null;
 let dialogReturnFocus = null;
 const TASTE_PROFILE_KEY = 'foodMyWayTasteProfile';
@@ -39,6 +40,17 @@ async function fetchWithTimeout(resource,options={},timeoutMs=12000){
   const timer=setTimeout(()=>controller.abort(),timeoutMs);
   try{ return await fetch(resource,{...options,signal:controller.signal}); }
   finally{ clearTimeout(timer); }
+}
+
+async function requestRecipeImport(url){
+  const response=await fetchWithTimeout('./api/recipe-import',{
+    method:'POST',
+    headers:{'content-type':'application/json'},
+    body:JSON.stringify({url})
+  },15000);
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok) throw new Error(result.error || 'That recipe could not be imported.');
+  return result.recipe;
 }
 
 async function submitFoundingInterest(email,source='founding-modal'){
@@ -1342,6 +1354,13 @@ function render(){
   if($('servingsVal')) $('servingsVal').textContent = servings;
   if($('recipeTitle')) $('recipeTitle').textContent = state.title;
   if($('recipeDescription')) $('recipeDescription').textContent = details.description;
+  const source=sanitizeRecipeSource(state.source);
+  const sourceLink=$('recipeSource');
+  if(sourceLink){
+    sourceLink.classList.toggle('hidden',!source);
+    sourceLink.textContent=source ? `Adapted from ${source.name}` : '';
+    sourceLink.href=source?.url || '#';
+  }
   if($('prepTime')) $('prepTime').textContent = `${details.prepMinutes} min prep`;
   if($('cookTime')) $('cookTime').textContent = `${details.cookMinutes} min cook`;
   const profile=sanitizeTasteProfile(state.preferences || getTasteProfile());
@@ -1515,6 +1534,16 @@ function cleanPortableText(value,maxLength){
   return String(value || '').replace(/[\u0000-\u001f\u007f]/g,' ').replace(/\s+/g,' ').trim().slice(0,maxLength);
 }
 
+function sanitizeRecipeSource(value){
+  if(!value || typeof value!=='object') return null;
+  try{
+    const url=new URL(cleanPortableText(value.url,1000));
+    if(url.protocol!=='https:') return null;
+    const name=cleanPortableText(value.name,100) || url.hostname.replace(/^www\./,'');
+    return {name,url:url.href};
+  }catch{ return null; }
+}
+
 function sanitizeSavedIngredients(value){
   if(!Array.isArray(value)) return [];
   const ingredients=[];
@@ -1587,6 +1616,7 @@ function snapshotCurrentRecipe(){
     cookMinutes: details.cookMinutes,
     ingredients: safeClone(state.ingredients),
     steps: safeClone(state.steps),
+    source:sanitizeRecipeSource(state.source),
     preferences:{texture:profile.texture,servingStyle:profile.servingStyle},
     nutrition: recipeMacros(state, servings),
     favorite: true,
@@ -1613,7 +1643,8 @@ function normalizeSavedRecipe(recipe,{untrusted=false}={}){
   const recipeState = {
     title: cleanPortableText(recipe.title,100) || titleFrom(ingredients),
     ingredients,
-    steps: !untrusted && importedSteps.length ? importedSteps : buildInstructions(ingredients,preferences)
+    steps: !untrusted && importedSteps.length ? importedSteps : buildInstructions(ingredients,preferences),
+    source:sanitizeRecipeSource(recipe.source)
   };
   const details = recipeDetails(recipeState.ingredients);
   const savedAt=cleanPortableText(recipe.savedAt,40) || new Date().toISOString();
@@ -1627,6 +1658,7 @@ function normalizeSavedRecipe(recipe,{untrusted=false}={}){
     cookMinutes:details.cookMinutes,
     ingredients: recipeState.ingredients,
     steps: recipeState.steps,
+    source:recipeState.source,
     preferences,
     nutrition:recipeMacros(recipeState,recipeServings),
     favorite: recipe.favorite !== false,
@@ -1916,7 +1948,8 @@ function openSavedRecipe(recipe){
     title: normalized.title,
     ingredients: safeClone(normalized.ingredients),
     steps: safeClone(normalized.steps),
-    preferences:safeClone(normalized.preferences)
+    preferences:safeClone(normalized.preferences),
+    source:sanitizeRecipeSource(normalized.source)
   };
   owned = true;
   loadedRecipeId = normalized.id;
@@ -2414,6 +2447,8 @@ function wireEvents(){
   const shareBtn = $('shareBtn');
   const backBtn = $('backBtn');
   const ingredientsInput = $('ingredientsInput');
+  const recipeUrlInput = $('recipeUrlInput');
+  const importRecipeBtn = $('importRecipeBtn');
   $('shopRecipe')?.classList.toggle('hidden',!getPublicConfig().commerceEnabled);
   const wireClick = (id,handler)=>{
     const element=$(id);
@@ -2451,10 +2486,45 @@ function wireEvents(){
     chip.dataset.wired = '1';
     chip.addEventListener('click', ()=>{
       if(!ingredientsInput) return;
+      pendingRecipeSource=null;
       applyFoodIdea(chip.dataset.starter || '');
       showToast(`${chip.textContent} loaded — make it yours.`);
     });
   });
+
+  if(importRecipeBtn && !importRecipeBtn.dataset.wired){
+    importRecipeBtn.dataset.wired='1';
+    importRecipeBtn.addEventListener('click',async()=>{
+      const url=recipeUrlInput?.value.trim() || '';
+      const status=$('recipeImportStatus');
+      if(!/^https:\/\//i.test(url)){
+        if(status) status.textContent='Paste a complete HTTPS recipe link first.';
+        recipeUrlInput?.focus();
+        return;
+      }
+      importRecipeBtn.disabled=true;
+      importRecipeBtn.textContent='Importing…';
+      if(status) status.textContent='Reading the recipe and extracting its ingredients…';
+      try{
+        const recipe=await requestRecipeImport(url);
+        const allIngredients=Array.isArray(recipe?.ingredients) ? recipe.ingredients : [];
+        const ingredients=allIngredients.slice(0,MAX_RECIPE_INGREDIENTS);
+        if(!ingredients.length) throw new Error('That page did not provide an ingredient list.');
+        applyFoodIdea(ingredients.join('\n'));
+        pendingRecipeSource=sanitizeRecipeSource(recipe.source);
+        const omitted=Math.max(0,allIngredients.length-ingredients.length);
+        if(status) status.textContent=`Imported ${ingredients.length} ingredients from ${pendingRecipeSource?.name || 'the recipe'}${omitted ? `; ${omitted} more were omitted to keep it practical` : ''}. Review them, then make your recipe.`;
+        track('recipe_imported',{ingredient_count:ingredients.length});
+        ingredientsInput?.focus();
+      }catch(error){
+        pendingRecipeSource=null;
+        if(status) status.textContent=error?.name==='AbortError' ? 'That recipe site took too long to respond. Try again.' : (error?.message || 'That recipe could not be imported.');
+      }finally{
+        importRecipeBtn.disabled=false;
+        importRecipeBtn.textContent='Import recipe';
+      }
+    });
+  }
 
   const surpriseBtn = $('surpriseBtn');
   if(surpriseBtn && !surpriseBtn.dataset.wired){
@@ -2467,6 +2537,7 @@ function wireEvents(){
         'eggs\nbread\ncheddar cheese\nbacon'
       ];
       if(!ingredientsInput) return;
+      pendingRecipeSource=null;
       applyFoodIdea(ideas[Math.floor(Math.random() * ideas.length)]);
       showToast('A comfort-food combo is ready.');
     });
@@ -2495,8 +2566,10 @@ function wireEvents(){
         ingredients,
         title:titleFrom(ingredients),
         steps:[],
-        preferences:{texture:profile.texture,servingStyle:profile.servingStyle}
+        preferences:{texture:profile.texture,servingStyle:profile.servingStyle},
+        source:sanitizeRecipeSource(pendingRecipeSource)
       };
+      pendingRecipeSource=null;
       state.steps = buildInstructions(state.ingredients,state.preferences);
 
       owned = false;
