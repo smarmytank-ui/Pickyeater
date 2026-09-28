@@ -23,7 +23,7 @@ body{
 .page{min-height:100vh}
 .topbar{max-width:1100px;margin:0 auto;padding:18px}
 .brand{display:flex;gap:12px;align-items:center}
-.brand-mark{width:44px;height:44px;border-radius:14px;border:1px solid rgba(43,122,99,.3);background:var(--accent-soft);box-shadow:var(--shadow)}
+.brand-mark{width:44px;height:44px;border-radius:50%;border:1px solid rgba(43,122,99,.3);background:var(--accent-soft);box-shadow:var(--shadow)}
 .brand-title{font-weight:800}
 .brand-sub{font-size:13px;color:var(--muted)}
 .content{max-width:760px;margin:0 auto;padding:0 16px 36px}
@@ -253,8 +253,8 @@ body{
 }
 .topbar{max-width:1040px;padding:22px 24px}
 .brand-mark{
-  width:48px;height:48px;border:0;border-radius:16px;
-  background:#fff url('./picky-mark.svg') center/29px no-repeat;
+  width:48px;height:48px;border:0;border-radius:50%;
+  background:transparent url('./food-my-way-pfp-192.png') center/contain no-repeat;
   box-shadow:0 8px 24px rgba(38,110,84,.16);
 }
 .brand-title{font-size:18px;letter-spacing:-.02em;color:var(--ink)}
@@ -318,7 +318,7 @@ textarea:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 5px r
   .recipe-intent-actions{display:grid;grid-template-columns:1fr}.recipe-intent-actions .btn{width:100%}
   .checkout-status{align-items:stretch;flex-direction:column}.checkout-status-actions{display:grid;grid-template-columns:1fr 1fr}.checkout-status-actions .btn{width:100%}
   .topbar{padding:14px 16px;align-items:center}
-  .brand-mark{width:42px;height:42px;border-radius:14px;background-size:25px}
+  .brand-mark{width:42px;height:42px;border-radius:50%;background-size:contain}
   .brand-title{font-size:16px}.brand-sub{display:none}
   .topbar-actions{flex-direction:row}
   .topbar-btn{padding:10px;width:42px;height:42px}

@@ -50,10 +50,17 @@ test('HTML ids do not collide with global function declarations',async()=>{
 });
 
 test('manifest icons and offline shell assets exist',async()=>{
-  const manifest=JSON.parse(await read('site.webmanifest'));
+  const [manifestSource,html,worker]=await Promise.all([
+    read('site.webmanifest'),read('index.html'),read('service-worker.js')
+  ]);
+  const manifest=JSON.parse(manifestSource);
   assert.equal(manifest.name,'Food My Way — Picky Eater Recipes');
+  assert.deepEqual(manifest.icons.map(icon=>icon.src),['food-my-way-pfp-192.png','food-my-way-pfp-512.png']);
   for(const icon of manifest.icons) await access(path.join(root,icon.src));
-  const worker=await read('service-worker.js');
+  assert.match(html,/class="brand-mark" role="img" aria-label="Food My Way puzzle-food logo"/);
+  assert.match(html,/href="\.\/food-my-way-pfp-32\.png"/);
+  assert.match(html,/href="\.\/food-my-way-pfp-180\.png"/);
+  for(const size of [32,180,192,512]) assert.match(worker,new RegExp(`food-my-way-pfp-${size}\\.png`));
   for(const asset of ['index.html','styles.css','app.js','config.js','privacy.html','terms.html','support.html']){
     assert.match(worker,new RegExp(asset.replace('.','\\.')));
   }
