@@ -47,6 +47,14 @@ test('keeps a bounded grocery item count without grocery content',()=>{
   assert.deepEqual(event.details,{item_count:12});
 });
 
+test('retains the approved social profile campaign dimensions',()=>{
+  const event=normalizeTelemetryEvent({
+    event:'kit_page_viewed',sessionId,path:'/survival-kit',
+    details:{campaign_source:'instagram',campaign_creative:'link_in_bio'}
+  });
+  assert.deepEqual(event.details,{campaign_source:'instagram',campaign_creative:'link_in_bio'});
+});
+
 test('every literal browser event is accepted by the server contract',async()=>{
   const script=await readFile(path.join(root,'app.js'),'utf8');
   const events=[...new Set([...script.matchAll(/track\('([^']+)'/g)].map(match=>match[1]))];

@@ -2,8 +2,12 @@
   const sessionId=crypto.randomUUID();
   const query=new URLSearchParams(location.search);
   const allowedSources=new Set(['tiktok','instagram','facebook','organic']);
-  const allowedCreatives=new Set(['four_safe_foods','taco_swap','picky_adults']);
-  const campaign={campaign_source:allowedSources.has(query.get('utm_source'))?query.get('utm_source'):'unknown',campaign_creative:allowedCreatives.has(query.get('utm_content'))?query.get('utm_content'):'unknown'};
+  const sourceAliases=new Map([['ig','instagram'],['fb','facebook']]);
+  const rawSource=String(query.get('utm_source') || '').toLowerCase();
+  const campaignSource=sourceAliases.get(rawSource) || rawSource;
+  const allowedCreatives=new Set(['four_safe_foods','taco_swap','picky_adults','link_in_bio']);
+  const rawCreative=String(query.get('utm_content') || '').toLowerCase();
+  const campaign={campaign_source:allowedSources.has(campaignSource)?campaignSource:'unknown',campaign_creative:allowedCreatives.has(rawCreative)?rawCreative:'unknown'};
   const emit=event=>fetch('/api/events',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({event,sessionId,path:location.pathname,details:campaign}),keepalive:true}).catch(()=>{});
   emit('kit_page_viewed');
   const checkoutUrl=String(window.FMW_CONFIG?.survivalKitCheckoutUrl || '').trim();

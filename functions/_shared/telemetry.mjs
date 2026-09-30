@@ -18,7 +18,7 @@ const STRING_VALUES={
   source:new Set(['runtime','promise']),
   feature:new Set(['weekly_planning','household_profile','unlimited_saves','grocery_checkout']),
   campaign_source:new Set(['tiktok','instagram','facebook','organic','unknown']),
-  campaign_creative:new Set(['four_safe_foods','taco_swap','picky_adults','unknown'])
+  campaign_creative:new Set(['four_safe_foods','taco_swap','picky_adults','link_in_bio','unknown'])
 };
 
 export function normalizeTelemetryEvent(input){

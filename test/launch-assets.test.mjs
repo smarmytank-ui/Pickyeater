@@ -103,6 +103,15 @@ test('Survival Kit links render a complete branded social preview',async()=>{
   assert.match(html,/<meta name="twitter:image" content="https:\/\/foodmyway\.app\/food-my-way-social\.png">/);
 });
 
+test('Instagram and Facebook profile links retain campaign attribution',async()=>{
+  const script=await read('survival-kit.js');
+  const telemetry=await read('functions/_shared/telemetry.mjs');
+  assert.match(script,/\['ig','instagram'\]/);
+  assert.match(script,/\['fb','facebook'\]/);
+  assert.match(script,/allowedCreatives=new Set\(\[[^\]]*'link_in_bio'/);
+  assert.match(telemetry,/campaign_creative:new Set\(\[[^\]]*'link_in_bio'/);
+});
+
 test('sitemap legal and support pages have explicit canonical signals',async()=>{
   const [sitemap,privacy,support,terms,headers]=await Promise.all([
     read('sitemap.xml'),read('privacy.html'),read('support.html'),read('terms.html'),read('_headers')
