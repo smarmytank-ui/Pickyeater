@@ -30,11 +30,11 @@ Current blocker: add `https://foodmyway.app/survival-kit` in the Instagram mobil
 
 - [x] Food My Way Facebook Page created under TP Biz Op LLC with page ID `1373971672467209`, category `Software Company`, and the approved bio.
 - [ ] Page username secured, branding applied, and public About/contact data verified.
-- [ ] TP Biz Op LLC Meta Business Portfolio created and fully verified. Business Suite is active, Instagram message access is enabled, and the portfolio is named `TP Biz Op LLC`; legal details and verification remain.
+- [ ] TP Biz Op LLC Meta Business Portfolio created and fully verified. Business Suite is active, Instagram message access is enabled, and Meta reports the portfolio is eligible for verification; legal name, address, phone, website, primary Page/location, and verification remain.
 - [x] Authentic private human administrator has full control without appearing on the public Food My Way Page.
 - [x] Food My Way Page and Instagram account are owned by the TP Biz Op LLC portfolio; their cross-connection remains.
 - [x] Meta ad account `Food My Way Ads` created under TP Biz Op LLC with account ID `1748503076238751`, Pacific Time, and USD. No payment method is attached and no spend is active.
-- [ ] Meta two-factor requirement enabled for people with portfolio access.
+- [ ] Meta two-factor requirement enabled for people with portfolio access. Live Security Center currently shows `No one`; passkey requirement also shows `No one`.
 
 Current blocker: connect the Facebook Page and Instagram profile, replace the Page's default profile image and blank cover, secure its username/link, and finish Meta legal verification/security. The authentic private Facebook administrator remains an internal ownership record and is not exposed on the public Page.
 

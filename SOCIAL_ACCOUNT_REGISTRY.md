@@ -32,11 +32,11 @@ Complete and record each item immediately after an account is created:
 - [ ] Recovery codes stored in the named password-manager item.
 - [ ] Password-manager item uses a unique generated password.
 - [ ] Legal business name and country match TP Biz Op LLC records.
-- [ ] Time zone is Pacific Time and billing currency is USD before the first ad account is finalized.
-- [ ] Owner has full control; all other people have only necessary task access.
+- [x] Time zone is Pacific Time and billing currency is USD for both Meta and TikTok advertiser accounts.
+- [x] Owner has full control; no partners or additional people are assigned to the Facebook Page or Instagram account.
 - [ ] Public profile exposes no personal address, phone number, birthday, friends list, or personal posts.
-- [ ] Account ID, business/portfolio ID, Page ID, ad-account ID, and linked assets recorded below.
-- [ ] No ad spend enabled until the owner approves the campaign budget and payment method at launch time.
+- [x] Account ID, business/portfolio ID, Page ID, ad-account ID, and currently linked assets recorded below.
+- [x] No ad spend enabled; neither advertiser account has an active campaign and Meta has no payment method attached.
 
 ## Account inventory
 
@@ -44,7 +44,7 @@ Complete and record each item immediately after an account is created:
 |---|---|---|---|---|---|---|---|
 | Instagram | Food My Way app | `@food_my_way_app` | `support@foodmyway.app` | TP Biz Op LLC Meta Business Portfolio | Professional Business account; PFP, display name, and bio verified publicly; portfolio ownership verified | `Food My Way — Instagram` | Login: `https://www.instagram.com/accounts/login/`; account ID `17841419124020938`; owned by TP Biz Op LLC; category `Software Company` (hidden); Survival Kit link and Facebook Page cross-connection remain |
 | Facebook | Food My Way app | `@foodmywayapp` if available | Owner's private Facebook administrator; business contact `support@foodmyway.app` | Meta Business Portfolio | Page created and owned by TP Biz Op LLC | `Food My Way — Meta` | Page ID `1373971672467209`; category `Software Company`; approved bio; one private full-access owner; public branding and username remain to be completed |
-| Meta Business | TP Biz Op LLC | n/a | `support@foodmyway.app` | TP Biz Op LLC | Business Suite active; Facebook Page and Meta ad account created; Instagram message access enabled | `Food My Way — Meta` | Login: `https://business.facebook.com/`; business ID `2317309182358374`; Page ID `1373971672467209`; ad account `Food My Way Ads`, ID `1748503076238751`, Pacific Time, USD; connected asset ID `1268560923015595`; no payment method or spend active; legal details, business verification, portfolio 2FA policy, public branding, and Instagram connection remain |
+| Meta Business | TP Biz Op LLC | n/a | `support@foodmyway.app` | TP Biz Op LLC | Business Suite active; Facebook Page and Meta ad account created; Instagram message access enabled; eligible for business verification | `Food My Way — Meta` | Login: `https://business.facebook.com/`; business ID `2317309182358374`; Page ID `1373971672467209`; ad account `Food My Way Ads`, ID `1748503076238751`, Pacific Time, USD; connected asset ID `1268560923015595`; no payment method or spend active; legal name/address/phone/website, primary Page/location, verification, portfolio 2FA policy, public branding, and Facebook–Instagram cross-connection remain |
 | TikTok | Food My Way | `@foodmywayapp` | `support@foodmyway.app` | TikTok Business Center | Existing Picky Eater account must be inspected first | `Food My Way — TikTok` | Decide whether to rename or create fresh before submission |
 | TikTok Business Center / Ads Manager | Food My Way | n/a | `support@foodmyway.app` | TP Biz Op LLC | Business Center access restored; email and text-message 2-step verification active; one advertiser account linked | `Food My Way — TikTok Business` | Login: `https://business.tiktok.com/`; Business Center `TP Biz Op LLC_bc_okmb61`; organization ID `7691373835622416405`; advertiser ID `7691373556810366996`; Los Angeles time and USD; no campaign, payment method, or spend active |
 
@@ -81,3 +81,4 @@ Record account creation date, exact account ID, linked assets, verification stat
 | 2026-09-30 | Meta | Food My Way Facebook Page created | Page ID `1373971672467209`; owned by `TP Biz Op LLC`; one private full-access owner | Apply public PFP/cover, secure the username, connect Instagram, and verify About/contact data |
 | 2026-09-30 | Meta | Food My Way ad account created | Ad account `Food My Way Ads`; ID `1748503076238751`; owned by `TP Biz Op LLC`; Pacific Time; USD; no payment method | Complete legal business verification and security, then build the campaign draft; payment method and launch require separate owner approval |
 | 2026-09-30 | Meta | Portfolio ownership and public Page branding audited live | Instagram `@food_my_way_app` (ID `17841419124020938`) and Facebook Page `Food My Way app` (ID `1373971672467209`) are owned by TP Biz Op LLC; private administrator has full control and is not shown on the public Page | Connect the two assets; replace the Page's default profile image and blank cover; secure its username and public link |
+| 2026-09-30 | Meta | Business Info and Security Center audited live | Eligible for verification; legal name, address, phone, website, primary Page/location are blank; portfolio 2FA and passkey requirements are `No one`; owner is the only admin | Owner must approve transmitting legal/contact details and separately configure security controls; consider a second trusted admin only when one is explicitly chosen |
