@@ -8,6 +8,7 @@ Updated: September 30, 2026
 - Primary business email: `support@foodmyway.app`
 - Public brand name: Food My Way
 - Primary website: `https://foodmyway.app`
+- Business recovery phone: Google Voice number ending in `4409` (full number kept out of the repository).
 - Never store passwords, one-time verification codes, recovery codes, payment-card data, or API secrets in this repository.
 - Store each password and recovery code in the owner's password manager. Record only the vault item name below.
 - Enable two-factor authentication after account creation; prefer an authenticator app and keep recovery codes in the same encrypted vault item.
@@ -41,11 +42,11 @@ Complete and record each item immediately after an account is created:
 
 | Platform | Public name | Preferred username | Sign-up email | Business container | Status | Password vault item | Account ID / notes |
 |---|---|---|---|---|---|---|---|
-| Instagram | Food My Way | `@food_my_way_app` | `support@foodmyway.app` | Meta Business Portfolio | Professional Business account; bio live; mobile-only branding fields remain | `Food My Way — Instagram` | Category `Software Company` (hidden); profile photo, display name, and link must be completed in the mobile app |
+| Instagram | Food My Way app | `@food_my_way_app` | `support@foodmyway.app` | Meta Business Portfolio | Professional Business account; PFP, display name, and bio verified publicly | `Food My Way — Instagram` | Login: `https://www.instagram.com/accounts/login/`; account ID `17841419124020938`; category `Software Company` (hidden); Survival Kit link remains to be added in the mobile app |
 | Facebook | Food My Way | `@foodmywayapp` if available | Owner's private Facebook administrator; business contact `support@foodmyway.app` | Meta Business Portfolio | Awaiting owner decision on private administrator | `Food My Way — Meta` | A Page requires an authentic human administrator; the administrator is not shown publicly |
-| Meta Business | Food My Way / TP Biz Op LLC | n/a | `support@foodmyway.app` | TP Biz Op LLC | Awaiting owner decision on private administrator | `Food My Way — Meta` | Pacific time; USD; connect Page and Instagram |
+| Meta Business | Food My Way / TP Biz Op LLC | n/a | `support@foodmyway.app` | TP Biz Op LLC | Not yet created or connected | `Food My Way — Meta` | Login: `https://business.facebook.com/`; Pacific time; USD; connect Page and Instagram; the private human administrator must not appear as the public Page identity |
 | TikTok | Food My Way | `@foodmywayapp` | `support@foodmyway.app` | TikTok Business Center | Existing Picky Eater account must be inspected first | `Food My Way — TikTok` | Decide whether to rename or create fresh before submission |
-| TikTok Business Center / Ads Manager | Food My Way | n/a | `support@foodmyway.app` | TP Biz Op LLC | Advertiser account created; Business Center linking and security remain | `Food My Way — TikTok Business` | Advertiser ID `7691373556810366996`; Los Angeles time and USD; optional beta enrollment off; no campaign, payment method, or spend active |
+| TikTok Business Center / Ads Manager | Food My Way | n/a | `support@foodmyway.app` | TP Biz Op LLC | Advertiser account created; Business Center linking and security remain | `Food My Way — TikTok Business` | Login: `https://ads.tiktok.com/`; advertiser ID `7691373556810366996`; account name `TP Biz Op LLC_adv`; Los Angeles time and USD; optional beta enrollment off; no campaign, payment method, or spend active |
 
 ## Brand profile
 
@@ -70,3 +71,4 @@ Record account creation date, exact account ID, linked assets, verification stat
 | 2026-09-30 | Instagram | Browser signup route inspected | Existing browser session contains unrelated accounts; direct signup redirects to those sessions | Owner should use Instagram app: Add Instagram account → Create new account; private password/code/DOB steps remain |
 | 2026-09-30 | Instagram | Separate Food My Way account created and verified | Exact handle `@food_my_way_app`; durable business email used | Confirm public profile branding, then convert to Business and connect to Meta |
 | 2026-09-30 | Instagram | Bio published and account converted to Business | Bio verified live; category `Software Company`; contact details kept private | In mobile app, add PFP, set display name `Food My Way`, add Survival Kit link, then connect to Meta |
+| 2026-09-30 | Instagram | Public identity corrected and verified | Public profile shows `Food My Way app`, `@food_my_way_app`, the round brand PFP, and approved bio; no personal name is visible | Add the Survival Kit profile link in the Instagram mobile app, then enable 2FA and connect to Meta |
