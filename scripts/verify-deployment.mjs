@@ -91,6 +91,9 @@ for(const path of [
   '/privacy',
   '/terms',
   '/support',
+  '/survival-kit',
+  '/survival-kit.css',
+  '/survival-kit.js',
   '/404',
   '/picky-adults',
   '/picky-kids',
@@ -116,6 +119,9 @@ if(launchMode){
     if(!/founderCheckoutUrl:\s*['"]https:\/\/(?:buy\.stripe\.com|checkout\.stripe\.com)\//.test(config)){
       failures.push('/config.js: a valid Stripe founderCheckoutUrl is required for paid launch');
     }else passed.push('/config.js founderCheckoutUrl');
+    if(!/survivalKitCheckoutUrl:\s*['"]https:\/\/(?:buy\.stripe\.com|checkout\.stripe\.com)\//.test(config)){
+      failures.push('/config.js: a valid Stripe survivalKitCheckoutUrl is required for paid launch');
+    }else passed.push('/config.js survivalKitCheckoutUrl');
   }catch(error){ failures.push(`/config.js launch settings: ${error.message}`); }
   await checkLaunchCopy('/',{
     contains:['First 250 paid members','$29'],
@@ -128,6 +134,9 @@ if(launchMode){
   await checkLaunchCopy('/privacy.html',{
     contains:['Cloudflare','Resend','Stripe','90 days'],
     excludes:['before their material data collection is enabled']
+  });
+  await checkLaunchCopy('/survival-kit',{
+    contains:['Picky Eater Survival Kit','$19','14-day refund policy','secure download']
   });
 }
 
@@ -154,6 +163,9 @@ await checkApi('/api/founding-unsubscribe?token=invalid',{
   statuses:launchMode ? [400] : [400,503],headers:{'content-type':/text\/html/i,...noStore}
 });
 await checkApi('/api/account/data',{
+  statuses:launchMode ? [401] : [401,503],headers:jsonNoStore
+});
+await checkApi('/api/survival-kit-download',{
   statuses:launchMode ? [401] : [401,503],headers:jsonNoStore
 });
 await checkApi('/api/events',{
