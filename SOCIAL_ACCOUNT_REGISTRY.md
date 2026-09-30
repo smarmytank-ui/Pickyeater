@@ -17,10 +17,10 @@ Updated: September 30, 2026
 | Platform | Public name | Preferred username | Sign-up email | Business container | Status | Password vault item | Account ID / notes |
 |---|---|---|---|---|---|---|---|
 | Instagram | Food My Way | `@foodmywayapp` | `support@foodmyway.app` | Meta Business Portfolio | Not created | `Food My Way — Instagram` | Use a professional Business account |
-| Facebook | Food My Way | `@foodmywayapp` if available | Owner's Facebook login; business contact `support@foodmyway.app` | Meta Business Portfolio | Not created | `Food My Way — Meta` | Create a Page, not a separate personal profile |
-| Meta Business | Food My Way / TP Biz Op LLC | n/a | `support@foodmyway.app` | TP Biz Op LLC | Not created | `Food My Way — Meta` | Pacific time; USD; connect Page and Instagram |
+| Facebook | Food My Way | `@foodmywayapp` if available | Owner's private Facebook administrator; business contact `support@foodmyway.app` | Meta Business Portfolio | Awaiting owner decision on private administrator | `Food My Way — Meta` | A Page requires an authentic human administrator; the administrator is not shown publicly |
+| Meta Business | Food My Way / TP Biz Op LLC | n/a | `support@foodmyway.app` | TP Biz Op LLC | Awaiting owner decision on private administrator | `Food My Way — Meta` | Pacific time; USD; connect Page and Instagram |
 | TikTok | Food My Way | `@foodmywayapp` | `support@foodmyway.app` | TikTok Business Center | Existing Picky Eater account must be inspected first | `Food My Way — TikTok` | Decide whether to rename or create fresh before submission |
-| TikTok Business Center | Food My Way | n/a | `support@foodmyway.app` | TP Biz Op LLC | Not created | `Food My Way — TikTok Business` | Advertiser; United States; Pacific time; USD |
+| TikTok Business Center | Food My Way | n/a | `support@foodmyway.app` | TP Biz Op LLC | Registration form open; email/password not submitted | `Food My Way — TikTok Business` | Advertiser; United States; Pacific time; USD |
 
 ## Brand profile
 
