@@ -28,7 +28,7 @@ Updated: September 30, 2026
 Complete and record each item immediately after an account is created:
 
 - [ ] Owner email verified.
-- [ ] Authenticator-app two-factor authentication enabled.
+- [x] Meta two-factor authentication enabled for the Instagram-based administrator; the exact method still needs to be recorded privately.
 - [ ] Recovery codes stored in the named password-manager item.
 - [ ] Password-manager item uses a unique generated password.
 - [ ] Legal business name and country match TP Biz Op LLC records.
@@ -83,3 +83,4 @@ Record account creation date, exact account ID, linked assets, verification stat
 | 2026-09-30 | Meta | Portfolio ownership and public Page branding audited live | Instagram `@food_my_way_app` (ID `17841419124020938`) and Facebook Page `Food My Way app` (ID `1373971672467209`) are owned by TP Biz Op LLC; private administrator has full control and is not shown on the public Page | Connect the two assets; replace the Page's default profile image and blank cover; secure its username and public link |
 | 2026-09-30 | Meta | Business Info and Security Center audited live | Eligible for verification; legal name, address, phone, website, primary Page/location are blank; portfolio 2FA and passkey requirements are `No one`; owner is the only admin | Owner must approve transmitting legal/contact details and separately configure security controls; consider a second trusted admin only when one is explicitly chosen |
 | 2026-09-30 | TikTok | Business Center ownership and asset inventory audited live | One active owner with Admin and Finance Manager roles; one assigned advertiser account; 0 TikTok Business Accounts for Management, 0 TikTok Accounts as Ad Delivery Assets, 0 shops, and 0 pixels; billing setup still offered | Add/link the public Food My Way TikTok account before building ad drafts; payment setup and spend remain owner-controlled launch actions |
+| 2026-09-30 | Meta | Administrator passkey and two-factor authentication completed | Accounts Center lists a Windows Hello passkey for `support@foodmyway.app`; Business Security Center reports `0 out of 1` people still needing two-factor authentication | Allow the passkey status to synchronize; Business Security Center still reports `1 out of 1` people needing a passkey |

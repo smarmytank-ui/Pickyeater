@@ -21,10 +21,10 @@ This is the authoritative go/no-go ledger for the first Food My Way social launc
 - [x] Exact fallback handle `@food_my_way_app` secured and documented.
 - [x] Converted to professional Business account with the `Software Company` category; category display remains hidden.
 - [ ] Profile photo, name, bio, and Survival Kit link applied and verified publicly. The round PFP, display name `Food My Way app`, and bio are verified live; only the link remains.
-- [ ] Authenticator-app two-factor authentication enabled and recovery codes stored privately.
+- [x] Meta two-factor authentication enabled for the Instagram-based administrator; Meta Business Security Center reports `0 out of 1` people still needing two-factor authentication. The exact method and private recovery-code storage remain to be audited.
 - [x] Owned by the TP Biz Op LLC Meta Business Portfolio; account ID `17841419124020938` verified live.
 
-Current blocker: add `https://foodmyway.app/survival-kit` in the Instagram mobile app, enable Instagram two-factor authentication, and cross-connect the profile with the Food My Way Facebook Page.
+Current blocker: add `https://foodmyway.app/survival-kit` in the Instagram mobile app and cross-connect the profile with the Food My Way Facebook Page.
 
 ## Facebook and Meta
 
@@ -34,7 +34,8 @@ Current blocker: add `https://foodmyway.app/survival-kit` in the Instagram mobil
 - [x] Authentic private human administrator has full control without appearing on the public Food My Way Page.
 - [x] Food My Way Page and Instagram account are owned by the TP Biz Op LLC portfolio; their cross-connection remains.
 - [x] Meta ad account `Food My Way Ads` created under TP Biz Op LLC with account ID `1748503076238751`, Pacific Time, and USD. No payment method is attached and no spend is active.
-- [ ] Meta two-factor requirement enabled for people with portfolio access. Live Security Center currently shows `No one`; passkey requirement also shows `No one`.
+- [x] Meta two-factor requirement is satisfied for the sole administrator; live Security Center reports `0 out of 1` people still needing two-factor authentication.
+- [ ] Meta passkey requirement has synchronized. A Windows Hello passkey for `support@foodmyway.app` was verified in Accounts Center on September 30, 2026, but Business Security Center still reports `1 out of 1` people needing a passkey.
 
 Current blocker: connect the Facebook Page and Instagram profile, replace the Page's default profile image and blank cover, secure its username/link, and finish Meta legal verification/security. The authentic private Facebook administrator remains an internal ownership record and is not exposed on the public Page.
 
