@@ -68,6 +68,7 @@ Advertiser onboarding, two-step verification, and Business Center access are com
 - [x] Current application test suite passes: 126/126 tests on September 30, 2026.
 - [x] Live paid-launch verifier passes: 54/54 production checks against `https://foodmyway.app` on September 30, 2026, including the $19 Survival Kit page, Stripe configuration, authentication, protected download, refund/legal copy, and public/API routes.
 - [x] Meta and TikTok campaign names, budgets, targeting, placements, links, and stop rules documented.
+- [x] A privacy-minimized results and decision tracker is ready in `SOCIAL_TEST_SCORECARD.md`.
 - [x] Representative Meta and TikTok production URLs returned HTTP 200 with the Food My Way app shell and Survival Kit route.
 - [x] Maximum planned test is $135: Meta $45 plus TikTok $90.
 - [x] Third-party pixels, customer lists, child information, and food-preference targeting are excluded from test one.
