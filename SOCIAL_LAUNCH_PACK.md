@@ -28,6 +28,8 @@ Replace `PLATFORM` with `tiktok`, `instagram`, or `facebook`. Replace `CREATIVE`
 
 File: `output/video/01-four-safe-foods.mp4`
 
+Cover: `output/video/covers/01-four-safe-foods-cover.png`
+
 Creative code: `four_safe_foods`
 
 On-screen hook: **Four familiar foods. One realistic dinner.**
@@ -44,6 +46,8 @@ Suggested tags: `#PickyEater #EasyDinner #MealPlanning #FoodMyWay`
 
 File: `output/video/02-tacos-without-tomatoes.mp4`
 
+Cover: `output/video/covers/02-tacos-without-tomatoes-cover.png`
+
 Creative code: `taco_swap`
 
 On-screen hook: **Hate tomatoes? The tacos can stay.**
@@ -59,6 +63,8 @@ Suggested tags: `#IngredientSwap #TacoNight #PickyEating #FoodMyWay`
 ## Video 3 - Picky adults
 
 File: `output/video/03-picky-adults.mp4`
+
+Cover: `output/video/covers/03-picky-adults-cover.png`
 
 Creative code: `picky_adults`
 
@@ -94,6 +100,8 @@ Validated locally on September 30, 2026 with FFprobe. All three production files
 | `03-picky-adults.mp4` | 20.0 s | 1080×1920 at 30 fps | H.264, yuv420p | AAC stereo, 48 kHz | 3,346,331 bytes |
 
 These files use a 9:16 frame, broadly compatible codecs, and a short duration appropriate for Instagram Reels, Facebook Reels, and TikTok. Platform upload processing remains the final authoritative check.
+
+The three PNG cover frames were extracted at the one-second mark and visually inspected. Use them as the selected cover where the platform permits a custom Reel/video cover; confirm the profile-grid crop before publishing.
 
 ## Controlled paid test
 
