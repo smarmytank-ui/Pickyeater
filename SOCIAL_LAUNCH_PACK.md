@@ -92,14 +92,14 @@ Do not boost immediately. First require at least one of these organic signals:
 - at least five viewers ask for a meal, swap, or link;
 - at least one non-owner checkout starts.
 
-Then run a **$135 validation test**:
+Then run a **$135 validation test** that respects the platforms' different budget floors:
 
-- three creatives;
-- $15 per creative per day;
-- three days;
+- **Meta: $45 total** — one broad ad set at $15 per day for three days, with all three creatives rotating across Instagram and Facebook placements;
+- **TikTok: $90 total** — one broad ad group at $30 per day for three days, with all three creatives rotating in the ad group;
 - United States only;
-- start with adults 25-54 and broad targeting rather than sensitive health or diagnostic interests;
-- send traffic to the matching UTM link;
+- adults 25-54 with broad targeting rather than sensitive health or diagnostic interests;
+- traffic objective for the first privacy-minimized validation run, using the matching UTM link for each platform and creative;
+- do not install Meta or TikTok tracking pixels for this first test; use Food My Way's first-party events and Stripe's authoritative purchase ledger;
 - do not use customer food preferences or child information for ad targeting.
 
 Pause a creative after at least 1,000 impressions if it has no meaningful clicks. Do not scale the campaign until the funnel records a real purchase and the buyer can successfully download the kit.
@@ -112,4 +112,4 @@ Primary decision metrics:
 4. Food My Way app clicks from the kit page.
 5. Refunds and support issues.
 
-The $19 price leaves limited room for paid acquisition after Stripe fees and refunds. Treat the first spend as validation, not as a revenue forecast.
+The $19 price leaves limited room for paid acquisition after Stripe fees and refunds. Treat the first spend as validation, not as a revenue forecast. Adding third-party conversion pixels is a separate privacy decision that requires consent controls and updated disclosures before scaling.
