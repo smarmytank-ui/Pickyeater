@@ -41,7 +41,7 @@ Complete and record each item immediately after an account is created:
 
 | Platform | Public name | Preferred username | Sign-up email | Business container | Status | Password vault item | Account ID / notes |
 |---|---|---|---|---|---|---|---|
-| Instagram | Food My Way | `@foodmywayapp` | `support@foodmyway.app` | Meta Business Portfolio | Not created | `Food My Way — Instagram` | Use a professional Business account |
+| Instagram | Food My Way | `@foodmywayapp` (fallback `@tryfoodmyway`) | `support@foodmyway.app` | Meta Business Portfolio | Awaiting owner completion of private signup | `Food My Way — Instagram` | Create separately through Instagram account switcher; then convert to professional Business account |
 | Facebook | Food My Way | `@foodmywayapp` if available | Owner's private Facebook administrator; business contact `support@foodmyway.app` | Meta Business Portfolio | Awaiting owner decision on private administrator | `Food My Way — Meta` | A Page requires an authentic human administrator; the administrator is not shown publicly |
 | Meta Business | Food My Way / TP Biz Op LLC | n/a | `support@foodmyway.app` | TP Biz Op LLC | Awaiting owner decision on private administrator | `Food My Way — Meta` | Pacific time; USD; connect Page and Instagram |
 | TikTok | Food My Way | `@foodmywayapp` | `support@foodmyway.app` | TikTok Business Center | Existing Picky Eater account must be inspected first | `Food My Way — TikTok` | Decide whether to rename or create fresh before submission |
@@ -65,3 +65,4 @@ Record account creation date, exact account ID, linked assets, verification stat
 | 2026-09-30 | Meta | Public/private ownership model documented | Private human admin; Food My Way remains the public identity | Owner confirmation required before login/account creation |
 | 2026-09-30 | TikTok | Official Business signup form opened | Owner subsequently completed the login registration | Advertiser onboarding remains |
 | 2026-09-30 | TikTok | Business login created by owner; advertiser onboarding prepared | `https://foodmyway.app`; legal name `TP Biz Op LLC`; United States | Owner must select industry/spend range, enter phone, and approve final Continue submission |
+| 2026-09-30 | Instagram | Browser signup route inspected | Existing browser session contains unrelated accounts; direct signup redirects to those sessions | Owner should use Instagram app: Add Instagram account → Create new account; private password/code/DOB steps remain |
