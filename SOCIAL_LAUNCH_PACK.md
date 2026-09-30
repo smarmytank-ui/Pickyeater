@@ -83,6 +83,18 @@ Suggested tags: `#PickyAdult #SensoryFriendly #EasyMeals #FoodMyWay`
 
 The files contain a silent audio track so each platform can add an appropriate native or licensed sound without copyright risk. Do not add unlicensed music outside the platform.
 
+## Technical validation
+
+Validated locally on September 30, 2026 with FFprobe. All three production files are ready for vertical short-form upload:
+
+| File | Duration | Frame | Video | Audio | Size |
+|---|---:|---:|---|---|---:|
+| `01-four-safe-foods.mp4` | 20.0 s | 1080×1920 at 30 fps | H.264, yuv420p | AAC stereo, 48 kHz | 4,116,776 bytes |
+| `02-tacos-without-tomatoes.mp4` | 20.0 s | 1080×1920 at 30 fps | H.264, yuv420p | AAC stereo, 48 kHz | 4,146,589 bytes |
+| `03-picky-adults.mp4` | 20.0 s | 1080×1920 at 30 fps | H.264, yuv420p | AAC stereo, 48 kHz | 3,346,331 bytes |
+
+These files use a 9:16 frame, broadly compatible codecs, and a short duration appropriate for Instagram Reels, Facebook Reels, and TikTok. Platform upload processing remains the final authoritative check.
+
 ## Controlled paid test
 
 Do not boost immediately. First require at least one of these organic signals:
