@@ -43,14 +43,14 @@ Current blocker: complete Instagram first, then use Meta's **Continue with Insta
 - [x] TikTok for Business login created by owner.
 - [x] Website, legal business name, country, industry, spend range, phone, and business email populated.
 - [x] Time zone corrected to Los Angeles and currency verified as USD.
-- [ ] Human contact name corrected from the company name.
-- [ ] Optional Beta Tester Program enrollment removed.
-- [ ] Advertiser onboarding submitted and success state/account ID verified.
+- [x] Human contact name corrected from the company name.
+- [x] Optional Beta Tester Program enrollment removed.
+- [x] Advertiser onboarding submitted and success state/account ID verified (`7691373556810366996`).
 - [ ] TikTok Business Center ownership and linked advertiser account verified.
 - [ ] Food My Way public TikTok identity/handle, profile image, bio, and link configured.
 - [ ] Authenticator-app two-factor authentication enabled and recovery codes stored privately.
 
-Current blocker: owner action-time confirmation is required before transmitting the human contact name, opting out of the program, and clicking the final advertiser-account **Continue** button.
+Advertiser onboarding is complete. Remaining TikTok work is Business Center ownership/linking, public profile branding, and two-factor authentication; no campaign or payment method has been created.
 
 ## Launch content
 
@@ -73,9 +73,9 @@ Current blocker: owner action-time confirmation is required before transmitting 
 
 ## Go/no-go decision
 
-**NO-GO for public launch today.** Creative and campaign preparation are ready, but the social identities, security controls, business ownership links, and advertiser-account submissions are not yet fully completed and verified.
+**NO-GO for public launch today.** Creative, campaign preparation, and the TikTok advertiser account are ready, but the public social identities, security controls, and business ownership links are not yet fully completed and verified.
 
 The next two owner actions, in order:
 
-1. Reply `Confirm TikTok advertiser setup` so the prepared TikTok advertiser account can be finalized.
-2. Complete the private Food My Way Instagram signup and report `Instagram created`.
+1. Complete the private Food My Way Instagram signup and report `Instagram created`.
+2. Connect the finished Instagram account to Meta, then finish TikTok Business Center/profile ownership and security.

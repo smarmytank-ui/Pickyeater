@@ -45,7 +45,7 @@ Complete and record each item immediately after an account is created:
 | Facebook | Food My Way | `@foodmywayapp` if available | Owner's private Facebook administrator; business contact `support@foodmyway.app` | Meta Business Portfolio | Awaiting owner decision on private administrator | `Food My Way — Meta` | A Page requires an authentic human administrator; the administrator is not shown publicly |
 | Meta Business | Food My Way / TP Biz Op LLC | n/a | `support@foodmyway.app` | TP Biz Op LLC | Awaiting owner decision on private administrator | `Food My Way — Meta` | Pacific time; USD; connect Page and Instagram |
 | TikTok | Food My Way | `@foodmywayapp` | `support@foodmyway.app` | TikTok Business Center | Existing Picky Eater account must be inspected first | `Food My Way — TikTok` | Decide whether to rename or create fresh before submission |
-| TikTok Business Center / Ads Manager | Food My Way | n/a | `support@foodmyway.app` | TP Biz Op LLC | Advertiser onboarding fully populated; awaiting owner-approved cleanup and final Continue | `Food My Way — TikTok Business` | Website, legal name, industry, spend range, phone, Los Angeles time, and USD present; beta opt-in still checked |
+| TikTok Business Center / Ads Manager | Food My Way | n/a | `support@foodmyway.app` | TP Biz Op LLC | Advertiser account created; Business Center linking and security remain | `Food My Way — TikTok Business` | Advertiser ID `7691373556810366996`; Los Angeles time and USD; optional beta enrollment off; no campaign, payment method, or spend active |
 
 ## Brand profile
 
@@ -66,4 +66,5 @@ Record account creation date, exact account ID, linked assets, verification stat
 | 2026-09-30 | TikTok | Official Business signup form opened | Owner subsequently completed the login registration | Advertiser onboarding remains |
 | 2026-09-30 | TikTok | Business login created by owner; advertiser onboarding prepared | `https://foodmyway.app`; legal name `TP Biz Op LLC`; United States | Owner must select industry/spend range, enter phone, and approve final Continue submission |
 | 2026-09-30 | TikTok | Advertiser form audited and corrected | Industry and spend range selected by owner; Los Angeles time and USD verified | Confirm changing contact name to Paul Horvat, opting out of Beta Tester Program, and final Continue submission |
+| 2026-09-30 | TikTok | Advertiser onboarding submitted and verified | Advertiser ID `7691373556810366996`; account name `TP Biz Op LLC_adv`; beta enrollment off | Link/verify TikTok Business Center, configure the public profile, and enable two-factor authentication |
 | 2026-09-30 | Instagram | Browser signup route inspected | Existing browser session contains unrelated accounts; direct signup redirects to those sessions | Owner should use Instagram app: Add Instagram account → Create new account; private password/code/DOB steps remain |
