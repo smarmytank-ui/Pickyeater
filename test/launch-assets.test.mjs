@@ -90,6 +90,19 @@ test('canonical launch files consistently use foodmyway.app',async()=>{
   assert.match(robots,/https:\/\/foodmyway\.app\/sitemap\.xml/);
 });
 
+test('Survival Kit links render a complete branded social preview',async()=>{
+  const html=await read('survival-kit.html');
+  assert.match(html,/<meta property="og:type" content="website">/);
+  assert.match(html,/<meta property="og:title" content="The Picky Eater Survival Kit - Food My Way">/);
+  assert.match(html,/<meta property="og:url" content="https:\/\/foodmyway\.app\/survival-kit\.html">/);
+  assert.match(html,/<meta property="og:image" content="https:\/\/foodmyway\.app\/food-my-way-social\.png">/);
+  assert.match(html,/<meta property="og:image:alt" content="[^"]+">/);
+  assert.match(html,/<meta name="twitter:card" content="summary_large_image">/);
+  assert.match(html,/<meta name="twitter:title" content="The Picky Eater Survival Kit - Food My Way">/);
+  assert.match(html,/<meta name="twitter:description" content="[^"]+">/);
+  assert.match(html,/<meta name="twitter:image" content="https:\/\/foodmyway\.app\/food-my-way-social\.png">/);
+});
+
 test('sitemap legal and support pages have explicit canonical signals',async()=>{
   const [sitemap,privacy,support,terms,headers]=await Promise.all([
     read('sitemap.xml'),read('privacy.html'),read('support.html'),read('terms.html'),read('_headers')
