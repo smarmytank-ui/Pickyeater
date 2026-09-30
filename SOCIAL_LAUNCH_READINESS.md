@@ -18,13 +18,13 @@ This is the authoritative go/no-go ledger for the first Food My Way social launc
 ## Instagram
 
 - [x] Separate Food My Way Instagram account created and email verified.
-- [x] Exact fallback handle `@food_my_way_app` secured and documented.
+- [x] Preferred handle `@foodmywayapp` secured and verified publicly.
 - [x] Converted to professional Business account with the `Software Company` category; category display remains hidden.
-- [ ] Profile photo, name, bio, and Survival Kit link applied and verified publicly. The round PFP, display name `Food My Way app`, and bio are verified live; only the link remains.
+- [x] Profile photo, display name, bio, and Survival Kit link applied and verified publicly.
 - [x] Meta two-factor authentication enabled for the Instagram-based administrator; Meta Business Security Center reports `0 out of 1` people still needing two-factor authentication. The exact method and private recovery-code storage remain to be audited.
 - [x] Owned by the TP Biz Op LLC Meta Business Portfolio; account ID `17841419124020938` verified live.
 
-Current blocker: add `https://foodmyway.app/survival-kit` in the Instagram mobile app and cross-connect the profile with the Food My Way Facebook Page.
+Current blocker: cross-connect the profile with the Food My Way Facebook Page.
 
 ## Facebook and Meta
 
@@ -81,5 +81,5 @@ Advertiser onboarding, two-step verification, and Business Center access are com
 
 The next two owner actions, in order:
 
-1. In the Instagram mobile app, add `https://foodmyway.app/survival-kit` to the public profile.
-2. Report `Instagram link done` so the profile can be connected to Meta and secured with two-factor authentication.
+1. Approve connecting the Food My Way Instagram profile and Facebook Page in Meta.
+2. Approve applying the prepared profile image, cover, username, and public link to the Facebook Page.
