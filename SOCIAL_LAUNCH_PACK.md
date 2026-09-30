@@ -189,6 +189,8 @@ Nothing in this section authorizes spend. Build the campaigns in draft, verify t
 - [ ] Start/end dates, time zone, daily budgets, and the combined $135 expected maximum are visible on the review screens.
 - [ ] Owner confirms the exact payment method and publication of both campaigns at action time.
 
+Link validation performed September 30, 2026: representative Meta and TikTok URLs above each returned HTTP 200 from production with the Food My Way application shell and Survival Kit route present. Neither request encountered a server-side redirect, so its UTM query was not stripped in transit. Recheck in a real browser immediately before publication because client-side behavior and deployment state can change.
+
 ### Decision rule after three days
 
 - Do not extend the test automatically.
