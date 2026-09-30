@@ -33,10 +33,10 @@ Current blocker: add `https://foodmyway.app/survival-kit` in the Instagram mobil
 - [ ] TP Biz Op LLC Meta Business Portfolio created and fully verified. Business Suite is active, Instagram message access is enabled, and the portfolio is named `TP Biz Op LLC`; legal details and verification remain.
 - [ ] Authentic private human administrator has full control without appearing as the public brand.
 - [ ] Food My Way Page and Instagram account are owned by the portfolio.
-- [ ] Meta ad account created with Los Angeles time and USD.
+- [x] Meta ad account `Food My Way Ads` created under TP Biz Op LLC with account ID `1748503076238751`, Pacific Time, and USD. No payment method is attached and no spend is active.
 - [ ] Meta two-factor requirement enabled for people with portfolio access.
 
-Current blocker: add Instagram's mobile-only website link, then use Meta's **Continue with Instagram** route; Meta may still require the owner's authentic private Facebook profile for Page ownership, but that personal name must not be exposed as the public Page identity.
+Current blocker: complete the Facebook Page's public branding and username, add Instagram's mobile-only website link, connect the Instagram account to the portfolio, and finish Meta legal verification/security. The authentic private Facebook administrator remains an internal ownership record and must not appear as the public brand.
 
 ## TikTok
 
