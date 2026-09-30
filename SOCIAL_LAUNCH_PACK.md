@@ -161,6 +161,8 @@ Nothing in this section authorizes spend. Build the campaigns in draft, verify t
 
 ### TikTok draft
 
+- Account gate observed September 30, 2026: Ads Manager reports that the advertising-account contract is not yet in effect and disables Continue. Wait for TikTok's activation notice; do not create a replacement advertiser account.
+- Disable the simplified-flow **Rebate offer** before continuing. Its observed default was a seven-day $280 commitment, which is outside this plan's $90 maximum.
 - Campaign: `FMW_SK_TEST1_TRAFFIC_YYYYMMDD`
 - Objective: Traffic
 - Campaign budget optimization: off; use the ad-group budget below

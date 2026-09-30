@@ -52,7 +52,7 @@ Current blocker: connect the Facebook Page and Instagram profile, replace the Pa
 - [ ] Food My Way public TikTok identity/handle, profile image, bio, and link configured.
 - [x] Two-step verification enabled with email and text-message methods. An authenticator app and privately stored recovery codes remain recommended hardening.
 
-Advertiser onboarding, two-step verification, and Business Center access are complete. Live inventory reports 0 connected TikTok profiles, 0 ad-delivery assets, 0 shops, and 0 pixels. Remaining TikTok work is linking/configuring the public profile and preparing the campaign draft; no campaign or payment method has been created.
+Advertiser onboarding, two-step verification, and Business Center access are complete. Live inventory reports 0 connected TikTok profiles, 0 ad-delivery assets, 0 shops, and 0 pixels. The campaign builder currently reports that the advertising-account contract is not yet in effect and disables Continue. Its simplified flow also defaults to a seven-day rebate offer at $280; do not accept it because it exceeds the approved $90 TikTok test cap. Remaining TikTok work is linking/configuring the public profile and preparing the campaign draft after TikTok activates the contract; no campaign or payment method has been created.
 
 ## Launch content
 
@@ -72,7 +72,7 @@ Advertiser onboarding, two-step verification, and Business Center access are com
 - [x] Maximum planned test is $135: Meta $45 plus TikTok $90.
 - [x] Third-party pixels, customer lists, child information, and food-preference targeting are excluded from test one.
 - [ ] Organic-signal gate satisfied.
-- [ ] Campaign drafts built in both platforms and review screens audited.
+- [ ] Campaign drafts built in both platforms and review screens audited. TikTok currently blocks draft creation until its advertising-account contract takes effect.
 - [ ] Owner approves the exact payment methods and publication at action time.
 
 ## Go/no-go decision
