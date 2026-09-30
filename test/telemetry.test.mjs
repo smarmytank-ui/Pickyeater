@@ -53,6 +53,11 @@ test('retains the approved social profile campaign dimensions',()=>{
     details:{campaign_source:'instagram',campaign_creative:'link_in_bio'}
   });
   assert.deepEqual(event.details,{campaign_source:'instagram',campaign_creative:'link_in_bio'});
+  const paidMeta=normalizeTelemetryEvent({
+    event:'kit_page_viewed',sessionId,path:'/survival-kit',
+    details:{campaign_source:'meta',campaign_creative:'four_safe_foods'}
+  });
+  assert.deepEqual(paidMeta.details,{campaign_source:'meta',campaign_creative:'four_safe_foods'});
 });
 
 test('every literal browser event is accepted by the server contract',async()=>{

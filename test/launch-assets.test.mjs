@@ -108,6 +108,7 @@ test('Instagram and Facebook profile links retain campaign attribution',async()=
   const telemetry=await read('functions/_shared/telemetry.mjs');
   assert.match(script,/\['ig','instagram'\]/);
   assert.match(script,/\['fb','facebook'\]/);
+  assert.match(script,/allowedSources=new Set\(\[[^\]]*'meta'/);
   assert.match(script,/allowedCreatives=new Set\(\[[^\]]*'link_in_bio'/);
   assert.match(telemetry,/campaign_creative:new Set\(\[[^\]]*'link_in_bio'/);
 });

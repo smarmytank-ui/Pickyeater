@@ -1,7 +1,7 @@
 (()=>{
   const sessionId=crypto.randomUUID();
   const query=new URLSearchParams(location.search);
-  const allowedSources=new Set(['tiktok','instagram','facebook','organic']);
+  const allowedSources=new Set(['tiktok','instagram','facebook','meta','organic']);
   const sourceAliases=new Map([['ig','instagram'],['fb','facebook']]);
   const rawSource=String(query.get('utm_source') || '').toLowerCase();
   const campaignSource=sourceAliases.get(rawSource) || rawSource;
