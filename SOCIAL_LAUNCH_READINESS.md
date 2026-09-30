@@ -47,10 +47,11 @@ Current blocker: connect the Facebook Page and Instagram profile, replace the Pa
 - [x] Optional Beta Tester Program enrollment removed.
 - [x] Advertiser onboarding submitted and success state/account ID verified (`7691373556810366996`).
 - [x] TikTok Business Center access restored. Business Center `TP Biz Op LLC_bc_okmb61` (organization ID `7691373835622416405`) opens normally and reports one linked advertiser account.
+- [x] Ownership/access audited: one active owner has Admin and Finance Manager roles and one assigned advertiser account; no additional users or partners were observed.
 - [ ] Food My Way public TikTok identity/handle, profile image, bio, and link configured.
 - [x] Two-step verification enabled with email and text-message methods. An authenticator app and privately stored recovery codes remain recommended hardening.
 
-Advertiser onboarding, two-step verification, and Business Center access are complete. Remaining TikTok work is linking/configuring the public profile and preparing the campaign draft; no campaign or payment method has been created.
+Advertiser onboarding, two-step verification, and Business Center access are complete. Live inventory reports 0 connected TikTok profiles, 0 ad-delivery assets, 0 shops, and 0 pixels. Remaining TikTok work is linking/configuring the public profile and preparing the campaign draft; no campaign or payment method has been created.
 
 ## Launch content
 
