@@ -24,7 +24,11 @@ const APP_SHELL = [
   './picky-adults.html',
   './picky-kids.html',
   './sensory-friendly-meals.html',
-  './easy-weeknight-meals.html'
+  './easy-weeknight-meals.html',
+  './survival-kit.html',
+  './survival-kit.css',
+  './survival-kit-access.css',
+  './survival-kit.js'
 ];
 
 self.addEventListener('install', event=>{

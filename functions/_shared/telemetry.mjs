@@ -2,6 +2,7 @@ const ALLOWED_EVENTS=new Set([
   'page_view','client_error','beta_data_exported','weekly_plan_toggled','grocery_item_checked',
   'weekly_planner_opened','saved_recipe_opened','recipe_book_opened','recipe_shared','recipe_generated','recipe_imported',
   'recipe_saved','recipe_intent_recorded','founder_checkout_started','founder_checkout_returned','founder_interest_opened',
+  'kit_page_viewed','kit_checkout_started','kit_downloaded','kit_app_clicked',
   'founder_interest_saved','founder_interest_synced','taste_profile_opened','taste_profile_saved','local_data_deleted',
   'install_prompt_result','app_installed','premium_gate_viewed','grocery_shop_started',
   'grocery_shop_link_created','grocery_shop_failed','account_sign_in_requested',
@@ -15,7 +16,9 @@ const STRING_VALUES={
   outcome:new Set(['accepted','dismissed']),
   result:new Set(['success','cancel']),
   source:new Set(['runtime','promise']),
-  feature:new Set(['weekly_planning','household_profile','unlimited_saves','grocery_checkout'])
+  feature:new Set(['weekly_planning','household_profile','unlimited_saves','grocery_checkout']),
+  campaign_source:new Set(['tiktok','instagram','facebook','organic','unknown']),
+  campaign_creative:new Set(['four_safe_foods','taco_swap','picky_adults','unknown'])
 };
 
 export function normalizeTelemetryEvent(input){

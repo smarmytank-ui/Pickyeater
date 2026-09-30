@@ -25,3 +25,7 @@ database_id = "ea353c89-a43a-4918-aa01-2a97d543c575"
 binding = "ACCOUNTS"
 database_name = "food-my-way-accounts"
 database_id = "832f6e5b-5907-4aa4-987c-27b1ac4896de"
+
+[[r2_buckets]]
+binding = "KIT_FILES"
+bucket_name = "food-my-way-kit-files"

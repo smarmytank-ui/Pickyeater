@@ -13,6 +13,8 @@ export async function onRequestPost({request,env}){
   try{ input=await request.json(); }catch{ return json({error:'Invalid JSON request.'},400); }
   let email;
   try{ email=normalizeAccountEmail(input?.email); }catch(error){ return json({error:error.message},400); }
+  const returnTo=String(input?.returnTo || '');
+  const safeReturnTo=/^\/survival-kit\.html(?:\?download=1)?$/.test(returnTo) ? returnTo : '';
   const now=Math.floor(Date.now()/1000);
   try{
     await env.ACCOUNTS.batch([
@@ -50,6 +52,7 @@ export async function onRequestPost({request,env}){
     return json({error:'Cloud account origin is invalid.'},503);
   }
   link.searchParams.set('token',token);
+  if(safeReturnTo) link.searchParams.set('returnTo',safeReturnTo);
   let response;
   try{
     response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{

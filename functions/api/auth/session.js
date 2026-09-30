@@ -9,15 +9,19 @@ export async function onRequestGet({request,env}){
   catch{ return json({error:'Cloud accounts are temporarily unavailable.'},503); }
   if(!account) return json({authenticated:false,configured:true});
   let entitlement=null;
+  let entitlements=[];
   let entitlementUnavailable=false;
   if(env.PURCHASES){
     try{
-      const row=await env.PURCHASES.prepare("SELECT plan,status FROM entitlements WHERE email=?1 AND status='active' ORDER BY updated_at DESC LIMIT 1")
-        .bind(account.email).first();
-      if(row) entitlement={plan:row.plan,status:row.status};
+      const result=await env.PURCHASES.prepare("SELECT plan,status FROM entitlements WHERE email=?1 AND status='active' ORDER BY updated_at DESC")
+        .bind(account.email).all();
+      entitlements=(result?.results || []).map(row=>({plan:row.plan,status:row.status}));
+      entitlement=entitlements.find(item=>item.plan==='founding') || entitlements[0] || null;
     }catch{ entitlementUnavailable=true; }
   }
-  return json({authenticated:true,email:account.email,entitlement,entitlementUnavailable});
+  const body={authenticated:true,email:account.email,entitlement,entitlementUnavailable};
+  if(!entitlementUnavailable) body.entitlements=entitlements;
+  return json(body);
 }
 
 export async function onRequestPost({request,env}){

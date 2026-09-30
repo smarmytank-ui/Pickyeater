@@ -21,6 +21,16 @@ Stripe documents that metadata on a Payment Link is copied to the Checkout Sessi
 
 The app accepts only `buy.stripe.com` or `checkout.stripe.com` HTTPS URLs, preventing an accidental or malicious arbitrary checkout redirect.
 
+## Picky Eater Survival Kit checkout and delivery
+
+The Survival Kit is a separate one-time USD $19 digital product. Create its Stripe Payment Link with customer email collection, the same privacy/terms URLs, success URL `https://foodmyway.app/survival-kit.html?purchase=success`, and metadata `offer=food_my_way_survival_kit`. Put the resulting Stripe URL in `config.js` as `survivalKitCheckoutUrl` only after the live delivery path is verified.
+
+Apply `migrations/0007_survival_kit_entitlement.sql` to the production `PURCHASES` database before deploying code that accepts the new offer. The existing signed webhook then records `survival_kit` independently from the Founding entitlement and revokes the matching entitlement after a full refund.
+
+Create a private R2 bucket named `food-my-way-kit-files`, bind it as `KIT_FILES`, and upload the generated PDF with the exact object key `FoodMyWay-Picky-Eater-Survival-Kit.pdf`. Do not place the PDF in the public Pages repository. `GET /api/survival-kit-download` requires a valid Food My Way session for the checkout email and an active Survival Kit entitlement before it reads the object from R2.
+
+Before launch, complete a live controlled purchase, sign in using the checkout email, download and open the PDF, then issue a full refund and confirm that the same account receives HTTP 403 from the download endpoint. Remove any disposable QA records only after the refund event has been verified.
+
 ## Payment fulfillment
 
 `POST /api/stripe-webhook` verifies Stripe's signed raw request before recording access. It accepts only a paid, one-time USD $29 subtotal carrying the founding-offer metadata above. Tax may increase the final total; discounts, a different subtotal, or a total below the subtotal fail closed. Duplicate events are safe to replay.

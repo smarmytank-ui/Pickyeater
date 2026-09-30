@@ -1,4 +1,4 @@
-import { foundingEntitlementFromEvent, foundingRefundFromEvent, stripeSignatureIsValid } from '../_shared/stripe-webhook.mjs';
+import { paidEntitlementFromEvent, foundingRefundFromEvent, stripeSignatureIsValid } from '../_shared/stripe-webhook.mjs';
 
 function json(body,status=200){
   return new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store'}});
@@ -19,7 +19,7 @@ export async function onRequestPost({request,env}){
   if(!Number.isInteger(eventCreated) || eventCreated<=0) return json({error:'Stripe event is missing its creation time.'},400);
 
   let entitlement;
-  try{ entitlement=foundingEntitlementFromEvent(event); }catch(error){ return json({error:error.message},422); }
+  try{ entitlement=paidEntitlementFromEvent(event); }catch(error){ return json({error:error.message},422); }
   const refund=foundingRefundFromEvent(event);
   if(!entitlement && !refund) return json({received:true,handled:false});
 
@@ -29,14 +29,14 @@ export async function onRequestPost({request,env}){
       .bind(event.id,event.type,now)];
     if(entitlement){
       statements.push(env.PURCHASES.prepare(`INSERT INTO entitlements (email,plan,status,stripe_customer_id,stripe_session_id,stripe_payment_intent_id,amount,currency,stripe_event_created,created_at,updated_at)
-        SELECT ?1,'founding',?2,?3,?4,?5,?6,?7,?8,?9,?9
-        WHERE NOT EXISTS (SELECT 1 FROM refunded_payments WHERE stripe_payment_intent_id=?5 AND stripe_event_created>=?8)
+        SELECT ?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?10
+        WHERE NOT EXISTS (SELECT 1 FROM refunded_payments WHERE stripe_payment_intent_id=?6 AND stripe_event_created>=?9)
         ON CONFLICT(email,plan) DO UPDATE SET status=excluded.status, stripe_customer_id=excluded.stripe_customer_id,
         stripe_session_id=excluded.stripe_session_id, stripe_payment_intent_id=excluded.stripe_payment_intent_id,
         amount=excluded.amount, currency=excluded.currency, stripe_event_created=excluded.stripe_event_created, updated_at=excluded.updated_at
         WHERE entitlements.status!='refunded' AND excluded.stripe_event_created>=entitlements.stripe_event_created
           AND NOT EXISTS (SELECT 1 FROM refunded_payments WHERE stripe_payment_intent_id=excluded.stripe_payment_intent_id AND stripe_event_created>=excluded.stripe_event_created)`)
-        .bind(entitlement.email,entitlement.status,entitlement.stripeCustomerId,entitlement.stripeSessionId,
+        .bind(entitlement.email,entitlement.plan,entitlement.status,entitlement.stripeCustomerId,entitlement.stripeSessionId,
           entitlement.stripePaymentIntentId,entitlement.amount,entitlement.currency,eventCreated,now));
     }else{
       statements.push(env.PURCHASES.prepare(`INSERT INTO refunded_payments (stripe_payment_intent_id,stripe_event_created,created_at,updated_at)

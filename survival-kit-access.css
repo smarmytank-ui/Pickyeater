@@ -1,0 +1,1 @@
+.access form{display:grid;gap:10px}.access label{font-weight:900}.access input{width:100%;min-height:50px;border:1px solid var(--line);border-radius:13px;padding:11px 13px;font:inherit}.access form .button{border:0;cursor:pointer}.hidden{display:none!important}

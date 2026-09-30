@@ -26,16 +26,22 @@ export async function stripeSignatureIsValid(payload,header,secret,{now=Math.flo
   return signatures.some(signature=>timingSafeEqual(signature,expected));
 }
 
-export function foundingEntitlementFromEvent(event){
+const OFFERS={
+  food_my_way_founding:{plan:'founding',subtotal:2900,label:'Founding'},
+  food_my_way_survival_kit:{plan:'survival_kit',subtotal:1900,label:'Survival Kit'}
+};
+
+export function paidEntitlementFromEvent(event){
   if(!event || !['checkout.session.completed','checkout.session.async_payment_succeeded'].includes(event.type)) return null;
   const session=event.data?.object;
-  if(session?.metadata?.offer!=='food_my_way_founding') return null;
+  const offer=OFFERS[session?.metadata?.offer];
+  if(!offer) return null;
   if(session.mode!=='payment' || session.payment_status!=='paid') return null;
   const subtotal=Number(session.amount_subtotal);
   const total=Number(session.amount_total);
   const discount=Number(session.total_details?.amount_discount || 0);
-  if(session.currency!=='usd' || subtotal!==2900 || !Number.isInteger(total) || total<subtotal || discount!==0){
-    throw new Error('Founding payment amount does not match the configured offer.');
+  if(session.currency!=='usd' || subtotal!==offer.subtotal || !Number.isInteger(total) || total<subtotal || discount!==0){
+    throw new Error(`${offer.label} payment amount does not match the configured offer.`);
   }
   const email=String(session.customer_details?.email || session.customer_email || '').trim().toLowerCase();
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Paid checkout is missing a valid customer email.');
@@ -43,7 +49,7 @@ export function foundingEntitlementFromEvent(event){
   const stripePaymentIntentId=String(session.payment_intent || '').trim();
   if(!stripeSessionId || !stripePaymentIntentId) throw new Error('Paid checkout is missing the Stripe references required for fulfillment.');
   return {
-    email,
+    email,plan:offer.plan,
     stripeCustomerId:String(session.customer || ''),
     stripeSessionId,
     stripePaymentIntentId,
@@ -51,6 +57,11 @@ export function foundingEntitlementFromEvent(event){
     currency:session.currency,
     status:'active'
   };
+}
+
+export function foundingEntitlementFromEvent(event){
+  const entitlement=paidEntitlementFromEvent(event);
+  return entitlement?.plan==='founding' ? Object.fromEntries(Object.entries(entitlement).filter(([key])=>key!=='plan')) : null;
 }
 
 export function foundingRefundFromEvent(event){

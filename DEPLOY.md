@@ -10,7 +10,7 @@ Deploy the complete repository so icons, the web manifest, offline support, and 
 
 1. Push an approved commit and let the existing Cloudflare Pages project deploy the repository root. Pages Functions under `functions/` must be included; this is not a static-only GitHub Pages deployment.
 2. Keep the preview hostname protected with Cloudflare Access while testing. Connect `foodmyway.app` only when production launch gates pass.
-3. Apply every numbered migration in `migrations/` to its documented D1 database and configure the `LEADS`, `PURCHASES`, `TELEMETRY`, and `ACCOUNTS` bindings. Follow `CLOUD_ACCOUNTS.md`, `PAYMENTS_AND_LEADS.md`, and `TELEMETRY.md` for the binding-to-migration mapping.
+3. Apply every numbered migration in `migrations/` to its documented D1 database and configure the `LEADS`, `PURCHASES`, `TELEMETRY`, and `ACCOUNTS` bindings. The Survival Kit release also requires the private `KIT_FILES` R2 binding and exact PDF object key documented in `PAYMENTS_AND_LEADS.md`. Follow `CLOUD_ACCOUNTS.md`, `PAYMENTS_AND_LEADS.md`, and `TELEMETRY.md` for the binding-to-migration mapping.
 4. Configure secrets only in Cloudflare: Resend credentials and sender, the Stripe webhook secret, and the founding-list unsubscribe secret. Never put secrets in `config.js` or Git.
 5. Run `npm run verify:release` before deployment. CI runs the same syntax and behavioral checks on `main` and `picky-v2`.
 6. Run `node scripts/verify-deployment.mjs https://foodmyway.app` after every deployment. This checks the public funnel, security headers, assets, and fail-closed APIs without creating customer data.

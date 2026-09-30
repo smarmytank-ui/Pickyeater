@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { foundingEntitlementFromEvent, foundingRefundFromEvent, stripeSignatureIsValid } from '../functions/_shared/stripe-webhook.mjs';
+import { foundingEntitlementFromEvent, paidEntitlementFromEvent, foundingRefundFromEvent, stripeSignatureIsValid } from '../functions/_shared/stripe-webhook.mjs';
 
 async function signature(payload,secret,timestamp){
   const encoder=new TextEncoder();
@@ -39,6 +39,20 @@ test('rejects a mismatched founding price',()=>{
     customer_details:{email:'buyer@example.com'},metadata:{offer:'food_my_way_founding'}
   }}};
   assert.throws(()=>foundingEntitlementFromEvent(event),/amount/);
+});
+
+test('creates a separate entitlement for the exact paid Survival Kit offer',()=>{
+  const event={type:'checkout.session.completed',data:{object:{
+    id:'cs_kit',mode:'payment',payment_status:'paid',currency:'usd',amount_subtotal:1900,amount_total:1900,
+    customer:'cus_kit',payment_intent:'pi_kit',customer_details:{email:'KitBuyer@Example.com'},
+    metadata:{offer:'food_my_way_survival_kit'}
+  }}};
+  assert.deepEqual(paidEntitlementFromEvent(event),{
+    email:'kitbuyer@example.com',plan:'survival_kit',stripeCustomerId:'cus_kit',stripeSessionId:'cs_kit',
+    stripePaymentIntentId:'pi_kit',amount:1900,currency:'usd',status:'active'
+  });
+  assert.equal(foundingEntitlementFromEvent(event),null);
+  assert.throws(()=>paidEntitlementFromEvent({type:'checkout.session.completed',data:{object:{...event.data.object,amount_subtotal:2900,amount_total:2900}}}),/amount/);
 });
 
 test('accepts tax on top of the exact founding subtotal and rejects discounts',()=>{
