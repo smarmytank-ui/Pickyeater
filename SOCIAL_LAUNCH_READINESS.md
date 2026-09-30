@@ -28,7 +28,7 @@ Current blocker: add `https://foodmyway.app/survival-kit` in the Instagram mobil
 
 ## Facebook and Meta
 
-- [ ] Food My Way Facebook Page created.
+- [ ] Food My Way Facebook Page created. Page name, `Software Company` category, and approved bio are staged at Meta's final Create Page confirmation.
 - [ ] Page username secured, branding applied, and public About/contact data verified.
 - [ ] TP Biz Op LLC Meta Business Portfolio created and fully verified. Business Suite is active, Instagram message access is enabled, and the portfolio is named `TP Biz Op LLC`; legal details and verification remain.
 - [ ] Authentic private human administrator has full control without appearing as the public brand.
@@ -46,11 +46,11 @@ Current blocker: add Instagram's mobile-only website link, then use Meta's **Con
 - [x] Human contact name corrected from the company name.
 - [x] Optional Beta Tester Program enrollment removed.
 - [x] Advertiser onboarding submitted and success state/account ID verified (`7691373556810366996`).
-- [x] TikTok Business Center exists, requires two-step verification for all members, and reports one linked advertiser account. Business Center `TP Biz Op LLC_bc_okmb61`; organization ID `7691373835622416405`.
+- [ ] TikTok Business Center access restored. Business Center `TP Biz Op LLC_bc_okmb61` (organization ID `7691373835622416405`) currently stops at `2-step verification required`; a password reset did not satisfy this gate.
 - [ ] Food My Way public TikTok identity/handle, profile image, bio, and link configured.
 - [ ] Authenticator-app two-factor authentication enabled and recovery codes stored privately.
 
-Advertiser onboarding is complete. Remaining TikTok work is Business Center ownership/linking, public profile branding, and two-factor authentication; no campaign or payment method has been created.
+Advertiser onboarding is complete. Remaining TikTok work is enabling two-step verification in Account security, re-verifying Business Center ownership and advertiser linking, and configuring the public profile; no campaign or payment method has been created.
 
 ## Launch content
 
