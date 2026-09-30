@@ -125,3 +125,66 @@ Primary decision metrics:
 5. Refunds and support issues.
 
 The $19 price leaves limited room for paid acquisition after Stripe fees and refunds. Treat the first spend as validation, not as a revenue forecast. Adding third-party conversion pixels is a separate privacy decision that requires consent controls and updated disclosures before scaling.
+
+## Exact paid-test build sheet
+
+Nothing in this section authorizes spend. Build the campaigns in draft, verify the review screen, and obtain the owner's confirmation immediately before publishing.
+
+### Meta draft
+
+- Campaign: `FMW_SK_TEST1_TRAFFIC_YYYYMMDD`
+- Objective: Traffic
+- Buying type: Auction
+- Campaign budget: off; use the ad-set budget below
+- Special Ad Categories: none
+- Ad set: `US_25-54_BROAD_3D`
+- Geography: United States
+- Age: 25–54
+- Gender: all
+- Detailed targeting: none
+- Placements: Advantage+ placements, limited to Facebook and Instagram surfaces; exclude Audience Network if it is offered
+- Optimization: landing-page views when available; otherwise link clicks
+- Schedule: three complete 24-hour periods
+- Budget: $15/day; expected maximum scheduled budget $45
+- Ads:
+  - `FMW_FOUR_SAFE_FOODS` → `https://foodmyway.app/survival-kit?utm_source=meta&utm_medium=paid_social&utm_campaign=survival_kit_test1&utm_content=four_safe_foods`
+  - `FMW_TACO_SWAP` → `https://foodmyway.app/survival-kit?utm_source=meta&utm_medium=paid_social&utm_campaign=survival_kit_test1&utm_content=taco_swap`
+  - `FMW_PICKY_ADULTS` → `https://foodmyway.app/survival-kit?utm_source=meta&utm_medium=paid_social&utm_campaign=survival_kit_test1&utm_content=picky_adults`
+
+### TikTok draft
+
+- Campaign: `FMW_SK_TEST1_TRAFFIC_YYYYMMDD`
+- Objective: Traffic
+- Campaign budget optimization: off; use the ad-group budget below
+- Ad group: `US_25-54_BROAD_3D`
+- Geography: United States
+- Age: use the available adult bands that most closely cover 25–54
+- Gender: all
+- Interests/behaviors: none
+- Placement: TikTok only
+- Optimization: landing-page view when available; otherwise click
+- Schedule: three complete 24-hour periods
+- Budget: $30/day; expected maximum scheduled budget $90
+- Ads:
+  - `FMW_FOUR_SAFE_FOODS` → `https://foodmyway.app/survival-kit?utm_source=tiktok&utm_medium=paid_social&utm_campaign=survival_kit_test1&utm_content=four_safe_foods`
+  - `FMW_TACO_SWAP` → `https://foodmyway.app/survival-kit?utm_source=tiktok&utm_medium=paid_social&utm_campaign=survival_kit_test1&utm_content=taco_swap`
+  - `FMW_PICKY_ADULTS` → `https://foodmyway.app/survival-kit?utm_source=tiktok&utm_medium=paid_social&utm_campaign=survival_kit_test1&utm_content=picky_adults`
+
+### Pre-publish gate
+
+- [ ] Organic-signal gate above has been satisfied and recorded.
+- [ ] Every ad previews correctly in all enabled placements with no cropped headline or CTA.
+- [ ] Each destination opens the live Survival Kit page and retains all UTM parameters.
+- [ ] Stripe live mode, fulfillment, receipt, download link, and 14-day refund copy have been rechecked.
+- [ ] No pixel, SDK, customer list, child information, or food-preference data is attached to targeting.
+- [ ] Automated creative, targeting, audience expansion, and budget-increase options are disabled unless explicitly documented.
+- [ ] Start/end dates, time zone, daily budgets, and the combined $135 expected maximum are visible on the review screens.
+- [ ] Owner confirms the exact payment method and publication of both campaigns at action time.
+
+### Decision rule after three days
+
+- Do not extend the test automatically.
+- Record spend, impressions, video views, landing-page views, checkout starts, confirmed purchases, refunds, and support failures by platform and creative.
+- A purchase must be confirmed in Stripe; platform-reported conversions are not authoritative.
+- If there are no purchases, stop and revise the offer or landing page before buying more traffic.
+- If there is at least one verified purchase and fulfillment succeeds, calculate blended cost per purchase and review qualitative comments before deciding on a second test.
