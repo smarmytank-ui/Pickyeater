@@ -19,7 +19,7 @@ This positioning avoids competing as a generic recipe generator. The wedge is re
 - Founding Member: **$29 one time**, limited to the first 250 customers
 - Free: unlimited recipe creation and ingredient swaps, with up to three saved recipes
 - The live checkout, signed fulfillment webhook, passwordless account recovery, and Founding entitlement have passed a real-payment test.
-- The controlled refund-revocation test passed, production premium enforcement is live, and the strict paid-launch verifier passes all 43 checks.
+- The controlled refund-revocation test passed, production premium enforcement is live, all 126 automated tests pass, and the strict paid-launch verifier passes all 54 checks as of September 30, 2026.
 
 ### Planned recurring release after retention proof
 
