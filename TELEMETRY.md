@@ -32,7 +32,7 @@ Daily funnel counts:
 SELECT substr(created_at,1,10) AS day, event_name, count(*) AS events,
        count(DISTINCT session_id) AS sessions
 FROM product_events
-WHERE event_name IN ('page_view','recipe_generated','recipe_intent_recorded','recipe_saved','founder_interest_saved','founder_checkout_started','founder_checkout_returned','account_sign_in_requested','account_signed_in','cloud_backup_completed')
+WHERE event_name IN ('page_view','recipe_generated','recipe_intent_recorded','recipe_saved','founder_interest_saved','founder_checkout_started','founder_checkout_returned','kit_page_viewed','kit_checkout_started','kit_app_clicked','kit_downloaded','account_sign_in_requested','account_signed_in','cloud_backup_completed')
 GROUP BY day,event_name ORDER BY day DESC,event_name;
 ```
 
@@ -48,19 +48,33 @@ WHERE event_name='recipe_intent_recorded'
 GROUP BY day ORDER BY day DESC;
 ```
 
-Count paid founding orders and current recognized revenue from the authoritative purchase ledger:
+Survival Kit funnel by source and creative (the values are fixed allowlists, not arbitrary URLs or ad-platform identifiers):
 
 ```sql
-SELECT substr(created_at,1,10) AS purchase_day,
+SELECT substr(created_at,1,10) AS day,
+       json_extract(details,'$.campaign_source') AS source,
+       json_extract(details,'$.campaign_creative') AS creative,
+       event_name,
+       count(DISTINCT session_id) AS sessions
+FROM product_events
+WHERE event_name IN ('kit_page_viewed','kit_checkout_started','kit_app_clicked','kit_downloaded')
+GROUP BY day,source,creative,event_name
+ORDER BY day DESC,source,creative,event_name;
+```
+
+Count paid orders and current recognized revenue from the authoritative purchase ledger, split by offer:
+
+```sql
+SELECT substr(created_at,1,10) AS purchase_day, plan,
        count(*) AS paid_orders,
        sum(amount) / 100.0 AS gross_sales_usd,
        sum(CASE WHEN status='active' THEN amount ELSE 0 END) / 100.0 AS currently_active_sales_usd,
        sum(CASE WHEN status='refunded' THEN 1 ELSE 0 END) AS refunded_orders
 FROM entitlements
-GROUP BY purchase_day ORDER BY purchase_day DESC;
+GROUP BY purchase_day,plan ORDER BY purchase_day DESC,plan;
 ```
 
-Compare daily `founder_checkout_started` sessions with `paid_orders` for directional checkout conversion. They live in separate privacy-minimized databases and are intentionally not joined by email or another persistent person-level identifier. `account_signed_in` with `{"founding":true}` measures paid-member activation after purchase.
+Compare daily `founder_checkout_started` sessions with Founding `paid_orders`, and `kit_checkout_started` sessions with `survival_kit` orders, for directional checkout conversion. They live in separate privacy-minimized databases and are intentionally not joined by email or another persistent person-level identifier. `account_signed_in` with `{"founding":true}` measures paid-member activation after purchase; `kit_downloaded` measures Survival Kit fulfillment after authenticated access.
 
 Generic client-error rate:
 

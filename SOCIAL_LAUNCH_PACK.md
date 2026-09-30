@@ -20,7 +20,7 @@ Profile bio:
 
 Primary profile link during this campaign:
 
-`https://foodmyway.app/survival-kit.html?utm_source=PLATFORM&utm_campaign=survival_kit_launch&utm_content=CREATIVE`
+`https://foodmyway.app/survival-kit?utm_source=PLATFORM&utm_campaign=survival_kit_launch&utm_content=CREATIVE`
 
 Replace `PLATFORM` with `tiktok`, `instagram`, or `facebook`. Replace `CREATIVE` with the code listed below.
 
