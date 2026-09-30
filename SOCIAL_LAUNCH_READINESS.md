@@ -17,14 +17,14 @@ This is the authoritative go/no-go ledger for the first Food My Way social launc
 
 ## Instagram
 
-- [ ] Separate Food My Way Instagram account created and email verified.
-- [ ] Preferred handle `@foodmywayapp` or documented fallback secured.
+- [x] Separate Food My Way Instagram account created and email verified.
+- [x] Exact fallback handle `@food_my_way_app` secured and documented.
 - [ ] Converted to professional Business account.
 - [ ] Profile photo, name, bio, and Survival Kit link applied and verified publicly.
 - [ ] Authenticator-app two-factor authentication enabled and recovery codes stored privately.
 - [ ] Connected to the TP Biz Op LLC Meta Business Portfolio.
 
-Current blocker: owner must complete the private Instagram signup flow, including password, date-of-birth, verification code, and any CAPTCHA.
+Current blocker: action-time confirmation is required before publishing the prepared profile name, image, and bio. Instagram's web editor requires the profile link to be added in the mobile app.
 
 ## Facebook and Meta
 
@@ -36,7 +36,7 @@ Current blocker: owner must complete the private Instagram signup flow, includin
 - [ ] Meta ad account created with Los Angeles time and USD.
 - [ ] Meta two-factor requirement enabled for people with portfolio access.
 
-Current blocker: complete Instagram first, then use Meta's **Continue with Instagram** route; Meta may still require the owner's authentic private Facebook profile for Page ownership.
+Current blocker: finish Instagram branding and professional conversion, then use Meta's **Continue with Instagram** route; Meta may still require the owner's authentic private Facebook profile for Page ownership.
 
 ## TikTok
 
@@ -77,5 +77,5 @@ Advertiser onboarding is complete. Remaining TikTok work is Business Center owne
 
 The next two owner actions, in order:
 
-1. Complete the private Food My Way Instagram signup and report `Instagram created`.
-2. Connect the finished Instagram account to Meta, then finish TikTok Business Center/profile ownership and security.
+1. Reply `Confirm Instagram branding` so the prepared public profile changes can be published.
+2. Add the Survival Kit link in the Instagram mobile app, then connect the finished account to Meta.

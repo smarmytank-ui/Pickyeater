@@ -41,7 +41,7 @@ Complete and record each item immediately after an account is created:
 
 | Platform | Public name | Preferred username | Sign-up email | Business container | Status | Password vault item | Account ID / notes |
 |---|---|---|---|---|---|---|---|
-| Instagram | Food My Way | `@foodmywayapp` (fallback `@tryfoodmyway`) | `support@foodmyway.app` | Meta Business Portfolio | Awaiting owner completion of private signup | `Food My Way — Instagram` | Create separately through Instagram account switcher; then convert to professional Business account |
+| Instagram | Food My Way | `@food_my_way_app` | `support@foodmyway.app` | Meta Business Portfolio | Account created and email verified; public branding approval pending | `Food My Way — Instagram` | Exact handle verified in the live account; convert to professional Business account after branding |
 | Facebook | Food My Way | `@foodmywayapp` if available | Owner's private Facebook administrator; business contact `support@foodmyway.app` | Meta Business Portfolio | Awaiting owner decision on private administrator | `Food My Way — Meta` | A Page requires an authentic human administrator; the administrator is not shown publicly |
 | Meta Business | Food My Way / TP Biz Op LLC | n/a | `support@foodmyway.app` | TP Biz Op LLC | Awaiting owner decision on private administrator | `Food My Way — Meta` | Pacific time; USD; connect Page and Instagram |
 | TikTok | Food My Way | `@foodmywayapp` | `support@foodmyway.app` | TikTok Business Center | Existing Picky Eater account must be inspected first | `Food My Way — TikTok` | Decide whether to rename or create fresh before submission |
@@ -68,3 +68,4 @@ Record account creation date, exact account ID, linked assets, verification stat
 | 2026-09-30 | TikTok | Advertiser form audited and corrected | Industry and spend range selected by owner; Los Angeles time and USD verified | Confirm changing contact name to Paul Horvat, opting out of Beta Tester Program, and final Continue submission |
 | 2026-09-30 | TikTok | Advertiser onboarding submitted and verified | Advertiser ID `7691373556810366996`; account name `TP Biz Op LLC_adv`; beta enrollment off | Link/verify TikTok Business Center, configure the public profile, and enable two-factor authentication |
 | 2026-09-30 | Instagram | Browser signup route inspected | Existing browser session contains unrelated accounts; direct signup redirects to those sessions | Owner should use Instagram app: Add Instagram account → Create new account; private password/code/DOB steps remain |
+| 2026-09-30 | Instagram | Separate Food My Way account created and verified | Exact handle `@food_my_way_app`; durable business email used | Confirm public profile branding, then convert to Business and connect to Meta |
