@@ -37,7 +37,7 @@ Current blocker: cross-connect the profile with the Food My Way Facebook Page.
 - [x] Meta two-factor requirement is satisfied for the sole administrator; live Security Center reports `0 out of 1` people still needing two-factor authentication.
 - [ ] Meta passkey requirement has synchronized. A Windows Hello passkey for `support@foodmyway.app` was verified in Accounts Center on September 30, 2026, but Business Security Center still reports `1 out of 1` people needing a passkey.
 
-Current blocker: connect the Facebook Page and Instagram profile, replace the Page's default profile image and blank cover, secure its username/link, and finish Meta legal verification/security. The authentic private Facebook administrator remains an internal ownership record and is not exposed on the public Page.
+Current blocker: Meta still reports the administrator as missing a passkey even though Accounts Center shows a Windows Hello passkey. On September 30, 2026, both the Page's **Connect assets** control and Setup Guide's **Add Instagram** control were re-tested and remained inert while that warning was present. The owner has already approved connecting the Facebook Page and Instagram profile and applying the prepared Page branding; no additional approval is needed once Meta clears the security gate. The authentic private Facebook administrator remains an internal ownership record and is not exposed on the public Page.
 
 ## TikTok
 
@@ -80,7 +80,4 @@ Advertiser onboarding, two-step verification, and Business Center access are com
 
 **NO-GO for public launch today.** Creative, campaign preparation, and the TikTok advertiser account are ready, but the public social identities, security controls, and business ownership links are not yet fully completed and verified.
 
-The next two owner actions, in order:
-
-1. Approve connecting the Food My Way Instagram profile and Facebook Page in Meta.
-2. Approve applying the prepared profile image, cover, username, and public link to the Facebook Page.
+The remaining owner-only action is to make Meta recognize the passkey for the Instagram-based administrator. Connection and Facebook branding are already approved and can proceed immediately after Meta Security Center changes from `1 out of 1` to `0 out of 1` people needing a passkey.
