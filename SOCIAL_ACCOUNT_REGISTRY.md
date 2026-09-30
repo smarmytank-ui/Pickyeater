@@ -25,6 +25,7 @@ Updated: September 30, 2026
 ## Brand profile
 
 - Profile image: `food-my-way-pfp-512.png`
+- Facebook Page cover: `food-my-way-facebook-cover-v1.png`
 - Bio: `Start with foods you already like. Flexible recipes, simple swaps, and less mealtime stress. Try the app free ↓`
 - Profile link: `https://foodmyway.app/survival-kit`
 - Support contact: `support@foodmyway.app`
