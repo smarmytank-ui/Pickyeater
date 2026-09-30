@@ -19,12 +19,12 @@ This is the authoritative go/no-go ledger for the first Food My Way social launc
 
 - [x] Separate Food My Way Instagram account created and email verified.
 - [x] Exact fallback handle `@food_my_way_app` secured and documented.
-- [ ] Converted to professional Business account.
-- [ ] Profile photo, name, bio, and Survival Kit link applied and verified publicly.
+- [x] Converted to professional Business account with the `Software Company` category; category display remains hidden.
+- [ ] Profile photo, name, bio, and Survival Kit link applied and verified publicly. Bio is live; photo, display name, and link remain mobile-only actions.
 - [ ] Authenticator-app two-factor authentication enabled and recovery codes stored privately.
 - [ ] Connected to the TP Biz Op LLC Meta Business Portfolio.
 
-Current blocker: action-time confirmation is required before publishing the prepared profile name, image, and bio. Instagram's web editor requires the profile link to be added in the mobile app.
+Current blocker: Instagram's web interface published the bio but restricts the profile photo, display name, and profile link to the mobile app. Add the supplied round PFP, change the display name to `Food My Way`, and add the Survival Kit URL in the app.
 
 ## Facebook and Meta
 
@@ -36,7 +36,7 @@ Current blocker: action-time confirmation is required before publishing the prep
 - [ ] Meta ad account created with Los Angeles time and USD.
 - [ ] Meta two-factor requirement enabled for people with portfolio access.
 
-Current blocker: finish Instagram branding and professional conversion, then use Meta's **Continue with Instagram** route; Meta may still require the owner's authentic private Facebook profile for Page ownership.
+Current blocker: complete Instagram's three mobile-only profile fields, then use Meta's **Continue with Instagram** route; Meta may still require the owner's authentic private Facebook profile for Page ownership.
 
 ## TikTok
 
@@ -77,5 +77,5 @@ Advertiser onboarding is complete. Remaining TikTok work is Business Center owne
 
 The next two owner actions, in order:
 
-1. Reply `Confirm Instagram branding` so the prepared public profile changes can be published.
-2. Add the Survival Kit link in the Instagram mobile app, then connect the finished account to Meta.
+1. In the Instagram mobile app, add `food-my-way-pfp-512.png`, change the display name to `Food My Way`, and add `https://foodmyway.app/survival-kit`.
+2. Report `Instagram mobile branding done` so the public profile can be verified and connected to Meta.
