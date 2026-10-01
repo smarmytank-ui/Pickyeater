@@ -62,8 +62,10 @@ Advertiser onboarding, two-step verification, Business Center access, the dedica
 - [x] 1080×1920, 30 fps, H.264 video, AAC stereo audio verified with FFprobe.
 - [x] Three custom vertical cover images extracted and visually inspected.
 - [x] Hooks, captions, calls to action, hashtags, posting order, and UTM creative codes documented in `SOCIAL_LAUNCH_PACK.md`.
-- [ ] Launch videos uploaded as drafts to each completed platform.
+- [ ] Launch videos uploaded as drafts to each completed platform. Video 1 is fully staged in the live TikTok and Instagram composers; Facebook and Videos 2–3 remain to be staged.
 - [ ] Owner approves each first public post at action time.
+
+Video 1 staging was verified on September 30, 2026. TikTok has the 1080×1920 source, final caption, public visibility, comments enabled, reuse disabled, brand disclosure enabled, AI disclosure enabled, and a clean content-check result. Instagram has the same 9:16 source, custom cover, final caption, AI label enabled, like/view counts visible, and comments enabled. Neither composer has been submitted; both are intentionally waiting for separate owner approval immediately before `Post` / `Share`.
 
 ## Controlled first paid test
 
@@ -80,6 +82,6 @@ Advertiser onboarding, two-step verification, Business Center access, the dedica
 
 ## Go/no-go decision
 
-**READY FOR CONTROLLED ORGANIC SOFT LAUNCH AFTER FINAL POST STAGING; NOT READY FOR PAID CAMPAIGN PUBLICATION.** The product funnel, $19 Survival Kit, fulfillment, analytics, three launch creatives, Instagram identity, Meta ownership, and TikTok identity/security are verified. Remaining organic-launch gates are Facebook PFP/username/website/About QA, TikTok's mobile website-field audit, uploading each video as a platform draft, and owner approval immediately before the first public posts. The first upload is waiting at TikTok Studio for owner authorization to transmit the prepared video file.
+**READY FOR CONTROLLED ORGANIC SOFT LAUNCH AFTER FINAL POST STAGING; NOT READY FOR PAID CAMPAIGN PUBLICATION.** The product funnel, $19 Survival Kit, fulfillment, analytics, three launch creatives, Instagram identity, Meta ownership, and TikTok identity/security are verified. Remaining organic-launch gates are Facebook PFP/username/website/About QA, TikTok's mobile website-field audit, staging Facebook plus Videos 2–3, and owner approval immediately before the first public posts. Video 1 is fully staged in both TikTok and Instagram and is waiting at each platform's final publication control.
 
 Paid launch remains gated by real organic response, campaign review screens, exact payment-method approval, and TikTok's advertiser-contract activation. Business verification is optional at this stage. Do not attach payment methods, publish campaigns, accept TikTok's $280 rebate offer, or spend any money without the owner's action-time approval.
