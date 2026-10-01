@@ -79,6 +79,10 @@ export async function fatSecretRequest(env,method,params={},fetchImpl=fetch){
     signal:AbortSignal.timeout(12000)
   });
   const payload=await response.json().catch(()=>({}));
-  if(!response.ok || payload?.error) throw new Error('FatSecret request failed.');
+  if(!response.ok || payload?.error){
+    const code=cleanText(payload?.error?.code,20);
+    const providerMessage=cleanText(payload?.error?.message,160);
+    throw new Error(`FatSecret request failed${code ? ` (${code})` : ''}${providerMessage ? `: ${providerMessage}` : '.'}`);
+  }
   return payload;
 }
