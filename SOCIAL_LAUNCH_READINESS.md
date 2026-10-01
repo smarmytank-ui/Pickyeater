@@ -14,6 +14,7 @@ This is the authoritative go/no-go ledger for the first Food My Way social launc
 - [x] Facebook cover is ready: `food-my-way-facebook-cover-v1.png`.
 - [x] Cross-platform bio and primary profile link are documented in `SOCIAL_ACCOUNT_REGISTRY.md`.
 - [x] Passwords, OTPs, recovery codes, card data, and API secrets are excluded from the repository.
+- [x] Non-secret ownership, account IDs, recovery status, and private vault-reference fields are consolidated in `ACCOUNT_OWNERSHIP_REGISTRY.md`.
 
 ## Instagram
 
