@@ -26,6 +26,8 @@ This is the authoritative go/no-go ledger for the first Food My Way social launc
 
 Instagram is connected to the Food My Way Facebook Page. Remaining Instagram work is limited to routine launch-content preparation and final public QA.
 
+Public visitor-view QA on September 30, 2026 confirmed `@foodmywayapp`, display name `Food My Way app`, the round brand PFP, the approved bio, and the clickable `foodmyway.app/survival-kit` link. The profile showed no personal name and no published posts.
+
 ## Facebook and Meta
 
 - [x] Food My Way Facebook Page created under TP Biz Op LLC with page ID `1373971672467209`, category `Software Company`, and the approved bio.
@@ -55,6 +57,8 @@ Meta asset connection is complete. Meta confirmed that the Food My Way Facebook 
 - [x] Two-step verification enabled with email and text-message methods. An authenticator app and privately stored recovery codes remain recommended hardening.
 
 Advertiser onboarding, two-step verification, Business Center access, the dedicated public profile connection, PFP, and launch bio are complete. The correct profile is `@foodmyway.app`; earlier accidental links to established `@smarmytank` and `@1purpose_oc` accounts were removed without modifying those profiles. TikTok prevents another display-name change until Oct 7, 2026 and another username change until Oct 30, 2026. The campaign builder currently reports that the advertising-account contract is not yet in effect and disables Continue. Its simplified flow also defaults to a seven-day rebate offer at $280; do not accept it because it exceeds the approved $90 TikTok test cap. Remaining TikTok work is the timed rename, mobile website-field audit, first content, and campaign draft after TikTok activates the contract; no campaign or payment method has been created.
+
+Public visitor-view QA on September 30, 2026 confirmed the round brand PFP, display name `FoodMyWay.app`, handle `@foodmyway.app`, approved bio, zero published videos, and no personal-name exposure. No clickable website link was visible, so the mobile Business-profile website-field audit remains open.
 
 ## Launch content
 
