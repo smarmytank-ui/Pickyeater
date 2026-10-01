@@ -58,14 +58,14 @@ Advertiser onboarding, two-step verification, Business Center access, the dedica
 
 ## Launch content
 
-- [x] Three 20-second vertical launch videos rendered.
+- [x] Three 20-second vertical launch videos rendered, plus three separate narrated review masters.
 - [x] 1080×1920, 30 fps, H.264 video, AAC stereo audio verified with FFprobe.
 - [x] Three custom vertical cover images extracted and visually inspected.
 - [x] Hooks, captions, calls to action, hashtags, posting order, and UTM creative codes documented in `SOCIAL_LAUNCH_PACK.md`.
 - [ ] Launch videos uploaded as drafts to each completed platform. Video 1 is staged in the live TikTok and Instagram composers, but its source contains an intentionally silent audio track and must be replaced with an audible launch master before publication; Facebook and Videos 2–3 remain to be staged.
 - [ ] Owner approves each first public post at action time.
 
-Video 1 staging was verified on September 30, 2026. TikTok has the 1080×1920 source, final caption, public visibility, comments enabled, reuse disabled, brand disclosure enabled, AI disclosure enabled, and a clean content-check result. Instagram has the same 9:16 source, custom cover, final caption, AI label enabled, like/view counts visible, and comments enabled. Neither composer has been submitted. The owner correctly identified that the staged source is inaudible; `scripts/render-social-videos.ps1` confirms it was deliberately built with `anullsrc`. Both drafts are therefore held and must be replaced with audible masters before approval.
+Video 1 staging was verified on September 30, 2026. TikTok has the 1080×1920 source, final caption, public visibility, comments enabled, reuse disabled, brand disclosure enabled, AI disclosure enabled, and a clean content-check result. Instagram has the same 9:16 source, custom cover, final caption, AI label enabled, like/view counts visible, and comments enabled. Neither composer has been submitted. The owner correctly identified that the staged source is inaudible; `scripts/render-social-videos.ps1` confirms it was deliberately built with `anullsrc`. Both drafts are therefore held. Three audible review masters were rendered locally with original narration at `output/video/*-voiced.mp4`; FFprobe verifies 20-second H.264/AAC files with 48 kHz stereo audio, and volume analysis reports approximately -20.5 dB mean / -4.5 dB peak. Listening approval and replacement of the staged drafts remain required.
 
 ## Controlled first paid test
 

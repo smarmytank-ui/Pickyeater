@@ -26,7 +26,9 @@ Replace `PLATFORM` with `tiktok`, `instagram`, or `facebook`. Replace `CREATIVE`
 
 ## Video 1 - Four familiar foods
 
-File: `output/video/01-four-safe-foods.mp4`
+Review master: `output/video/01-four-safe-foods-voiced.mp4`
+
+Silent source (do not publish): `output/video/01-four-safe-foods.mp4`
 
 Cover: `output/video/covers/01-four-safe-foods-cover.png`
 
@@ -47,7 +49,7 @@ Suggested tags: `#PickyEater #EasyDinner #MealPlanning #FoodMyWay`
 Use these exact settings when staging the first organic post. Uploading and completing this sheet does not authorize the final **Post** action.
 
 - Account: `@foodmyway.app`
-- File: `output/video/01-four-safe-foods.mp4`
+- File after listening approval: `output/video/01-four-safe-foods-voiced.mp4`
 - Caption: `Four familiar foods. One realistic dinner. Start with what already works and change only what doesn't. Try Food My Way at foodmyway.app. #PickyEater #EasyDinner #MealPlanning #FoodMyWay`
 - Cover: choose the frame matching `output/video/covers/01-four-safe-foods-cover.png`; verify the profile-grid crop before posting
 - Visibility: Everyone
@@ -62,7 +64,9 @@ Policy reference checked September 30, 2026: TikTok's official [AI-generated con
 
 ## Video 2 - Tacos without tomatoes
 
-File: `output/video/02-tacos-without-tomatoes.mp4`
+Review master: `output/video/02-tacos-without-tomatoes-voiced.mp4`
+
+Silent source (do not publish): `output/video/02-tacos-without-tomatoes.mp4`
 
 Cover: `output/video/covers/02-tacos-without-tomatoes-cover.png`
 
@@ -80,7 +84,9 @@ Suggested tags: `#IngredientSwap #TacoNight #PickyEating #FoodMyWay`
 
 ## Video 3 - Picky adults
 
-File: `output/video/03-picky-adults.mp4`
+Review master: `output/video/03-picky-adults-voiced.mp4`
+
+Silent source (do not publish): `output/video/03-picky-adults.mp4`
 
 Cover: `output/video/covers/03-picky-adults-cover.png`
 
@@ -105,7 +111,7 @@ Suggested tags: `#PickyAdult #SensoryFriendly #EasyMeals #FoodMyWay`
 5. On day 7, compare landing-page views, checkout starts, app clicks, watch time, and comments asking for specific foods.
 6. Make the next three videos from the winning hook rather than inventing a new format.
 
-The files contain a silent audio track so each platform can add an appropriate native or licensed sound without copyright risk. Do not add unlicensed music outside the platform.
+The original files contain a silent audio track and are retained only as source masters. The `-voiced.mp4` review masters contain original narration produced locally and do not rely on unlicensed music. Listen to and approve each voiced master before replacing a staged draft or publishing it. Platform-native licensed music may be considered later, but it is not required for the narrated versions.
 
 ## Technical validation
 
