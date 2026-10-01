@@ -2350,6 +2350,100 @@ function quickAddDiaryEntry(){
   renderDiary();
 }
 
+let selectedFoodResult=null;
+
+function setFoodSearchStatus(message){
+  const status=document.getElementById('foodSearchStatus');
+  if(status) status.textContent=message;
+}
+
+function clearFoodServingPicker(){
+  selectedFoodResult=null;
+  const picker=document.getElementById('foodServingPicker');
+  if(picker){ picker.replaceChildren(); picker.classList.add('hidden'); }
+}
+
+async function chooseFoodResult(foodId){
+  clearFoodServingPicker();
+  setFoodSearchStatus('Loading servings…');
+  try{
+    const response=await fetch(`/api/food-search?food_id=${encodeURIComponent(foodId)}`,{headers:{accept:'application/json'}});
+    const payload=await response.json().catch(()=>({}));
+    if(!response.ok) throw new Error(payload.error || 'Nutrition details are unavailable.');
+    selectedFoodResult=payload.food;
+    const picker=document.getElementById('foodServingPicker');
+    const select=document.createElement('select');
+    select.id='foodServingSelect';
+    select.className='field';
+    select.setAttribute('aria-label',`Serving for ${payload.food.name}`);
+    payload.food.servings.forEach((serving,index)=>{
+      const option=document.createElement('option');
+      option.value=String(index);
+      option.textContent=`${serving.label} — ${Math.round(serving.calories)} cal`;
+      select.appendChild(option);
+    });
+    const label=document.createElement('label');
+    label.htmlFor=select.id;
+    label.textContent=`Choose a serving for ${payload.food.name}`;
+    const actions=document.createElement('div');
+    actions.className='food-serving-actions';
+    const add=document.createElement('button');
+    add.type='button'; add.className='btn'; add.textContent=`Add to ${activeMeal}`;
+    add.addEventListener('click',addSelectedFoodToDiary);
+    actions.append(select,add);
+    picker.append(label,actions);
+    picker.classList.remove('hidden');
+    setFoodSearchStatus(`${payload.food.servings.length} serving option${payload.food.servings.length===1 ? '' : 's'} found.`);
+    select.focus();
+  }catch(error){ setFoodSearchStatus(error.message || 'Food search is temporarily unavailable.'); }
+}
+
+function renderFoodSearchResults(foods){
+  const host=document.getElementById('foodSearchResults');
+  if(!host) return;
+  host.replaceChildren();
+  foods.forEach(food=>{
+    const button=document.createElement('button');
+    button.type='button'; button.className='food-result';
+    const copy=document.createElement('span'); copy.className='food-result-copy';
+    const name=document.createElement('span'); name.className='food-result-name'; name.textContent=food.name;
+    const meta=document.createElement('span'); meta.className='food-result-meta'; meta.textContent=[food.brand,food.description].filter(Boolean).join(' • ');
+    const action=document.createElement('span'); action.className='food-result-action'; action.textContent='Choose';
+    copy.append(name,meta); button.append(copy,action);
+    button.addEventListener('click',()=>chooseFoodResult(food.id));
+    host.appendChild(button);
+  });
+}
+
+async function searchFatSecret(event){
+  event?.preventDefault();
+  const input=document.getElementById('foodSearchInput');
+  const query=input?.value.trim() || '';
+  if(query.length<2){ setFoodSearchStatus('Enter at least two characters.'); input?.focus(); return; }
+  clearFoodServingPicker(); renderFoodSearchResults([]); setFoodSearchStatus('Searching foods…');
+  const button=document.getElementById('foodSearchButton'); if(button) button.disabled=true;
+  try{
+    const response=await fetch(`/api/food-search?q=${encodeURIComponent(query)}`,{headers:{accept:'application/json'}});
+    const payload=await response.json().catch(()=>({}));
+    if(!response.ok) throw new Error(payload.error || 'Food search is temporarily unavailable.');
+    renderFoodSearchResults(payload.foods || []);
+    setFoodSearchStatus(payload.foods?.length ? `${payload.foods.length} foods found. Choose one for serving details.` : 'No matching foods found. Try a brand or a simpler name.');
+  }catch(error){ setFoodSearchStatus(error.message || 'Food search is temporarily unavailable.'); }
+  finally{ if(button) button.disabled=false; }
+}
+
+function addSelectedFoodToDiary(){
+  const index=Number(document.getElementById('foodServingSelect')?.value || 0);
+  const serving=selectedFoodResult?.servings?.[index];
+  if(!selectedFoodResult || !serving) return;
+  const title=[selectedFoodResult.brand,selectedFoodResult.name].filter(Boolean).join(' — ');
+  if(!addEntryToDiary(activeMeal,{title,source:`FatSecret • ${serving.label}`,macros:{cal:serving.calories,p:serving.protein,c:serving.carbs,f:serving.fat},localOnly:true,time:new Date().toISOString()})) return;
+  renderDiary(); clearFoodServingPicker(); renderFoodSearchResults([]);
+  const input=document.getElementById('foodSearchInput'); if(input) input.value='';
+  setFoodSearchStatus(`${title} added to ${activeMeal}.`);
+  showToast(`Added to ${activeMeal}.`);
+}
+
 function showDiaryView(){
   const card = $('diaryCard');
   $('inputCard')?.classList.add('hidden');
@@ -2702,6 +2796,7 @@ function wireEvents(){
   document.getElementById('viewToday')?.addEventListener('click', ()=>setDiaryDay(0));
   document.getElementById('viewYesterday')?.addEventListener('click', ()=>setDiaryDay(-1));
   document.getElementById('qaAdd')?.addEventListener('click', quickAddDiaryEntry);
+  document.getElementById('foodSearchForm')?.addEventListener('submit',searchFatSecret);
   document.getElementById('closeSharedRecipe')?.addEventListener('click', ()=>{
     history.replaceState(null, '', location.pathname + location.search);
     $('sharedRecipeCard')?.classList.add('hidden');

@@ -1,10 +1,10 @@
-const CACHE_NAME = 'food-my-way-v2-66-4';
+const CACHE_NAME = 'food-my-way-v2-67-0';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=2.66.4',
-  './app.js?v=2.66.4',
-  './config.js?v=2.66.4',
+  './styles.css?v=2.67.0',
+  './app.js?v=2.67.0',
+  './config.js?v=2.67.0',
   './site.webmanifest',
   './picky-mark.svg',
   './favicon.ico',

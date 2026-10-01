@@ -1,10 +1,10 @@
 {
   "name": "food-my-way",
-  "version": "2.66.4",
+  "version": "2.67.0",
   "private": true,
   "scripts": {
     "test": "node --test",
-    "check": "node --check app.js && node --check service-worker.js && node --check functions/api/events.js && node --check functions/api/founding-interest.js && node --check functions/api/founding-unsubscribe.js && node --check functions/api/recipe-import.js && node --check functions/_shared/recipe-import.mjs && node --check functions/api/shop.js && node --check functions/api/stripe-webhook.js && node --check functions/api/auth/request.js && node --check functions/api/auth/consume.js && node --check functions/api/auth/session.js && node --check functions/api/account/data.js",
+    "check": "node --check app.js && node --check service-worker.js && node --check functions/api/events.js && node --check functions/api/founding-interest.js && node --check functions/api/founding-unsubscribe.js && node --check functions/api/recipe-import.js && node --check functions/_shared/recipe-import.mjs && node --check functions/api/shop.js && node --check functions/api/food-search.js && node --check functions/_shared/fatsecret.mjs && node --check functions/api/stripe-webhook.js && node --check functions/api/auth/request.js && node --check functions/api/auth/consume.js && node --check functions/api/auth/session.js && node --check functions/api/account/data.js",
     "verify:release": "npm run check && npm test",
     "verify:deployment": "node scripts/verify-deployment.mjs"
   }
