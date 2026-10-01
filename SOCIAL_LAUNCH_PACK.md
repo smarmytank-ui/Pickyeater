@@ -8,7 +8,7 @@ Use **Food My Way** as the brand on every platform. “Picky eater” describes 
 
 Preferred account names:
 
-- TikTok: `@foodmywayapp`
+- TikTok: current `@foodmyway.app`; request preferred `@foodmywayapp` after TikTok's username cooldown ends October 30, 2026
 - Instagram: `@foodmywayapp`
 - Facebook Page: `Food My Way`
 
@@ -41,6 +41,24 @@ Caption:
 CTA: **Try your four familiar foods at FoodMyWay.app.**
 
 Suggested tags: `#PickyEater #EasyDinner #MealPlanning #FoodMyWay`
+
+### TikTok day-1 staging sheet
+
+Use these exact settings when staging the first organic post. Uploading and completing this sheet does not authorize the final **Post** action.
+
+- Account: `@foodmyway.app`
+- File: `output/video/01-four-safe-foods.mp4`
+- Caption: `Four familiar foods. One realistic dinner. Start with what already works and change only what doesn't. Try Food My Way at foodmyway.app. #PickyEater #EasyDinner #MealPlanning #FoodMyWay`
+- Cover: choose the frame matching `output/video/covers/01-four-safe-foods-cover.png`; verify the profile-grid crop before posting
+- Visibility: Everyone
+- Comments: on, so viewers can submit their four familiar foods
+- Duet and Stitch: off for the first post; revisit after moderation workflow is proven
+- Branded-content disclosure: off; this is the owner's organic brand post, not third-party sponsored content
+- AI-generated-content label: **on**; the creative contains a realistic generated food image, and TikTok requires creators to label realistic AI-generated images, audio, and video
+- Music: none during staging; add only an in-platform licensed sound after reviewing the preview
+- Final gate: capture the full review screen and obtain owner confirmation immediately before **Post**
+
+Policy reference checked September 30, 2026: TikTok's official [AI-generated content guidance](https://support.tiktok.com/en/using-tiktok/creating-videos/ai-generated-content) requires labeling realistic AI-generated content and states that enabling the label does not affect distribution when the post otherwise follows its Community Guidelines.
 
 ## Video 2 - Tacos without tomatoes
 
