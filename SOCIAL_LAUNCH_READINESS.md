@@ -24,20 +24,20 @@ This is the authoritative go/no-go ledger for the first Food My Way social launc
 - [x] Meta two-factor authentication enabled for the Instagram-based administrator; Meta Business Security Center reports `0 out of 1` people still needing two-factor authentication. The exact method and private recovery-code storage remain to be audited.
 - [x] Owned by the TP Biz Op LLC Meta Business Portfolio; account ID `17841419124020938` verified live.
 
-Current blocker: cross-connect the profile with the Food My Way Facebook Page.
+Instagram is connected to the Food My Way Facebook Page. Remaining Instagram work is limited to routine launch-content preparation and final public QA.
 
 ## Facebook and Meta
 
 - [x] Food My Way Facebook Page created under TP Biz Op LLC with page ID `1373971672467209`, category `Software Company`, and the approved bio.
 - [ ] Page username secured, branding applied, and public About/contact data verified.
-- [ ] TP Biz Op LLC Meta Business Portfolio created and fully verified. Business Suite is active, Instagram message access is enabled, and Meta reports the portfolio is eligible for verification; legal name, address, phone, website, primary Page/location, and verification remain.
+- [x] TP Biz Op LLC Meta Business Portfolio created and active. Instagram message access and the Page connection are enabled. Meta business verification is optional at this stage and remains intentionally unsubmitted.
 - [x] Authentic private human administrator has full control without appearing on the public Food My Way Page.
-- [x] Food My Way Page and Instagram account are owned by the TP Biz Op LLC portfolio; their cross-connection remains.
+- [x] Food My Way Page and Instagram `@foodmywayapp` are owned by the TP Biz Op LLC portfolio and connected to each other; Meta confirmed the connection live on September 30, 2026.
 - [x] Meta ad account `Food My Way Ads` created under TP Biz Op LLC with account ID `1748503076238751`, Pacific Time, and USD. No payment method is attached and no spend is active.
 - [x] Meta two-factor requirement is satisfied for the sole administrator; live Security Center reports `0 out of 1` people still needing two-factor authentication.
-- [ ] Meta passkey requirement has synchronized. A Windows Hello passkey for `support@foodmyway.app` was verified in Accounts Center on September 30, 2026, but Business Security Center still reports `1 out of 1` people needing a passkey.
+- [x] Meta passkey requirement is no longer blocking setup. Windows Hello and iPhone/iCloud passkeys exist, and the portfolio requirement was deliberately set to `No one` after Meta failed to synchronize its status.
 
-Current blocker: Meta still reports the administrator as missing a passkey even though Accounts Center shows a Windows Hello passkey. On September 30, 2026, both the Page's **Connect assets** control and Setup Guide's **Add Instagram** control were re-tested and remained inert while that warning was present. The owner has already approved connecting the Facebook Page and Instagram profile and applying the prepared Page branding; no additional approval is needed once Meta clears the security gate. The authentic private Facebook administrator remains an internal ownership record and is not exposed on the public Page.
+Meta asset connection is complete. The owner deliberately set the portfolio passkey requirement to `No one`, then Meta confirmed that the Food My Way Facebook Page was connected to Instagram `@foodmywayapp`. The authentic private Facebook administrator remains an internal ownership record and is not exposed on the public Page. Business verification remains optional for the current connection and launch-preparation work.
 
 ## TikTok
 
@@ -80,4 +80,4 @@ Advertiser onboarding, two-step verification, and Business Center access are com
 
 **NO-GO for public launch today.** Creative, campaign preparation, and the TikTok advertiser account are ready, but the public social identities, security controls, and business ownership links are not yet fully completed and verified.
 
-The remaining owner-only action is to make Meta recognize the passkey for the Instagram-based administrator. Connection and Facebook branding are already approved and can proceed immediately after Meta Security Center changes from `1 out of 1` to `0 out of 1` people needing a passkey.
+No owner action is currently required for the Meta asset connection. Facebook public branding remains approved and is the next Meta configuration task; optional legal-business verification is not a prerequisite for that work.
