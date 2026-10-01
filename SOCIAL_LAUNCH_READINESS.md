@@ -67,6 +67,7 @@ Public visitor-view QA on September 30, 2026 confirmed the round brand PFP, disp
 - [x] 1080×1920, 30 fps, H.264 video, AAC stereo audio verified with FFprobe.
 - [x] Three custom vertical cover images extracted and visually inspected.
 - [x] Hooks, captions, calls to action, hashtags, posting order, and UTM creative codes documented in `SOCIAL_LAUNCH_PACK.md`.
+- [x] A single owner-facing watch/listen/sign-off packet for all three narrated masters is available in `SOCIAL_CONTENT_APPROVAL_PACKET.md`.
 - [ ] Launch videos uploaded as drafts to each completed platform. Video 1 is staged in the live TikTok and Instagram composers, but its source contains an intentionally silent audio track and must be replaced with an audible launch master before publication; Facebook and Videos 2–3 remain to be staged.
 - [ ] Owner approves each first public post at action time.
 
