@@ -29,7 +29,7 @@ Instagram is connected to the Food My Way Facebook Page. Remaining Instagram wor
 ## Facebook and Meta
 
 - [x] Food My Way Facebook Page created under TP Biz Op LLC with page ID `1373971672467209`, category `Software Company`, and the approved bio.
-- [ ] Page username secured, branding applied, and public About/contact data verified.
+- [ ] Page username secured, profile image applied, and public About/contact data verified. The approved Facebook cover image was published and verified live on September 30, 2026.
 - [x] TP Biz Op LLC Meta Business Portfolio created and active. Instagram message access and the Page connection are enabled. Meta business verification is optional at this stage and remains intentionally unsubmitted.
 - [x] Authentic private human administrator has full control without appearing on the public Food My Way Page.
 - [x] Food My Way Page and Instagram `@foodmywayapp` are owned by the TP Biz Op LLC portfolio and connected to each other; Meta confirmed the connection live on September 30, 2026.
