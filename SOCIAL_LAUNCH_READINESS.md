@@ -29,15 +29,15 @@ Instagram is connected to the Food My Way Facebook Page. Remaining Instagram wor
 ## Facebook and Meta
 
 - [x] Food My Way Facebook Page created under TP Biz Op LLC with page ID `1373971672467209`, category `Software Company`, and the approved bio.
-- [ ] Page username secured, profile image applied, and public About/contact data verified. The approved Facebook cover image was published and verified live on September 30, 2026.
+- [ ] Page username secured, profile image applied, and public About/contact data verified. Public QA on September 30, 2026 confirmed the approved cover and bio are live, but the profile image is still Facebook's default `F`, the Page URL is still numeric (`61595078755170`), and no public website field was visible.
 - [x] TP Biz Op LLC Meta Business Portfolio created and active. Instagram message access and the Page connection are enabled. Meta business verification is optional at this stage and remains intentionally unsubmitted.
 - [x] Authentic private human administrator has full control without appearing on the public Food My Way Page.
 - [x] Food My Way Page and Instagram `@foodmywayapp` are owned by the TP Biz Op LLC portfolio and connected to each other; Meta confirmed the connection live on September 30, 2026.
 - [x] Meta ad account `Food My Way Ads` created under TP Biz Op LLC with account ID `1748503076238751`, Pacific Time, and USD. No payment method is attached and no spend is active.
 - [x] Meta two-factor requirement is satisfied for the sole administrator; live Security Center reports `0 out of 1` people still needing two-factor authentication.
-- [x] Meta passkey requirement is no longer blocking setup. Windows Hello and iPhone/iCloud passkeys exist, and the portfolio requirement was deliberately set to `No one` after Meta failed to synchronize its status.
+- [ ] Meta passkey status is inconsistent. Windows Hello and iPhone/iCloud passkeys exist, but a September 30, 2026 live Security Center recheck shows the portfolio requirement as `Admins only` and reports `1 out of 1` administrator still needing a passkey.
 
-Meta asset connection is complete. The owner deliberately set the portfolio passkey requirement to `No one`, then Meta confirmed that the Food My Way Facebook Page was connected to Instagram `@foodmywayapp`. The authentic private Facebook administrator remains an internal ownership record and is not exposed on the public Page. Business verification remains optional for the current connection and launch-preparation work.
+Meta asset connection is complete. Meta confirmed that the Food My Way Facebook Page was connected to Instagram `@foodmywayapp`, and the authentic private Facebook administrator remains an internal ownership record that is not exposed on the public Page. The current Instagram-authenticated Business Suite session cannot access Page Settings and offers to send an access request; do not send it without owner approval. Business verification remains optional for the current connection and launch-preparation work. The passkey policy/status must be reconciled from the private Facebook administrator session.
 
 ## TikTok
 
