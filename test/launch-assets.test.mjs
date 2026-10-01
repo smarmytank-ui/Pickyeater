@@ -113,6 +113,24 @@ test('Instagram and Facebook profile links retain campaign attribution',async()=
   assert.match(telemetry,/campaign_creative:new Set\(\[[^\]]*'link_in_bio'/);
 });
 
+test('paid launch links use only campaign dimensions accepted by browser and server',async()=>{
+  const [pack,script,telemetry]=await Promise.all([
+    read('SOCIAL_LAUNCH_PACK.md'),read('survival-kit.js'),read('functions/_shared/telemetry.mjs')
+  ]);
+  const urls=[...pack.matchAll(/https:\/\/foodmyway\.app\/survival-kit\?utm_source=(meta|tiktok)&utm_medium=paid_social&utm_campaign=survival_kit_test1&utm_content=(four_safe_foods|taco_swap|picky_adults)/g)];
+  assert.equal(urls.length,6);
+  assert.deepEqual(new Set(urls.map(match=>match[1])),new Set(['meta','tiktok']));
+  assert.deepEqual(new Set(urls.map(match=>match[2])),new Set(['four_safe_foods','taco_swap','picky_adults']));
+  for(const value of ['meta','tiktok']){
+    assert.match(script,new RegExp(`allowedSources=new Set\\(\\[[^\\]]*'${value}'`));
+    assert.match(telemetry,new RegExp(`campaign_source:new Set\\(\\[[^\\]]*'${value}'`));
+  }
+  for(const value of ['four_safe_foods','taco_swap','picky_adults']){
+    assert.match(script,new RegExp(`allowedCreatives=new Set\\(\\[[^\\]]*'${value}'`));
+    assert.match(telemetry,new RegExp(`campaign_creative:new Set\\(\\[[^\\]]*'${value}'`));
+  }
+});
+
 test('sitemap legal and support pages have explicit canonical signals',async()=>{
   const [sitemap,privacy,support,terms,headers]=await Promise.all([
     read('sitemap.xml'),read('privacy.html'),read('support.html'),read('terms.html'),read('_headers')

@@ -60,6 +60,31 @@ test('retains the approved social profile campaign dimensions',()=>{
   assert.deepEqual(paidMeta.details,{campaign_source:'meta',campaign_creative:'four_safe_foods'});
 });
 
+test('accepts every approved paid-social source and creative combination',()=>{
+  const sources=['meta','tiktok'];
+  const creatives=['four_safe_foods','taco_swap','picky_adults'];
+  for(const campaign_source of sources){
+    for(const campaign_creative of creatives){
+      const event=normalizeTelemetryEvent({
+        event:'kit_page_viewed',sessionId,path:'/survival-kit',
+        details:{campaign_source,campaign_creative}
+      });
+      assert.deepEqual(event.details,{campaign_source,campaign_creative});
+    }
+  }
+});
+
+test('drops unapproved paid-social attribution instead of retaining arbitrary query data',()=>{
+  const event=normalizeTelemetryEvent({
+    event:'kit_checkout_started',sessionId,path:'/survival-kit?utm_source=private',
+    details:{
+      campaign_source:'search_partner',campaign_creative:'customer_email',
+      utm_campaign:'secret-campaign',email:'buyer@example.com',url:'https://example.com/private'
+    }
+  });
+  assert.deepEqual(event,{event:'kit_checkout_started',sessionId,path:'/survival-kit',details:{}});
+});
+
 test('every literal browser event is accepted by the server contract',async()=>{
   const script=await readFile(path.join(root,'app.js'),'utf8');
   const events=[...new Set([...script.matchAll(/track\('([^']+)'/g)].map(match=>match[1]))];
