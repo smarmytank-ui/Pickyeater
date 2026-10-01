@@ -38,9 +38,9 @@ Public visitor-view QA on September 30, 2026 confirmed `@foodmywayapp`, display 
 - [x] Food My Way Page and Instagram `@foodmywayapp` are owned by the TP Biz Op LLC portfolio and connected to each other; Meta confirmed the connection live on September 30, 2026.
 - [x] Meta ad account `Food My Way Ads` created under TP Biz Op LLC with account ID `1748503076238751`, Pacific Time, and USD. No payment method is attached and no spend is active.
 - [x] Meta two-factor requirement is satisfied for the sole administrator; live Security Center reports `0 out of 1` people still needing two-factor authentication.
-- [ ] Meta passkey status is inconsistent. Windows Hello and iPhone/iCloud passkeys exist, but a September 30, 2026 live Security Center recheck shows the portfolio requirement as `Admins only` and reports `1 out of 1` administrator still needing a passkey.
+- [x] Meta passkey requirement is no longer blocking setup. A live October 1, 2026 Security Center recheck shows the portfolio requirement as `No one`; two-factor authentication remains `Admins only` with `0 out of 1` administrators pending.
 
-Meta asset connection is complete. Meta confirmed that the Food My Way Facebook Page was connected to Instagram `@foodmywayapp`, and the authentic private Facebook administrator remains an internal ownership record that is not exposed on the public Page. The current Instagram-authenticated Business Suite session cannot access Page Settings and offers to send an access request; do not send it without owner approval. Business verification remains optional for the current connection and launch-preparation work. The passkey policy/status must be reconciled from the private Facebook administrator session.
+Meta asset connection is complete. Meta confirmed that the Food My Way Facebook Page was connected to Instagram `@foodmywayapp`, and the authentic private Facebook administrator remains an internal ownership record that is not exposed on the public Page. On October 1, 2026, the Instagram-authenticated Business Suite session remained unable to access Page Settings and an access request was sent to the full-control portfolio owner. That request is pending. Business verification remains optional for the current connection and launch-preparation work.
 
 ## TikTok
 
