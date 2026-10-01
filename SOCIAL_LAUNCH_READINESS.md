@@ -49,10 +49,10 @@ Meta asset connection is complete. The owner deliberately set the portfolio pass
 - [x] Advertiser onboarding submitted and success state/account ID verified (`7691373556810366996`).
 - [x] TikTok Business Center access restored. Business Center `TP Biz Op LLC_bc_okmb61` (organization ID `7691373835622416405`) opens normally and reports one linked advertiser account.
 - [x] Ownership/access audited: one active owner has Admin and Finance Manager roles and one assigned advertiser account; no additional users or partners were observed.
-- [ ] Food My Way public TikTok identity/handle, profile image, bio, and link configured.
+- [ ] Food My Way public TikTok profile exists and is correctly linked to TP Biz Op LLC. Current public identity is `FoodMyWay.app` / `@foodmyway.app`; profile image, approved display name, preferred `@foodmywayapp` handle, bio, and link remain to be configured.
 - [x] Two-step verification enabled with email and text-message methods. An authenticator app and privately stored recovery codes remain recommended hardening.
 
-Advertiser onboarding, two-step verification, and Business Center access are complete. Live inventory reports 0 connected TikTok profiles, 0 ad-delivery assets, 0 shops, and 0 pixels. The campaign builder currently reports that the advertising-account contract is not yet in effect and disables Continue. Its simplified flow also defaults to a seven-day rebate offer at $280; do not accept it because it exceeds the approved $90 TikTok test cap. Remaining TikTok work is linking/configuring the public profile and preparing the campaign draft after TikTok activates the contract; no campaign or payment method has been created.
+Advertiser onboarding, two-step verification, Business Center access, and the dedicated public profile connection are complete. The correct profile is `@foodmyway.app`; earlier accidental links to established `@smarmytank` and `@1purpose_oc` accounts were removed without modifying those profiles. The campaign builder currently reports that the advertising-account contract is not yet in effect and disables Continue. Its simplified flow also defaults to a seven-day rebate offer at $280; do not accept it because it exceeds the approved $90 TikTok test cap. Remaining TikTok work is public-profile branding and preparing the campaign draft after TikTok activates the contract; no campaign or payment method has been created.
 
 ## Launch content
 
