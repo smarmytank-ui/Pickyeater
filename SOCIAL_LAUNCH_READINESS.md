@@ -80,6 +80,6 @@ Advertiser onboarding, two-step verification, Business Center access, the dedica
 
 ## Go/no-go decision
 
-**NO-GO for public launch today.** Creative, campaign preparation, and the TikTok advertiser account are ready, but the public social identities, security controls, and business ownership links are not yet fully completed and verified.
+**READY FOR CONTROLLED ORGANIC SOFT LAUNCH AFTER FINAL POST STAGING; NOT READY FOR PAID CAMPAIGN PUBLICATION.** The product funnel, $19 Survival Kit, fulfillment, analytics, three launch creatives, Instagram identity, Meta ownership, and TikTok identity/security are verified. Remaining organic-launch gates are Facebook PFP/username/website/About QA, TikTok's mobile website-field audit, uploading each video as a platform draft, and owner approval immediately before the first public posts. The first upload is waiting at TikTok Studio for owner authorization to transmit the prepared video file.
 
-No owner action is currently required for the Meta asset connection. Facebook public branding remains approved and is the next Meta configuration task; optional legal-business verification is not a prerequisite for that work.
+Paid launch remains gated by real organic response, campaign review screens, exact payment-method approval, and TikTok's advertiser-contract activation. Business verification is optional at this stage. Do not attach payment methods, publish campaigns, accept TikTok's $280 rebate offer, or spend any money without the owner's action-time approval.
