@@ -15,6 +15,14 @@ export function normalizeSearchQuery(value){
   return query;
 }
 
+export function normalizeBarcode(value){
+  const barcode=String(value ?? '').replace(/[\s-]/g,'');
+  if(!/^\d+$/.test(barcode) || ![8,12,13].includes(barcode.length)){
+    throw new Error('Enter an 8, 12, or 13 digit barcode.');
+  }
+  return barcode.padStart(13,'0');
+}
+
 export function normalizeFoodSummary(food){
   return {
     id:cleanText(food?.food_id,40),

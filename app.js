@@ -2423,9 +2423,23 @@ async function searchFatSecret(event){
   clearFoodServingPicker(); renderFoodSearchResults([]); setFoodSearchStatus('Searching foods…');
   const button=document.getElementById('foodSearchButton'); if(button) button.disabled=true;
   try{
-    const response=await fetch(`/api/food-search?q=${encodeURIComponent(query)}`,{headers:{accept:'application/json'}});
+    const barcode=query.replace(/[\s-]/g,'');
+    const isBarcode=/^\d+$/.test(barcode) && [8,12,13].includes(barcode.length);
+    const response=await fetch(isBarcode ? `/api/food-search?barcode=${encodeURIComponent(barcode)}` : `/api/food-search?q=${encodeURIComponent(query)}`,{headers:{accept:'application/json'}});
     const payload=await response.json().catch(()=>({}));
     if(!response.ok) throw new Error(payload.error || 'Food search is temporarily unavailable.');
+    if(payload.food){
+      selectedFoodResult=payload.food;
+      const picker=document.getElementById('foodServingPicker');
+      const select=document.createElement('select');
+      select.id='foodServingSelect'; select.className='field'; select.setAttribute('aria-label',`Serving for ${payload.food.name}`);
+      payload.food.servings.forEach((serving,index)=>{ const option=document.createElement('option'); option.value=String(index); option.textContent=`${serving.label} — ${Math.round(serving.calories)} cal`; select.appendChild(option); });
+      const label=document.createElement('label'); label.htmlFor=select.id; label.textContent=`Choose a serving for ${payload.food.name}`;
+      const actions=document.createElement('div'); actions.className='food-serving-actions';
+      const add=document.createElement('button'); add.type='button'; add.className='btn'; add.textContent=`Add to ${activeMeal}`; add.addEventListener('click',addSelectedFoodToDiary);
+      actions.append(select,add); picker.append(label,actions); picker.classList.remove('hidden');
+      setFoodSearchStatus(`Barcode matched ${payload.food.name}. Choose a serving.`); select.focus(); return;
+    }
     renderFoodSearchResults(payload.foods || []);
     setFoodSearchStatus(payload.foods?.length ? `${payload.foods.length} foods found. Choose one for serving details.` : 'No matching foods found. Try a brand or a simpler name.');
   }catch(error){ setFoodSearchStatus(error.message || 'Food search is temporarily unavailable.'); }

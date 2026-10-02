@@ -1,11 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeFoodDetail, normalizeFoodSummary, normalizeSearchQuery } from '../functions/_shared/fatsecret.mjs';
+import { normalizeBarcode, normalizeFoodDetail, normalizeFoodSummary, normalizeSearchQuery } from '../functions/_shared/fatsecret.mjs';
 
 test('food search queries are bounded and normalized',()=>{
   assert.equal(normalizeSearchQuery('  grilled   chicken  '),'grilled chicken');
   assert.throws(()=>normalizeSearchQuery('x'),/two characters/);
   assert.equal(normalizeSearchQuery('a'.repeat(100)).length,80);
+});
+
+test('UPC and EAN barcodes normalize to FatSecret GTIN-13',()=>{
+  assert.equal(normalizeBarcode('012345678905'),'0012345678905');
+  assert.equal(normalizeBarcode('9638-5074'),'0000096385074');
+  assert.equal(normalizeBarcode('4006381333931'),'4006381333931');
+  assert.throws(()=>normalizeBarcode('1234567890'),/8, 12, or 13 digit/);
 });
 
 test('FatSecret search results expose only diary-safe fields',()=>{
