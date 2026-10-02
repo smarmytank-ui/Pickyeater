@@ -12,6 +12,15 @@ test('narrated launch assets match the locked manifest',async()=>{
   assert.deepEqual(await verifySocialAssets(),{count:3,publicationAuthorized:false});
 });
 
+test('private review page exposes every narrated master and no silent source',async()=>{
+  const manifest=JSON.parse(await readFile(path.join(root,'SOCIAL_ASSET_MANIFEST.json'),'utf8'));
+  const review=await readFile(path.join(root,'SOCIAL_VIDEO_REVIEW.html'),'utf8');
+  for(const asset of manifest.assets) assert.match(review,new RegExp(asset.file.replaceAll('.','\\.')));
+  const videoSources=[...review.matchAll(/<video[^>]+src="([^"]+)"/g)].map(match=>match[1]);
+  assert.equal(videoSources.length,manifest.assets.length);
+  assert.ok(videoSources.every(source=>source.endsWith('-voiced.mp4')));
+});
+
 test('verification fails closed when publication or an asset changes',async()=>{
   const fixture=await mkdtemp(path.join(tmpdir(),'food-my-way-social-'));
   const manifest=JSON.parse(await readFile(path.join(root,'SOCIAL_ASSET_MANIFEST.json'),'utf8'));
