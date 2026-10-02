@@ -1,6 +1,6 @@
 # Food My Way social launch readiness
 
-Updated: September 30, 2026
+Updated: October 2, 2026
 
 This is the authoritative go/no-go ledger for the first Food My Way social launch. A checked box requires direct evidence; plans and intended actions do not count.
 
@@ -42,6 +42,8 @@ Public visitor-view QA on September 30, 2026 confirmed `@foodmywayapp`, display 
 
 Meta asset connection is complete. Meta confirmed that the Food My Way Facebook Page was connected to Instagram `@foodmywayapp`, and the authentic private Facebook administrator remains an internal ownership record that is not exposed on the public Page. On October 1, 2026, the Instagram-authenticated Business Suite session remained unable to access Page Settings and an access request was sent to the full-control portfolio owner. That request is pending. Business verification remains optional for the current connection and launch-preparation work.
 
+Live recheck on October 2, 2026: the public Page still shows the branded cover, approved bio, `Software Company` category, zero followers, and Facebook's default `F` profile image. Meta Business Settings still redirects the Instagram-authenticated identity to `Your request is pending`, citing the October 1 Settings-access request. No public-setting changes are safe from this session until the private Facebook administrator reconciles that request.
+
 ## TikTok
 
 - [x] TikTok for Business login created by owner.
@@ -60,6 +62,8 @@ Meta asset connection is complete. Meta confirmed that the Food My Way Facebook 
 Advertiser onboarding, two-step verification, Business Center access, the dedicated public profile connection, PFP, and launch bio are complete. The correct profile is `@foodmyway.app`; earlier accidental links to established `@smarmytank` and `@1purpose_oc` accounts were removed without modifying those profiles. TikTok prevents another display-name change until Oct 7, 2026 and another username change until Oct 30, 2026. The campaign builder currently reports that the advertising-account contract is not yet in effect and disables Continue. Its simplified flow also defaults to a seven-day rebate offer at $280; do not accept it because it exceeds the approved $90 TikTok test cap. Remaining TikTok work is the timed rename, mobile website-field audit, first content, and campaign draft after TikTok activates the contract; no campaign or payment method has been created.
 
 Public visitor-view QA on September 30, 2026 confirmed the round brand PFP, display name `FoodMyWay.app`, handle `@foodmyway.app`, approved bio, zero published videos, and no personal-name exposure. No clickable website link was visible, so the mobile Business-profile website-field audit remains open.
+
+Live recheck on October 2, 2026 confirmed the same public branding and zero published videos. The active desktop TikTok session is authenticated as the separate `@1purpose_oc` account, not the Food My Way account. Do not upload, edit, or publish from that session; first switch or authenticate the dedicated `@foodmyway.app` account.
 
 ## Launch content
 
