@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "updated": "2026-10-02",
+  "campaign": "survival_kit_test1",
+  "launchAuthorized": false,
+  "paymentMethodsApproved": false,
+  "startDate": null,
+  "endDate": null,
+  "durationDays": 3,
+  "combinedMaximumUsd": 135,
+  "tracking": {
+    "metaPixel": false,
+    "tiktokPixel": false,
+    "sdk": false,
+    "conversionApi": false,
+    "customerLists": false,
+    "lookalikeAudiences": false,
+    "sensitiveTargeting": false
+  },
+  "platforms": {
+    "meta": {
+      "accountId": "1748503076238751",
+      "campaignName": "FMW_SURVIVAL_KIT_TEST1_META",
+      "objective": "Traffic",
+      "dailyBudgetUsd": 15,
+      "maximumUsd": 45,
+      "automaticExpansion": false,
+      "paymentMethodApproved": false,
+      "publishApproved": false
+    },
+    "tiktok": {
+      "accountId": "7691373556810366996",
+      "campaignName": "FMW_SURVIVAL_KIT_TEST1_TIKTOK",
+      "objective": "Traffic",
+      "dailyBudgetUsd": 30,
+      "maximumUsd": 90,
+      "automaticExpansion": false,
+      "promotionalRebateAccepted": false,
+      "paymentMethodApproved": false,
+      "publishApproved": false
+    }
+  },
+  "creatives": [
+    {
+      "code": "four_safe_foods",
+      "asset": "01-four-safe-foods-voiced.mp4"
+    },
+    {
+      "code": "taco_swap",
+      "asset": "02-tacos-without-tomatoes-voiced.mp4"
+    },
+    {
+      "code": "picky_adults",
+      "asset": "03-picky-adults-voiced.mp4"
+    }
+  ],
+  "gates": {
+    "approvedOrganicVideoPublic": false,
+    "organicSignalSatisfied": false,
+    "liveFunnelReverified": false,
+    "metaPageReconciled": false,
+    "tiktokContractActive": false,
+    "destinationUrlsReverified": false,
+    "ownerReviewedFinalScreens": false
+  }
+}

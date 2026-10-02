@@ -83,6 +83,7 @@ Video 1 staging was verified on September 30, 2026. TikTok has the 1080×1920 so
 - [x] Current application test suite passes: 132/132 tests on September 30, 2026, including every approved Meta/TikTok campaign source-and-creative combination and rejection of arbitrary attribution/query data.
 - [x] Live paid-launch verifier passes: 54/54 production checks against `https://foodmyway.app` on September 30, 2026, reverified after the paid-social attribution tests; coverage includes the $19 Survival Kit page, Stripe configuration, authentication, protected download, refund/legal copy, telemetry, and public/API routes.
 - [x] Meta and TikTok campaign names, budgets, targeting, placements, links, and stop rules documented.
+- [x] Machine-readable paid-test controls in `SOCIAL_AD_TEST_MANIFEST.json` lock the three-day $45 Meta / $90 TikTok / $135 combined caps, disable tracking and automation, bind the narrated creative allowlist, and keep dates, payment methods, and publication unapproved.
 - [x] A consolidated, approval-gated build and monitoring sequence is documented in `SOCIAL_PAID_TEST_RUNBOOK.md`.
 - [x] A privacy-minimized results and decision tracker is ready in `SOCIAL_TEST_SCORECARD.md`.
 - [x] Representative Meta and TikTok production URLs returned HTTP 200 with the Food My Way app shell and Survival Kit route.

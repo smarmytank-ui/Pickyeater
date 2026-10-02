@@ -4,6 +4,8 @@ Updated: September 30, 2026
 
 This runbook prepares the first Meta and TikTok advertising test. It does not authorize adding a payment method, accepting a promotional offer, publishing a campaign, or spending money. Those actions require the owner's explicit confirmation at the final review screen.
 
+The machine-readable control file is `SOCIAL_AD_TEST_MANIFEST.json`. Run `npm run verify:social-ad-test` before entering either campaign builder and again before asking the owner for final approval. The verifier fails if budgets exceed the approved limits, automation or third-party tracking is enabled, unapproved assets appear, campaign dates are prefilled, or any payment/publication approval is recorded prematurely.
+
 ## Launch gate
 
 Do not build or publish the paid test until all of the following are true:
