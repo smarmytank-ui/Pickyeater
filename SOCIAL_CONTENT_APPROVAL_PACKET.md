@@ -4,6 +4,8 @@ Updated: September 30, 2026
 
 Nothing in this packet authorizes publication, advertising, payment setup, or spend. Approve each organic post only after watching the exact narrated master with sound on. TikTok, Instagram, and Facebook approvals are independent.
 
+The machine-verifiable upload allowlist is `SOCIAL_ASSET_MANIFEST.json`. Before uploading, confirm the filename ends in `-voiced.mp4`, the byte size and SHA-256 hash match the manifest, and `publicationAuthorized` remains `false` until the owner gives final platform-specific approval. The similarly named files without `-voiced` are silent sources and must never be uploaded.
+
 ## Review instructions
 
 1. Open each narrated review master below.

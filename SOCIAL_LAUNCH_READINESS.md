@@ -70,6 +70,7 @@ Live recheck on October 2, 2026 confirmed the same public branding and zero publ
 - [x] Three 20-second vertical launch videos rendered, plus three separate narrated review masters.
 - [x] 1080×1920, 30 fps, H.264 video, AAC stereo audio verified with FFprobe.
 - [x] Three custom vertical cover images extracted and visually inspected.
+- [x] Exact narrated upload allowlist recorded in `SOCIAL_ASSET_MANIFEST.json` with byte sizes, SHA-256 hashes, publication disabled, and owner audio approval pending; silent source files are explicitly excluded.
 - [x] Hooks, captions, calls to action, hashtags, posting order, and UTM creative codes documented in `SOCIAL_LAUNCH_PACK.md`.
 - [x] A single owner-facing watch/listen/sign-off packet for all three narrated masters is available in `SOCIAL_CONTENT_APPROVAL_PACKET.md`.
 - [ ] Launch videos uploaded as drafts to each completed platform. Video 1 is staged in the live TikTok and Instagram composers, but its source contains an intentionally silent audio track and must be replaced with an audible launch master before publication; Facebook and Videos 2–3 remain to be staged.

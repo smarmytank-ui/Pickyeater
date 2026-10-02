@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "updated": "2026-10-02",
+  "assetRoot": "output/video",
+  "publicationAuthorized": false,
+  "ownerAudioApproval": "pending",
+  "rules": [
+    "Upload only files whose names end in -voiced.mp4.",
+    "Never upload the similarly named silent source files.",
+    "Do not publish until the owner has watched and approved the exact uploaded master with sound on.",
+    "TikTok uploads require an authenticated @foodmyway.app session; the current desktop session was last observed as @1purpose_oc."
+  ],
+  "assets": [
+    {
+      "order": 1,
+      "creativeCode": "four_safe_foods",
+      "file": "01-four-safe-foods-voiced.mp4",
+      "bytes": 4411835,
+      "durationSeconds": 20,
+      "sha256": "157829F384129DC495F2D49B6BF26F6673A6FA9E70A1CF9A6D76F5CF3F7A9810",
+      "status": "awaiting_owner_audio_approval"
+    },
+    {
+      "order": 2,
+      "creativeCode": "taco_swap",
+      "file": "02-tacos-without-tomatoes-voiced.mp4",
+      "bytes": 4419983,
+      "durationSeconds": 20,
+      "sha256": "63439B0F74FCB95BFAF7862079F612310E0F88952220DD6B17F87C5004F97BCE",
+      "status": "awaiting_owner_audio_approval"
+    },
+    {
+      "order": 3,
+      "creativeCode": "picky_adults",
+      "file": "03-picky-adults-voiced.mp4",
+      "bytes": 3634710,
+      "durationSeconds": 20,
+      "sha256": "33472744B4AC0B7A6932705754888967044E65FFDD85D7C5E74C457F8129ED0A",
+      "status": "awaiting_owner_audio_approval"
+    }
+  ]
+}
