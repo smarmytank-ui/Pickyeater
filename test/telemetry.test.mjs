@@ -94,3 +94,10 @@ test('every literal browser event is accepted by the server contract',async()=>{
     assert.doesNotThrow(()=>normalizeTelemetryEvent({event,sessionId,path:'/',details:{}}),`${event} is missing from the server allowlist`);
   }
 });
+
+ test('retains only opaque VEYZLO references on kit events',()=>{
+  const ref='vz_'+'a'.repeat(48);
+  for(const event of ['kit_page_viewed','kit_checkout_started','kit_app_clicked'])assert.deepEqual(normalizeTelemetryEvent({event,sessionId,details:{veyzlo_reference:ref,email:'private@example.test'}}).details,{veyzlo_reference:ref});
+  for(const value of ['person@example.test','vz_short',ref+'a',123])assert.deepEqual(normalizeTelemetryEvent({event:'kit_page_viewed',sessionId,details:{veyzlo_reference:value}}).details,{});
+  assert.deepEqual(normalizeTelemetryEvent({event:'recipe_generated',sessionId,details:{veyzlo_reference:ref}}).details,{});
+ });

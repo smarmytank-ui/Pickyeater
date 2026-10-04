@@ -59,7 +59,7 @@ self.addEventListener('fetch', event=>{
     return;
   }
 
-  const networkFirst=url.pathname.endsWith('/config.js') || url.pathname.endsWith('/service-worker.js');
+  const networkFirst=url.pathname.endsWith('/survival-kit.js') || url.pathname.endsWith('/config.js') || url.pathname.endsWith('/service-worker.js');
   const canStore=response=>{
     const policy=response.headers.get('cache-control') || '';
     return response.ok && response.type!=='opaque' && !/\b(?:no-store|private)\b/i.test(policy);

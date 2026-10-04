@@ -30,7 +30,8 @@ export function normalizeTelemetryEvent(input){
   if(!path.startsWith('/')) throw new Error('Invalid telemetry path.');
   const details={};
   for(const [key,value] of Object.entries(input?.details || {})){
-    if(NUMBER_KEYS.has(key) && Number.isFinite(value)) details[key]=Math.max(0,Math.min(10000,Number(value)));
+    if(key==='veyzlo_reference' && ['kit_page_viewed','kit_checkout_started','kit_app_clicked'].includes(event) && typeof value==='string' && /^vz_[a-f0-9]{48}$/.test(value)) details[key]=value;
+    else if(NUMBER_KEYS.has(key) && Number.isFinite(value)) details[key]=Math.max(0,Math.min(10000,Number(value)));
     else if(BOOLEAN_KEYS.has(key) && typeof value==='boolean') details[key]=value;
     else if(STRING_VALUES[key]?.has(value)) details[key]=value;
   }

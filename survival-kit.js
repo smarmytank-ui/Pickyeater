@@ -8,9 +8,21 @@
   const allowedCreatives=new Set(['four_safe_foods','taco_swap','picky_adults','link_in_bio']);
   const rawCreative=String(query.get('utm_content') || '').toLowerCase();
   const campaign={campaign_source:allowedSources.has(campaignSource)?campaignSource:'unknown',campaign_creative:allowedCreatives.has(rawCreative)?rawCreative:'unknown'};
+  const veyzloReference=query.get('veyzlo_ref');
+  if(/^vz_[a-f0-9]{48}$/.test(veyzloReference || ''))campaign.veyzlo_reference=veyzloReference;
   const emit=event=>fetch('/api/events',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({event,sessionId,path:location.pathname,details:campaign}),keepalive:true}).catch(()=>{});
   emit('kit_page_viewed');
-  const checkoutUrl=String(window.FMW_CONFIG?.survivalKitCheckoutUrl || '').trim();
+  let checkoutUrl=String(window.FMW_CONFIG?.survivalKitCheckoutUrl || '').trim();
+  // Carry only VEYZLO's opaque campaign reference. It is attribution, never payment proof.
+  if(/^vz_[a-f0-9]{48}$/.test(veyzloReference || '')){
+    try{
+      const checkout=new URL(checkoutUrl);
+      if(checkout.protocol==='https:' && checkout.hostname==='buy.stripe.com' && !checkout.username && !checkout.password && !checkout.port){
+        checkout.searchParams.set('client_reference_id',veyzloReference);
+        checkoutUrl=checkout.href;
+      }
+    }catch{}
+  }
   const valid=(()=>{try{const url=new URL(checkoutUrl);return url.protocol==='https:' && ['buy.stripe.com','checkout.stripe.com'].includes(url.hostname);}catch{return false;}})();
   for(const id of ['kitCheckout','kitCheckoutBottom']){
     const link=document.getElementById(id);
