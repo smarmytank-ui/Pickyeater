@@ -1,11 +1,13 @@
 {
   "name": "food-my-way",
-  "version": "2.67.1",
+  "version": "2.67.2",
   "private": true,
   "scripts": {
     "test": "node --test",
+    "test:app": "node scripts/run-app-checks.mjs",
+    "test:social-readiness": "node --test test/social-assets.test.mjs",
     "check": "node --check app.js && node --check service-worker.js && node --check functions/api/events.js && node --check functions/api/founding-interest.js && node --check functions/api/founding-unsubscribe.js && node --check functions/api/recipe-import.js && node --check functions/_shared/recipe-import.mjs && node --check functions/api/shop.js && node --check functions/api/food-search.js && node --check functions/_shared/fatsecret.mjs && node --check functions/api/stripe-webhook.js && node --check functions/api/auth/request.js && node --check functions/api/auth/consume.js && node --check functions/api/auth/session.js && node --check functions/api/account/data.js",
-    "verify:release": "npm run check && npm test",
+    "verify:release": "npm run check && npm run test:app",
     "verify:deployment": "node scripts/verify-deployment.mjs",
     "verify:social-assets": "node scripts/verify-social-assets.mjs",
     "verify:social-ad-test": "node scripts/verify-social-ad-test.mjs"

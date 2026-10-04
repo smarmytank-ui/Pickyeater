@@ -1,6 +1,6 @@
 const encoder=new TextEncoder();
 const SYNC_KEYS=new Set([
-  'pickyRecipesV2','pickyRecipeBook','foodMyWayWeeklyPlan','foodMyWayGroceryChecks','foodMyWayTasteProfile',
+  'pickyRecipesV2','pickyRecipeBook','foodMyWayExactRecipesV3','foodMyWayWeeklyPlan','foodMyWayGroceryChecks','foodMyWayTasteProfile',
   'pickyDiaryMeals','pickyFavorites','picky_saved_recipes'
 ]);
 
@@ -51,7 +51,11 @@ export function normalizeCloudSnapshot(input){
   if(!input || typeof input!=='object' || Array.isArray(input)) throw new Error('Invalid sync data.');
   const source=input.data && typeof input.data==='object' && !Array.isArray(input.data) ? input.data : input;
   const data={};
-  for(const [key,value] of Object.entries(source)) if(SYNC_KEYS.has(key)) data[key]=value;
+  for(const [key,value] of Object.entries(source)){
+    if(!SYNC_KEYS.has(key)) continue;
+    if(key==='foodMyWayExactRecipesV3' && (!Array.isArray(value) || value.some(record=>record?.exact!==true))) throw new Error('Invalid exact recipe backup.');
+    data[key]=Array.isArray(value) ? value.map(record=>record?.exact===true ? {...record,nutrition:null,nutritionStatus:'unavailable'} : record) : value;
+  }
   const snapshot={version:1,data};
   const serialized=JSON.stringify(snapshot);
   if(serialized.length>250_000) throw new Error('Sync data is too large.');

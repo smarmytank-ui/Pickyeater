@@ -26,7 +26,8 @@ let dialogReturnFocus = null;
 const TASTE_PROFILE_KEY = 'foodMyWayTasteProfile';
 const WEEKLY_PLAN_KEY = 'foodMyWayWeeklyPlan';
 const GROCERY_CHECKS_KEY = 'foodMyWayGroceryChecks';
-const CLOUD_DATA_KEYS = ['pickyRecipesV2', WEEKLY_PLAN_KEY, GROCERY_CHECKS_KEY, TASTE_PROFILE_KEY, 'pickyDiaryMeals', 'pickyFavorites', 'picky_saved_recipes'];
+const EXACT_RECIPE_BOOK_KEY = 'foodMyWayExactRecipesV3';
+const CLOUD_DATA_KEYS = ['pickyRecipesV2', EXACT_RECIPE_BOOK_KEY, WEEKLY_PLAN_KEY, GROCERY_CHECKS_KEY, TASTE_PROFILE_KEY, 'pickyDiaryMeals', 'pickyFavorites', 'picky_saved_recipes'];
 const FREE_RECIPE_LIMIT = 3;
 let deferredInstallPrompt = null;
 
@@ -233,7 +234,16 @@ async function refreshPendingEntitlement({attempts=6,delayMs=2500}={}){
   return false;
 }
 
+function exportRecipeNutrition(value){
+  if(Array.isArray(value)) return value.map(exportRecipeNutrition);
+  if(!value || typeof value!=='object') return value;
+  const copy=Object.fromEntries(Object.entries(value).map(([key,item])=>[key,exportRecipeNutrition(item)]));
+  if(copy.exact===true && Array.isArray(copy.ingredients)){copy.nutrition=null;copy.nutritionStatus='unavailable';}
+  return copy;
+}
+
 function downloadCloudExport(payload){
+  payload=exportRecipeNutrition(payload);
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const anchor=document.createElement('a');
@@ -243,13 +253,17 @@ function downloadCloudExport(payload){
 
 function restoreCloudSnapshot(snapshot){
   const data=snapshot?.data && typeof snapshot.data==='object' ? snapshot.data : {};
+  if(Object.prototype.hasOwnProperty.call(data,EXACT_RECIPE_BOOK_KEY)){
+    if(!Array.isArray(data[EXACT_RECIPE_BOOK_KEY])) throw new Error('Invalid exact recipe backup. Previous local data was preserved.');
+    data[EXACT_RECIPE_BOOK_KEY]=data[EXACT_RECIPE_BOOK_KEY].map(normalizeExactRecipe);
+  }
   const previous=new Map();
   try{
     for(const key of CLOUD_DATA_KEYS) previous.set(key,localStorage.getItem(key));
     for(const key of CLOUD_DATA_KEYS){
       if(Object.prototype.hasOwnProperty.call(data,key)){
         if(!lsSet(key,data[key])) throw new Error('write failed');
-      }else localStorage.removeItem(key);
+      }else if(key!==EXACT_RECIPE_BOOK_KEY) localStorage.removeItem(key);
     }
   }catch{
     for(const [key,value] of previous){
@@ -460,12 +474,15 @@ function applyFoodIdea(text){
 }
 
 function betaDataSnapshot(){
-  const keys = [RECIPE_BOOK_KEY, WEEKLY_PLAN_KEY, GROCERY_CHECKS_KEY, TASTE_PROFILE_KEY, 'pickyDiaryMeals', 'foodMyWayFounderInterest'];
+  // Export in memory even when storage is full and migration cannot write.
+  const current=lsGet(RECIPE_BOOK_KEY,[]);
+  const exact=mergedExactRecipes(Array.isArray(current)?current:[],readExactRecipeStore());
+  const keys = [RECIPE_BOOK_KEY, EXACT_RECIPE_BOOK_KEY, WEEKLY_PLAN_KEY, GROCERY_CHECKS_KEY, TASTE_PROFILE_KEY, 'pickyDiaryMeals', 'foodMyWayFounderInterest'];
   return {
     product:'Food My Way',
     exportedAt:new Date().toISOString(),
-    version:2,
-    data:Object.fromEntries(keys.map(key=>[key,lsGet(key,null)]).filter(([,value])=>value!==null))
+    version:3,
+    data:Object.fromEntries(keys.map(key=>[key,key===EXACT_RECIPE_BOOK_KEY ? exact : key===RECIPE_BOOK_KEY && Array.isArray(current) ? current.filter(recipe=>!recipe?.exact) : lsGet(key,null)]).filter(([,value])=>value!==null))
   };
 }
 
@@ -971,7 +988,7 @@ function gramsFor(name, unit, qty){
 }
 
 function isActiveIngredient(ingredient){
-  return Boolean(ingredient && ingredient.name!=='skip it' && Number(ingredient.base?.v)>0);
+  return Boolean(ingredient && ingredient.name!=='skip it' && (ingredient.exact || Number(ingredient.base?.v)>0));
 }
 
 function proteinSafetyGuidance(name, preparation){
@@ -1589,6 +1606,7 @@ function sanitizeSavedIngredients(value){
 }
 
 function recipeMacros(recipeState = state, recipeServings = servings){
+  if(recipeState?.exact) return null;
   if(!recipeState) return { calories:0, protein:0, carbs:0, fat:0 };
   let cal=0, p=0, c=0, f=0;
   recipeState.ingredients.forEach(ing=>{
@@ -1632,6 +1650,7 @@ function snapshotCurrentRecipe(){
 }
 
 function normalizeSavedRecipe(recipe,{untrusted=false}={}){
+  if(recipe?.exact===true){try{return normalizeExactRecipe(recipe);}catch{return null;}}
   if(!recipe || !Array.isArray(recipe.ingredients)) return null;
   const ingredients=sanitizeSavedIngredients(recipe.ingredients);
   if(!ingredients.length) return null;
@@ -1674,19 +1693,32 @@ function normalizeSavedRecipe(recipe,{untrusted=false}={}){
 }
 
 function getRecipeBook(){
-  const current = lsGet(RECIPE_BOOK_KEY, null);
-  if(Array.isArray(current)) return current.map(normalizeSavedRecipe).filter(Boolean);
-
-  const legacy = [
-    ...lsGet('pickyFavorites', []),
-    ...lsGet('picky_saved_recipes', [])
-  ].map(normalizeSavedRecipe).filter(Boolean);
-  if(legacy.length) lsSet(RECIPE_BOOK_KEY, legacy);
-  return legacy;
+  const stored=lsGet(RECIPE_BOOK_KEY,null);
+  const current=Array.isArray(stored) ? stored : [...lsGet('pickyFavorites',[]),...lsGet('picky_saved_recipes',[])];
+  const exact=mergedExactRecipes(current,readExactRecipeStore());
+  // Migrate any pre-release mixed records before the v2 key can be changed.
+  if(current.some(recipe=>recipe?.exact)){
+    if(!lsSet(EXACT_RECIPE_BOOK_KEY,exact)) throw new Error('Original recipes could not be protected. Export local data before saving changes.');
+    if(!lsSet(RECIPE_BOOK_KEY,current.filter(recipe=>!recipe?.exact))) throw new Error('Originals are protected, but the old recipe book could not be updated.');
+  }
+  const generated=current.filter(recipe=>!recipe?.exact).map(normalizeSavedRecipe).filter(Boolean);
+  if(!Array.isArray(stored) && generated.length) lsSet(RECIPE_BOOK_KEY,generated);
+  return [...generated,...exact];
 }
 
 function setRecipeBook(recipes){
-  return lsSet(RECIPE_BOOK_KEY, recipes);
+  // Refuse to overwrite unreadable originals. Preserve both keys on a failed write.
+  readExactRecipeStore();
+  const previous=new Map([RECIPE_BOOK_KEY,EXACT_RECIPE_BOOK_KEY].map(key=>[key,localStorage.getItem(key)]));
+  try{
+    const exact=recipes.filter(recipe=>recipe?.exact).map(normalizeExactRecipe);
+    if(!lsSet(EXACT_RECIPE_BOOK_KEY,exact)) throw new Error('write failed');
+    if(!lsSet(RECIPE_BOOK_KEY,recipes.filter(recipe=>!recipe?.exact))) throw new Error('write failed');
+    return true;
+  }catch{
+    for(const [key,value] of previous){try{value===null ? localStorage.removeItem(key) : localStorage.setItem(key,value);}catch{}}
+    return false;
+  }
 }
 
 function getWeeklyPlan(){
@@ -1707,7 +1739,19 @@ function toggleWeeklyPlan(recipeId){
 }
 
 function groceryQuantity(value, unit){
-  const quantity = formatQty(value) || String(Number(value.toFixed(2)));
+  // Keep small spice amounts precise when compatible volume units were combined.
+  if(unit==='cups' && value>0 && value<0.25){
+    value*=48;
+    unit='tsp';
+    if(value>=3 && Math.abs(value/3-Math.round(value/3))<1e-10){value/=3;unit='tbsp';}
+  }
+  const whole=Math.floor(value);
+  const remainder=value-whole;
+  const denominator=[2,3,4,8,16,32].find(candidate=>Math.abs(remainder*candidate-Math.round(remainder*candidate))<1e-10);
+  const numerator=denominator ? Math.round(remainder*denominator) : 0;
+  const quantity=numerator
+    ? `${whole ? `${whole} ` : ''}${numerator}/${denominator}`
+    : String(Number(value.toPrecision(12)));
   if(unit==='count' || !unit) return quantity;
   return `${quantity} ${unit}`;
 }
@@ -1715,18 +1759,7 @@ function groceryQuantity(value, unit){
 function plannedGroceryItems(){
   const recipeMap=new Map(getRecipeBook().map(recipe=>[recipe.id,recipe]));
   const recipes=getWeeklyPlan().map(id=>recipeMap.get(id)).filter(Boolean);
-  const combined=new Map();
-  recipes.forEach(recipe=>recipe.ingredients
-    .filter(isActiveIngredient)
-    .forEach(item=>{
-      const unit=item.base?.u || '';
-      const key=`${canonName(item.name)}|${unit}`;
-      const amount=Number(item.base.v)*(Number(recipe.servings)||2)/2;
-      const current=combined.get(key) || {name:canonName(item.name),unit,quantity:0};
-      current.quantity+=amount;
-      combined.set(key,current);
-    }));
-  return [...combined.entries()].sort((a,b)=>a[1].name.localeCompare(b[1].name));
+  return combineGroceryRecipes(recipes);
 }
 
 function uncheckedGroceryEntries(entries,checks={}){
@@ -1734,6 +1767,7 @@ function uncheckedGroceryEntries(entries,checks={}){
 }
 
 function recipeCommerceItems(recipe){
+  if(recipe?.exact) return [];
   if(!recipe || !Array.isArray(recipe.ingredients)) return [];
   const recipeServings=Number(recipe.servings) || 2;
   return recipe.ingredients.filter(isActiveIngredient).map(item=>{
@@ -1796,7 +1830,7 @@ function renderPlanner(){
     const checkbox=document.createElement('input');
     checkbox.type='checkbox'; checkbox.checked=Boolean(checks[key]);
     const text=document.createElement('span');
-    text.textContent=`${groceryQuantity(item.quantity,item.unit)} ${pretty(item.name)}`;
+    text.textContent=groceryItemText(item);
     checkbox.onchange=()=>{
       const updated=lsGet(GROCERY_CHECKS_KEY,{});
       updated[key]=checkbox.checked;
@@ -1815,6 +1849,7 @@ function renderPlanner(){
 }
 
 async function shopPlannedGroceries(){
+  if(plannedGroceryItems().some(([,item])=>item.unknownCount)){showToast('Review missing amounts before sending this list to a grocery service.');return;}
   const checks=lsGet(GROCERY_CHECKS_KEY,{});
   const items=uncheckedGroceryEntries(plannedGroceryItems(),checks).map(([,item])=>({
     name:item.name,quantity:item.quantity,unit:item.unit,
@@ -1947,6 +1982,7 @@ function showCreateView(){
 }
 
 function openSavedRecipe(recipe){
+  if(recipe?.exact){openExactRecipeEditor(recipe);return;}
   const normalized = normalizeSavedRecipe(recipe);
   if(!normalized) return;
   servings = normalized.servings;
@@ -2005,7 +2041,7 @@ function renderRecipeBook(query = ''){
     title.textContent = recipe.title;
     const meta = document.createElement('div');
     meta.className = 'recipe-card-meta';
-    meta.textContent = `${recipe.servings} servings • ${recipe.ingredients.filter(isActiveIngredient).length} ingredients • ${recipe.nutrition.calories} cal/serv`;
+    meta.textContent=recipeBookMeta(recipe);
     copy.append(title, meta);
 
     const favorite = document.createElement('button');
@@ -2032,7 +2068,7 @@ function renderRecipeBook(query = ''){
       ['Duplicate', ()=>{ const duplicate={...safeClone(recipe), id:uid(), title:`${recipe.title} Copy`, savedAt:new Date().toISOString()}; if(saveRecipe(duplicate)) renderRecipeBook(); }, ''],
       ['Delete', ()=>{ if(confirm(`Delete “${recipe.title}”?`)){ if(!setRecipeBook(getRecipeBook().filter(item=>item.id!==recipe.id))) showStorageFailure(); renderRecipeBook($('recipeSearch')?.value || ''); } }, 'ghost']
     ];
-    buttons.forEach(([label, handler, style])=>{
+    buttons.filter(([label])=>!recipe.exact || label!=='Share').forEach(([label, handler, style])=>{
       const btn=document.createElement('button');
       btn.type='button'; btn.className=`btn ${style}`.trim(); btn.textContent=label; btn.onclick=handler;
       actions.appendChild(btn);
@@ -2055,6 +2091,7 @@ function showRecipeBookView(){
 }
 
 function encodeSharedRecipe(recipe){
+  if(recipe?.exact) throw new Error('Exact personal recipes are private.');
   const portable = normalizeSavedRecipe(recipe);
   const json = JSON.stringify(portable);
   const bytes = new TextEncoder().encode(json);
@@ -2102,6 +2139,7 @@ function showShareFallback(url){
 
 function showSharedRecipe(recipe){
   if(!recipe) return;
+  if(recipe.exact){openExactRecipeEditor(recipe);return;}
   $('inputCard')?.classList.add('hidden');
   $('resultCard')?.classList.add('hidden');
   $('recipeBookCard')?.classList.add('hidden');
@@ -2109,7 +2147,7 @@ function showSharedRecipe(recipe){
   $('sharedRecipeCard')?.classList.remove('hidden');
   $('sharedRecipeTitle').textContent = recipe.title;
   $('sharedRecipeMeta').replaceChildren();
-  [`Serves ${recipe.servings}`, `${recipe.prepMinutes} min prep`, `${recipe.cookMinutes} min cook`, `${recipe.nutrition.calories} cal/serv`].forEach(text=>{
+  [`Serves ${recipe.servings}`, `${recipe.prepMinutes} min prep`, `${recipe.cookMinutes} min cook`, recipeNutritionText(recipe)].forEach(text=>{
     const span=document.createElement('span'); span.textContent=text; $('sharedRecipeMeta').appendChild(span);
   });
   $('sharedIngredients').replaceChildren();
@@ -2623,18 +2661,8 @@ function wireEvents(){
       if(status) status.textContent='Reading the recipe and extracting its ingredients…';
       try{
         const recipe=await requestRecipeImport(url);
-        const allIngredients=Array.isArray(recipe?.ingredients)
-          ? recipe.ingredients.map(item=>String(item).replace(/,+/g,' ').replace(/\s+/g,' ').trim()).filter(Boolean)
-          : [];
-        const ingredients=allIngredients.slice(0,MAX_RECIPE_INGREDIENTS);
-        if(!ingredients.length) throw new Error('That page did not provide an ingredient list.');
-        applyFoodIdea(ingredients.join('\n'));
-        pendingRecipeSource=sanitizeRecipeSource(recipe.source);
-        pendingRecipeTitle=cleanPortableText(recipe.title,100);
-        const omitted=Math.max(0,allIngredients.length-ingredients.length);
-        if(status) status.textContent=`Imported ${ingredients.length} ingredients from ${pendingRecipeSource?.name || 'the recipe'}${omitted ? `; ${omitted} more were omitted to keep it practical` : ''}. Review them, then make your recipe.`;
-        track('recipe_imported',{ingredient_count:ingredients.length});
-        ingredientsInput?.focus();
+        openExactRecipeEditor(recipe);
+        if(status) status.textContent='Original recipe loaded for review. Save it in the exact recipe editor.';
       }catch(error){
         pendingRecipeSource=null;
         pendingRecipeTitle='';
@@ -2991,8 +3019,149 @@ function wireEvents(){
   updateDiarySub();
 }
 
+// The old app never reads or rewrites this key. Keep originals outside its v2 serializer.
+function readExactRecipeStore(){
+  const raw=localStorage.getItem(EXACT_RECIPE_BOOK_KEY);
+  if(raw===null) return [];
+  try{
+    const records=JSON.parse(raw);
+    if(!Array.isArray(records)) throw new Error();
+    return records.map(recipe=>normalizeExactRecipe(recipe));
+  }catch{throw new Error('Exact recipe storage could not be read. Export local data before saving changes.');}
+}
+
+function mergedExactRecipes(current,exact){
+  const records=new Map();
+  for(const recipe of [...current.filter(recipe=>recipe?.exact),...exact]){
+    const normalized=normalizeExactRecipe(recipe);
+    records.set(normalized.id,normalized);
+  }
+  return [...records.values()];
+}
+
+function recipeNutritionText(recipe){
+  return recipe?.exact || recipe?.nutrition==null ? 'Nutrition unavailable' : `${recipe.nutrition.calories} cal/serv`;
+}
+
+function recipeBookMeta(recipe){
+  return recipe.exact
+    ? `Yield: ${recipe.yieldText || 'unknown'} · ${recipe.ingredients.length} original ingredients · ${recipeNutritionText(recipe)}`
+    : `${recipe.servings} servings · ${recipe.ingredients.filter(isActiveIngredient).length} ingredients · ${recipeNutritionText(recipe)}`;
+}
+
+// Exact imports use source quantities, never the generator's two-serving defaults.
+function exactText(value,max=20000){
+  const text=String(value ?? '');
+  if(text.length>max || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(text)) throw new Error('Recipe text is too long or contains unsupported characters.');
+  return text;
+}
+
+function parseExactIngredient(line){
+  const originalText=exactText(line,2000);
+  const units={cup:'cups',cups:'cups',tablespoon:'tbsp',tablespoons:'tbsp',tbsp:'tbsp',teaspoon:'tsp',teaspoons:'tsp',tsp:'tsp',pound:'lb',pounds:'lb',lb:'lb',lbs:'lb',ounce:'oz',ounces:'oz',oz:'oz',g:'g',kg:'kg',ml:'ml',l:'l',cloves:'cloves',clove:'cloves',slices:'slices',slice:'slices',count:'count',can:'can',cans:'can',package:'package',packages:'package'};
+  const match=originalText.trim().match(/^(\d+(?:\.\d+)?(?:\s+\d+\/\d+)?|\d+\/\d+)\s+(\S+)\s+(.+)$/);
+  let name=originalText.trim(), quantity=null, unit='';
+  if(match && units[match[2].toLowerCase()]){
+    const amount=match[1].split(/\s+/).reduce((sum,part)=>{
+      const fraction=part.split('/').map(Number);
+      return sum+(fraction.length===2 ? fraction[0]/fraction[1] : fraction[0]);
+    },0);
+    if(Number.isFinite(amount) && amount>0){ quantity=amount; unit=units[match[2].toLowerCase()]; name=match[3]; }
+  }
+  return {id:uid(),name,role:'other',originalText,exact:true,base:{v:quantity,u:unit}};
+}
+
+function normalizeExactRecipe(recipe){
+  const title=exactText(recipe.title,1000);
+  const yieldText=exactText(recipe.yieldText ?? recipe.servings ?? '',1000);
+  const instructionsText=exactText(recipe.instructionsText ?? (recipe.instructions || recipe.steps || []).map(step=>step.text ?? step).join('\n\n'));
+  if(!title.trim() || !Array.isArray(recipe.ingredients) || !recipe.ingredients.length || recipe.ingredients.length>200) throw new Error('Provide a title and 1–200 ingredient lines.');
+  const ingredients=recipe.ingredients.map(item=>{
+    const ingredient=parseExactIngredient(typeof item==='string' ? item : item.originalText);
+    if(item?.id) ingredient.id=cleanPortableText(item.id,80);
+    return ingredient;
+  });
+  if(ingredients.some(item=>!item.name)) throw new Error('Ingredient lines cannot be empty.');
+  const savedAt=recipe.savedAt || new Date().toISOString();
+  return {id:cleanPortableText(recipe.id,80) || uid(),version:3,exact:true,title,yieldText,servings:yieldText,
+    description:exactText(recipe.description || ''),instructionsText,ingredients,
+    steps:instructionsText ? [{key:'original',text:instructionsText}] : [],
+    source:sanitizeRecipeSource(recipe.source),preferences:{},nutrition:null,nutritionStatus:'unavailable',
+    favorite:recipe.favorite!==false,savedAt,updatedAt:recipe.updatedAt || savedAt};
+}
+
+function combineGroceryRecipes(recipes){
+  const conversions={cup:['cups',1],cups:['cups',1],tbsp:['cups',1/16],tsp:['cups',1/48],lb:['oz',16],oz:['oz',1],kg:['g',1000],g:['g',1],l:['ml',1000],ml:['ml',1]};
+  const combined=new Map();
+  for(const recipe of recipes){
+    for(const item of recipe.ingredients.filter(isActiveIngredient)){
+      const name=recipe.exact ? item.name.trim().toLowerCase() : canonName(item.name);
+      const sourceUnit=item.base?.u || '';
+      const [unit,factor]=conversions[sourceUnit] || [sourceUnit,1];
+      const key=`${name}|${unit}`;
+      const current=combined.get(key) || {name,unit,quantity:0,unknownCount:0};
+      if(item.base?.v==null) current.unknownCount+=1;
+      else current.quantity+=Number(item.base.v)*(recipe.exact ? 1 : (Number(recipe.servings)||2)/2)*factor;
+      combined.set(key,current);
+    }
+  }
+  return [...combined.entries()].sort((a,b)=>a[1].name.localeCompare(b[1].name));
+}
+
+function groceryItemText(item){
+  const known=item.quantity>0 ? `${groceryQuantity(item.quantity,item.unit)} ` : '';
+  return `${known}${item.name}${item.unknownCount ? ` — amount needs review (${item.unknownCount} recipe line${item.unknownCount===1?'':'s'})` : ''}`;
+}
+
+function openExactRecipeEditor(recipe={}){
+  const dialog=document.createElement('dialog');
+  dialog.className='exact-recipe-dialog';
+  const heading=document.createElement('h2'); heading.textContent='Private exact recipe'; dialog.appendChild(heading);
+  const source=sanitizeRecipeSource(recipe.source);
+  if(source){const link=document.createElement('a');link.href=source.url;link.textContent=`Original source: ${source.name}`;link.target='_blank';link.rel='noopener noreferrer';dialog.appendChild(link);}
+  const nutritionNote=document.createElement('p'); nutritionNote.textContent=recipeNutritionText({exact:true}); dialog.appendChild(nutritionNote);
+  const note=document.createElement('p'); note.textContent='Original amounts and instructions are kept. Nothing is generated. Missing or unrecognized amounts stay visible for review. Saved on this device; optional account backup follows your existing settings.'; dialog.appendChild(note);
+  const form=document.createElement('form'); dialog.appendChild(form);
+  const fields={};
+  for(const [key,label,value,multiline] of [
+    ['title','Original title',recipe.title || '',false],
+    ['yieldText','Original yield (leave blank if unknown)',recipe.yieldText ?? recipe.servings ?? '',false],
+    ['ingredients','Original ingredients — one per line',(recipe.ingredients || []).map(item=>typeof item==='string' ? item : item.originalText).join('\n'),true],
+    ['instructionsText','Original instructions',recipe.instructionsText ?? (recipe.instructions || recipe.steps || []).map(step=>step.text ?? step).join('\n\n'),true]
+  ]){
+    const labelNode=document.createElement('label'); labelNode.textContent=label;
+    const field=document.createElement(multiline?'textarea':'input'); field.className='field'; field.id=`exact-${key}`;
+    labelNode.htmlFor=field.id; field.value=value; field.classList.add('exact-recipe-field');
+    if(multiline) field.rows=key==='ingredients'?9:12;
+    fields[key]=field; form.append(labelNode,field);
+  }
+  const status=document.createElement('p'); status.setAttribute('role','status'); form.appendChild(status);
+  const review=()=>{
+    const lines=fields.ingredients.value.split('\n').filter(line=>line.trim());
+    const unknown=lines.map(parseExactIngredient).filter(item=>item.base.v==null).length;
+    status.textContent=`${lines.length} ingredients; ${unknown} amounts need review. ${fields.yieldText.value.trim()?'':'Yield is unknown.'}`;
+  };
+  fields.ingredients.addEventListener('input',()=>{try{review();}catch(error){status.textContent=error.message;}}); review();
+  const save=document.createElement('button'); save.type='submit'; save.className='btn primary'; save.textContent=recipe.id?'Save changes':'Save exact recipe';
+  const close=document.createElement('button'); close.type='button'; close.className='btn ghost'; close.textContent='Close'; close.onclick=()=>dialog.close(); form.append(save,close);
+  form.onsubmit=event=>{
+    event.preventDefault();
+    try{
+      const draft=normalizeExactRecipe({...recipe,exact:true,title:fields.title.value,yieldText:fields.yieldText.value,instructionsText:fields.instructionsText.value,ingredients:fields.ingredients.value.split('\n').filter(line=>line.trim()),updatedAt:new Date().toISOString()});
+      if(saveRecipe(draft,recipe.id?{replaceId:recipe.id}:{})){dialog.close();showRecipeBookView();}
+      else status.textContent='Recipe was not saved. Check membership or browser storage.';
+    }catch(error){status.textContent=error.message;}
+  };
+  const focus=document.activeElement;
+  dialog.addEventListener('close',()=>{dialog.remove();focus?.focus();},{once:true});
+  document.body.appendChild(dialog); dialog.showModal(); fields.title.focus();
+}
+
 // Safe init
 function init(){
+  const exactButton=document.createElement('button'); exactButton.type='button'; exactButton.className='btn ghost';
+  exactButton.id='exactRecipeBtn'; exactButton.textContent='Add a private exact recipe'; exactButton.onclick=()=>openExactRecipeEditor();
+  $('recipeImportStatus')?.after(exactButton);
   setupTelemetry();
   syncPendingFounderInterest();
   wireEvents();
@@ -3046,6 +3215,17 @@ if(typeof module !== 'undefined' && module.exports){
     restoreCloudSnapshot,
     boundedDiaryNumber,
     uncheckedGroceryEntries,
-    recipeCommerceItems
+    recipeCommerceItems,
+    parseExactIngredient,
+    normalizeExactRecipe,
+    combineGroceryRecipes,
+    groceryItemText,
+    getRecipeBook,
+    setRecipeBook,
+    betaDataSnapshot,
+    recipeNutritionText,
+    recipeBookMeta,
+    EXACT_RECIPE_BOOK_KEY,
+    exportRecipeNutrition
   };
 }

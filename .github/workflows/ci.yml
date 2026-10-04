@@ -2,7 +2,7 @@ name: Food My Way checks
 
 on:
   push:
-    branches: [main, picky-v2]
+    branches: [main, picky-v2, recipe-exact-2.67.2]
   pull_request:
 
 permissions:
@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   test:
+    name: App release checks
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -17,5 +18,15 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
-      - run: npm test
       - run: npm run check
+      - run: npm run test:app
+  social-launch-readiness:
+    name: Social launch readiness
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm run test:social-readiness
