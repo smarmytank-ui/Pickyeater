@@ -41,6 +41,39 @@ function request(email){
   });
 }
 
+test('configured preview and production login origins ignore untrusted request hosts',async()=>{
+  const configuration=await readFile(path.join(root,'wrangler.toml'),'utf8');
+  const previewSection=configuration.split('[env.preview.vars]')[1].split('[[env.preview.d1_databases]]')[0];
+  const productionSection=configuration.split('[vars]')[1].split('[[d1_databases]]')[0];
+  const originOf=section=>section.match(/^AUTH_ORIGIN = "([^"]+)"/m)[1];
+  assert.equal(originOf(productionSection),'https://foodmyway.app');
+  assert.equal(originOf(previewSection),'https://recipe-exact-2-67-2.picky-eater-preview.pages.dev');
+  for(const section of [productionSection,previewSection]){
+    const {database,env}=await setup();
+    env.AUTH_ORIGIN=originOf(section);
+    const originalFetch=globalThis.fetch;let sent;
+    globalThis.fetch=async(url,options)=>{assert.equal(url,'https://api.resend.com/emails');sent=JSON.parse(options.body);return new Response('{}',{status:200});};
+    try{
+      const response=await onRequestPost({request:new Request('https://untrusted.example/api/auth/request',{
+        method:'POST',headers:{'content-type':'application/json','host':'attacker.example','x-forwarded-host':'attacker.example'},
+        body:JSON.stringify({email:'synthetic@example.com',returnTo:'https://attacker.example/steal'})
+      }),env});
+      assert.equal(response.status,200);
+      const link=new URL(sent.text.match(/https:\/\/\S+\/api\/auth\/consume\?\S+/)[0]);
+      assert.equal(link.origin,env.AUTH_ORIGIN);
+      assert.equal(link.searchParams.has('returnTo'),false);
+      assert.equal(sent.text.includes('attacker.example'),false);
+    }finally{globalThis.fetch=originalFetch;database.close();}
+  }
+});
+
+test('preview origin override retains every existing storage binding without provisioning',async()=>{
+  const configuration=await readFile(path.join(root,'wrangler.toml'),'utf8');
+  const tables=name=>Array.from(configuration.matchAll(new RegExp('\\[\\['+name.replaceAll('.','\\.')+'\\]\\]\\s*([^\\[]+)','g')),match=>match[1].split(/\r?\n/).map(line=>line.trim()).filter(line=>/^\w+\s*=/.test(line)).join('\n')).sort();
+  assert.deepEqual(tables('env.preview.d1_databases'),tables('d1_databases'));
+  assert.deepEqual(tables('env.preview.r2_buckets'),tables('r2_buckets'));
+});
+
 test('sign-in email requests enforce a cooldown before sending again',async()=>{
   const {database,env}=await setup();
   const originalFetch=globalThis.fetch;

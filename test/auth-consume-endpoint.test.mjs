@@ -40,6 +40,24 @@ async function setup(){
   return {database,env:{ACCOUNTS:new D1(database)},token};
 }
 
+test('preview confirmation returns to preview with a secure host-only session cookie',async()=>{
+  const {database,env,token}=await setup();
+  const origin='https://recipe-exact-2-67-2.picky-eater-preview.pages.dev';
+  try{
+    const scanner=await onRequestGet({request:new Request(`${origin}/api/auth/consume?token=${token}&returnTo=https://attacker.example`),env});
+    assert.equal(scanner.status,200);
+    assert.equal(scanner.headers.get('set-cookie'),null);
+    const response=await onRequestPost({request:new Request(`${origin}/api/auth/consume`,{
+      method:'POST',headers:{'x-forwarded-host':'attacker.example'},body:new URLSearchParams({token,returnTo:'//attacker.example'})
+    }),env});
+    assert.equal(response.headers.get('location'),`${origin}/?login=success`);
+    const cookie=response.headers.get('set-cookie');
+    assert.match(cookie,/Path=\/; HttpOnly; Secure; SameSite=Lax/);
+    assert.doesNotMatch(cookie,/Domain=/i);
+    assert.equal(database.prepare('SELECT COUNT(*) AS count FROM sessions').get().count,1);
+  }finally{database.close();}
+});
+
 test('magic-link GET is scanner-safe and confirmed POST is single use',async()=>{
   const {database,env,token}=await setup();
   const link=`https://foodmyway.app/api/auth/consume?token=${token}`;

@@ -29,3 +29,34 @@ database_id = "832f6e5b-5907-4aa4-987c-27b1ac4896de"
 [[r2_buckets]]
 binding = "KIT_FILES"
 bucket_name = "food-my-way-kit-files"
+
+# Exact protected preview origin. These bindings intentionally remain shared;
+# this override does not isolate customer storage or authorize fixture seeding.
+# Pages requires all non-inheritable binding groups alongside overridden vars.
+[env.preview.vars]
+AUTH_FROM_EMAIL = "Food My Way <login@foodmyway.app>"
+AUTH_ORIGIN = "https://recipe-exact-2-67-2.picky-eater-preview.pages.dev"
+
+[[env.preview.d1_databases]]
+binding = "LEADS"
+database_name = "food-my-way-leads"
+database_id = "86cfba25-a029-4b4e-9612-86325b11db73"
+
+[[env.preview.d1_databases]]
+binding = "PURCHASES"
+database_name = "food-my-way-purchases"
+database_id = "fe02092f-41c3-4ac4-b4b5-2b5e8c22fc23"
+
+[[env.preview.d1_databases]]
+binding = "TELEMETRY"
+database_name = "food-my-way-telemetry"
+database_id = "ea353c89-a43a-4918-aa01-2a97d543c575"
+
+[[env.preview.d1_databases]]
+binding = "ACCOUNTS"
+database_name = "food-my-way-accounts"
+database_id = "832f6e5b-5907-4aa4-987c-27b1ac4896de"
+
+[[env.preview.r2_buckets]]
+binding = "KIT_FILES"
+bucket_name = "food-my-way-kit-files"
