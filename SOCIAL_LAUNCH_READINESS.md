@@ -1,6 +1,6 @@
 # Food My Way social launch readiness
 
-Updated: October 2, 2026
+Updated: October 5, 2026
 
 This is the authoritative go/no-go ledger for the first Food My Way social launch. A checked box requires direct evidence; plans and intended actions do not count.
 
@@ -70,17 +70,19 @@ Live recheck on October 2, 2026 confirmed the same public branding and zero publ
 - [x] Three 20-second vertical launch videos rendered, plus three separate narrated review masters.
 - [x] 1080×1920, 30 fps, H.264 video, AAC stereo audio verified with FFprobe.
 - [x] Three custom vertical cover images extracted and visually inspected.
-- [x] Exact narrated upload allowlist recorded in `SOCIAL_ASSET_MANIFEST.json` with byte sizes, SHA-256 hashes, publication disabled, and owner audio approval pending; silent source files are explicitly excluded.
+- [x] Exact narrated upload allowlist recorded in `SOCIAL_ASSET_MANIFEST.json` with byte sizes and SHA-256 hashes; silent source files are explicitly excluded.
 - [x] Hooks, captions, calls to action, hashtags, posting order, and UTM creative codes documented in `SOCIAL_LAUNCH_PACK.md`.
 - [x] A single owner-facing watch/listen/sign-off packet for all three narrated masters is available in `SOCIAL_CONTENT_APPROVAL_PACKET.md`.
 - [ ] Launch videos uploaded as drafts to each completed platform. Video 1 is staged in the live TikTok and Instagram composers, but its source contains an intentionally silent audio track and must be replaced with an audible launch master before publication; Facebook and Videos 2–3 remain to be staged.
-- [ ] Owner approves each first public post at action time.
+- [x] VEYZLO's October 3 finance handoff records the three real narrated version 4 videos as customer-approved, with exact checksums.
+- [ ] Owner approves each actual platform publication at action time.
 
-Video 1 staging was verified on September 30, 2026. TikTok has the 1080×1920 source, final caption, public visibility, comments enabled, reuse disabled, brand disclosure enabled, AI disclosure enabled, and a clean content-check result. Instagram has the same 9:16 source, custom cover, final caption, AI label enabled, like/view counts visible, and comments enabled. Neither composer has been submitted. The owner correctly identified that the staged source is inaudible; `scripts/render-social-videos.ps1` confirms it was deliberately built with `anullsrc`. Both drafts are therefore held. Three audible review masters were rendered locally with original narration at `output/video/*-voiced.mp4`; FFprobe verifies 20-second H.264/AAC files with 48 kHz stereo audio, and volume analysis reports approximately -20.5 dB mean / -4.5 dB peak. Listening approval and replacement of the staged drafts remain required.
+Video 1 staging was verified on September 30, 2026. TikTok has the 1080×1920 source, final caption, public visibility, comments enabled, reuse disabled, brand disclosure enabled, AI disclosure enabled, and a clean content-check result. Instagram has the same 9:16 source, custom cover, final caption, AI label enabled, like/view counts visible, and comments enabled. Neither composer has been submitted. The owner correctly identified that the staged source is inaudible; `scripts/render-social-videos.ps1` confirms it was deliberately built with `anullsrc`. Both drafts are therefore held. Three audible review masters were rendered locally with original narration at `output/video/*-voiced.mp4`; FFprobe verifies 20-second H.264/AAC files with 48 kHz stereo audio, and volume analysis reports approximately -20.5 dB mean / -4.5 dB peak. VEYZLO's October 3 finance handoff records customer approval of the narrated version 4 package. Replacing the silent staged drafts and obtaining action-time approval for each publication remain required.
 
 ## Controlled first paid test
 
-- [x] Current application test suite passes: 140/140 tests on October 2, 2026, including the narrated-asset integrity checks, first-test budget gates, every approved Meta/TikTok campaign source-and-creative combination, and rejection of arbitrary attribution/query data.
+- [x] Current application test suite passes: 166/166 tests on October 5, 2026, including the narrated-asset integrity checks, first-test budget gates, every approved Meta/TikTok campaign source-and-creative combination, and rejection of arbitrary attribution/query data.
+- [x] Complete `$19` Stripe test-mode rehearsal verified through checkout, signed webhook, customer email, explicit sign-in confirmation, active entitlement, and a 327,739-byte private PDF download.
 - [x] Live paid-launch verifier passes: 54/54 production checks against `https://foodmyway.app` on September 30, 2026, reverified after the paid-social attribution tests; coverage includes the $19 Survival Kit page, Stripe configuration, authentication, protected download, refund/legal copy, telemetry, and public/API routes.
 - [x] Meta and TikTok campaign names, budgets, targeting, placements, links, and stop rules documented.
 - [x] Machine-readable paid-test controls in `SOCIAL_AD_TEST_MANIFEST.json` lock the three-day $45 Meta / $90 TikTok / $135 combined caps, disable tracking and automation, bind the narrated creative allowlist, and keep dates, payment methods, and publication unapproved.
@@ -95,6 +97,6 @@ Video 1 staging was verified on September 30, 2026. TikTok has the 1080×1920 so
 
 ## Go/no-go decision
 
-**NOT YET READY FOR THE CONTROLLED ORGANIC SOFT LAUNCH OR PAID CAMPAIGN PUBLICATION.** The product funnel, $19 Survival Kit, fulfillment, analytics, three visual creatives, Instagram identity, Meta ownership, and TikTok identity/security are verified. The staged Video 1 source is silent and cannot be approved for launch in its current form. Remaining organic-launch gates are audible launch masters, replacement/re-staging on TikTok and Instagram, Facebook PFP/username/website/About QA, TikTok's mobile website-field audit, staging Facebook plus Videos 2–3, and owner approval immediately before the first public posts.
+**READY FOR A CONTROLLED ORGANIC REVENUE LAUNCH; NOT AUTHORIZED FOR PAID CAMPAIGN PUBLICATION.** The complete `$19` test-mode purchase and delivery flow is proven, and VEYZLO's October 3 finance handoff records the three real narrated version 4 videos as customer-approved with exact checksums. The silent staged source remains prohibited and must be replaced with an approved narrated master before any post is published. Facebook/TikTok cleanup and platform draft staging are operational follow-up, not product-fulfillment blockers. Paul must still approve the exact post at action time.
 
 Paid launch remains gated by real organic response, campaign review screens, exact payment-method approval, and TikTok's advertiser-contract activation. Business verification is optional at this stage. Do not attach payment methods, publish campaigns, accept TikTok's $280 rebate offer, or spend any money without the owner's action-time approval.

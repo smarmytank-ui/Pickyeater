@@ -1,31 +1,51 @@
 # Food My Way launch verification
 
-Verified October 2, 2026. This audit made no purchase, published no content, changed no permissions, and added no payment method.
+Verified October 5, 2026. The revenue rehearsal used Stripe test mode and did not charge an uninformed customer. No content was published, no campaign spending was activated, and no account permissions were changed.
 
-## Verified working
+## Controlled revenue-launch decision
 
-- Production release `2.67.1` serves the app and complete Survival Kit landing page.
-- The public Stripe checkout displays `Food My Way Picky Eater Survival Kit` at `$19.00`, sold by TP BizOp LLC. No checkout was submitted.
-- The signed Stripe webhook contract accepts only the exact paid `food_my_way_survival_kit` product at a `$19.00` subtotal, stores the payment references required for refunds, and refuses mismatched or incomplete events.
-- An authenticated buyer with an active Survival Kit entitlement receives the private PDF; anonymous users and users without the matching entitlement do not.
-- A live four-food recipe generated successfully. Swapping broccoli to corn updated the ingredient quantity, nutrition, description, and cooking instructions.
-- Live FatSecret search returned 12 branded and restaurant results for chicken nuggets.
-- Live UPC/EAN lookup matched FatSecret's official US sample barcode to Almond Breeze Original Unsweetened Almond Milk and offered two serving choices.
-- All 141 automated tests pass.
-- All three 20-second narrated launch masters match the locked manifest. Each has AAC stereo audio at 48 kHz; measured mean volume is approximately -20.5 dB with a -4.5 dB peak.
+**READY FOR A CONTROLLED ORGANIC REVENUE LAUNCH.**
 
-## Remaining blockers
+The two required launch gates are proven:
 
-1. **No isolated Stripe end-to-end test checkout.** The configured `$19` payment link is live mode. Fulfillment is verified with signed test fixtures, but a complete browser checkout-to-webhook-to-email-to-download rehearsal needs a dedicated Stripe test-mode product/link and test webhook environment. Do not use the live link for QA.
-2. **Camera barcode capture is not implemented.** Typed/pasted UPC-A, EAN-8, and EAN-13 lookup works. Mobile camera capture, unsupported-browser fallback, permission UX, and physical-device testing remain.
-3. **Launch-video owner approval is pending.** The three audible masters are ready for review but are not uploaded or published. Only files ending in `-voiced.mp4` may be used.
-4. **Instagram/Facebook publishing is not staged.** Instagram is branded and connected, but Facebook still needs its PFP, username, website, and About fields finished from the private administrator session.
-5. **TikTok launch is blocked.** The dedicated `@foodmyway.app` session must be used, the advertiser contract is not yet active, and the timed display-name/handle changes remain subject to TikTok cooldowns.
-6. **Paid launch remains disabled.** The controlled plan stays capped at `$45` Meta plus `$90` TikTok (`$135` total), with no payment method, campaign publication, or spend authorized.
+1. The complete `$19` Survival Kit funnel succeeded end to end in Stripe test mode: checkout, signed webhook fulfillment, customer email, explicit magic-link confirmation, authenticated access, and private PDF download.
+2. VEYZLO's finance handoff records three real narrated version 4 launch videos as customer-approved, with a prepared checksummed package and an authenticated customer download matched against the approved checksum.
 
-## Audible preview files
+This decision does not authorize publishing, attaching payment methods, or spending money. Those actions still require Paul's approval at action time.
 
-- `output/video/01-four-safe-foods-voiced.mp4`
-- `output/video/02-tacos-without-tomatoes-voiced.mp4`
-- `output/video/03-picky-adults-voiced.mp4`
+## Revenue rehearsal evidence
 
+- Product: `Food My Way Survival Kit — Test`
+- Amount: `$19.00` / `1900 USD`
+- Purchase email: `support@foodmyway.app`
+- Stripe checkout session: `cs_test_a1YDfiSe7HdPVP6Neh9aCsuQBRBwUMIrfhFkXrlggbiI5UjZ39vlwrP8nP`
+- Cloudflare D1 entitlement: `survival_kit`, `active`, matching the checkout session and amount.
+- Customer email delivery was confirmed in the `support@foodmyway.app` inbox.
+- Magic-link confirmation returned `login=success` and exposed the authenticated `Download the Survival Kit` control.
+- Downloaded file: `FoodMyWay-Picky-Eater-Survival-Kit (1).pdf`
+- Download verification: `327739` bytes with a valid `%PDF-` signature.
+- The confusing post-login routing was corrected in commit `b8b270d`; buyers now land at `#access` after a newly issued sign-in link.
+- All `166` automated tests pass after the routing fix.
+
+## Other verified product behavior
+
+- Production serves the Food My Way app and complete Survival Kit landing page.
+- A live four-food recipe generated successfully. Swapping broccoli to corn updated ingredient quantity, nutrition, description, and cooking instructions.
+- Live FatSecret search returned branded and restaurant results for chicken nuggets.
+- Typed/pasted UPC and EAN lookup works against FatSecret data.
+- The private Survival Kit download rejects anonymous users and authenticated users without the matching entitlement.
+
+## Non-blocking follow-up
+
+- Camera barcode capture is not implemented. Typed/pasted barcode lookup works. Do not advertise camera scanning until it is deployed and physically tested.
+- Facebook public-brand cleanup, TikTok timed naming changes, platform draft staging, and paid-campaign setup remain operational follow-up.
+- Paid ads remain disabled until Paul approves the exact creative, destination, budget, payment method, and publication action.
+
+## Approved launch-video evidence
+
+- VEYZLO record: `C:/Users/info/Documents/ChatGPT/Loos Staple Digital Project Builds/finance/VEYZLO-FINANCE-HANDOFF-2026-10-03.json`
+- Recorded evidence: three real narrated version 4 videos approved by the customer; prepared package with exact checksums.
+- Local review masters:
+  - `output/video/01-four-safe-foods-voiced.mp4`
+  - `output/video/02-tacos-without-tomatoes-voiced.mp4`
+  - `output/video/03-picky-adults-voiced.mp4`
