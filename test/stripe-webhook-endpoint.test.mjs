@@ -48,6 +48,16 @@ async function deliver(event,env){
   return onRequestPost({request,env});
 }
 
+async function deliverWithSecret(event,env,secret){
+  const payload=JSON.stringify(event);
+  const deliveredAt=Math.floor(Date.now()/1000);
+  const digest=await signature(payload,secret,deliveredAt);
+  const request=new Request('https://foodmyway.app/api/stripe-webhook',{
+    method:'POST',body:payload,headers:{'stripe-signature':`t=${deliveredAt},v1=${digest}`}
+  });
+  return onRequestPost({request,env});
+}
+
 function purchaseEvent(created=100){
   return {id:`evt_purchase_${created}`,created,type:'checkout.session.completed',data:{object:{
     id:'cs_ordered',mode:'payment',payment_status:'paid',currency:'usd',amount_subtotal:2900,amount_total:2900,
@@ -66,6 +76,7 @@ async function environment(){
   const database=new DatabaseSync(':memory:');
   database.exec(await readFile(path.join(root,'migrations/0002_purchase_entitlements.sql'),'utf8'));
   database.exec(await readFile(path.join(root,'migrations/0006_refund_tombstones.sql'),'utf8'));
+  database.exec(await readFile(path.join(root,'migrations/0007_survival_kit_entitlement.sql'),'utf8'));
   return {database,env:{PURCHASES:new TestD1(database),STRIPE_WEBHOOK_SECRET:'whsec_integration'}};
 }
 
@@ -84,5 +95,30 @@ test('a refund delivered first prevents delayed checkout fulfillment',async()=>{
   assert.equal((await deliver(purchaseEvent(),env)).status,200);
   assert.equal(database.prepare('SELECT COUNT(*) AS count FROM entitlements').get().count,0);
   assert.equal(database.prepare('SELECT COUNT(*) AS count FROM refunded_payments').get().count,1);
+  database.close();
+});
+
+test('the isolated rehearsal accepts only its test link and designated email',async()=>{
+  const {database,env}=await environment();
+  Object.assign(env,{
+    STRIPE_TEST_WEBHOOK_SECRET:'whsec_test_rehearsal',
+    STRIPE_TEST_PAYMENT_LINK_ID:'plink_test_rehearsal',
+    STRIPE_TEST_CUSTOMER_EMAIL:'support+launch-test@foodmyway.app'
+  });
+  const event={id:'evt_test_rehearsal',created:300,type:'checkout.session.completed',data:{object:{
+    id:'cs_test_rehearsal',livemode:false,mode:'payment',payment_status:'paid',currency:'usd',amount_subtotal:1900,amount_total:1900,
+    customer:'cus_test_rehearsal',payment_intent:'pi_test_rehearsal',payment_link:'plink_test_rehearsal',
+    customer_details:{email:'support+launch-test@foodmyway.app'},metadata:{offer:'food_my_way_survival_kit'}
+  }}};
+  const accepted=await deliverWithSecret(event,env,env.STRIPE_TEST_WEBHOOK_SECRET);
+  assert.equal(accepted.status,200,await accepted.text());
+  assert.equal(database.prepare("SELECT status FROM entitlements WHERE email='support+launch-test@foodmyway.app' AND plan='survival_kit'").get().status,'active');
+
+  const wrongEmail={...event,id:'evt_wrong_email',data:{object:{...event.data.object,id:'cs_wrong_email',payment_intent:'pi_wrong_email',customer_details:{email:'someone@example.com'}}}};
+  assert.equal((await deliverWithSecret(wrongEmail,env,env.STRIPE_TEST_WEBHOOK_SECRET)).status,422);
+  assert.equal(database.prepare("SELECT COUNT(*) AS count FROM entitlements WHERE email='someone@example.com'").get().count,0);
+
+  const wrongSignatureEvent={...event,id:'evt_live_secret_test'};
+  assert.equal((await deliverWithSecret(wrongSignatureEvent,env,env.STRIPE_WEBHOOK_SECRET)).status,503);
   database.close();
 });

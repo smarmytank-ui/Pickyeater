@@ -9,7 +9,12 @@ export async function onRequestPost({request,env}){
   const length=Number(request.headers.get('content-length') || 0);
   if(length>1_000_000) return json({error:'Request is too large.'},413);
   const payload=await request.text();
-  if(!await stripeSignatureIsValid(payload,request.headers.get('stripe-signature'),env.STRIPE_WEBHOOK_SECRET)){
+  const signature=request.headers.get('stripe-signature');
+  const liveSignatureValid=await stripeSignatureIsValid(payload,signature,env.STRIPE_WEBHOOK_SECRET);
+  const testSignatureValid=env.STRIPE_TEST_WEBHOOK_SECRET
+    ? await stripeSignatureIsValid(payload,signature,env.STRIPE_TEST_WEBHOOK_SECRET)
+    : false;
+  if(!liveSignatureValid && !testSignatureValid){
     return json({error:'Invalid webhook signature.'},400);
   }
   let event;
@@ -17,6 +22,24 @@ export async function onRequestPost({request,env}){
   if(!event?.id || !event?.type) return json({error:'Invalid Stripe event.'},400);
   const eventCreated=Number(event.created);
   if(!Number.isInteger(eventCreated) || eventCreated<=0) return json({error:'Stripe event is missing its creation time.'},400);
+
+  const session=event.data?.object;
+  const isTestEvent=session?.livemode===false;
+  if(isTestEvent){
+    const testEmail=String(session?.customer_details?.email || session?.customer_email || '').trim().toLowerCase();
+    const allowedTestEmail=String(env.STRIPE_TEST_CUSTOMER_EMAIL || '').trim().toLowerCase();
+    if(!testSignatureValid || !env.STRIPE_TEST_PAYMENT_LINK_ID || !allowedTestEmail){
+      return json({error:'Test payment fulfillment is not configured.'},503);
+    }
+    if(!['checkout.session.completed','checkout.session.async_payment_succeeded'].includes(event.type)){
+      return json({received:true,handled:false});
+    }
+    if(session.payment_link!==env.STRIPE_TEST_PAYMENT_LINK_ID || testEmail!==allowedTestEmail){
+      return json({error:'Test payment is outside the launch rehearsal allowlist.'},422);
+    }
+  }else if(!liveSignatureValid){
+    return json({error:'Invalid webhook signature.'},400);
+  }
 
   let entitlement;
   try{ entitlement=paidEntitlementFromEvent(event); }catch(error){ return json({error:error.message},422); }

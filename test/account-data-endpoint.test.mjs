@@ -145,3 +145,32 @@ test('account storage outage returns a controlled retryable response',async()=>{
   assert.equal(response.status,503);
   assert.deepEqual(await response.json(),{error:'Cloud accounts are temporarily unavailable.'});
 });
+
+test('cloud backup retains protected originals when an older client omits the exact key',async()=>{
+  const {accounts,purchases,env,cookie}=await setup();grantFounding(purchases);
+  const original={id:'synthetic-original',exact:true,title:'Synthetic title',yieldText:'12 bowls',instructionsText:'Original paragraph.\n\n'.repeat(30),ingredients:[{originalText:'synthetic rice'}],nutrition:{calories:0}};
+  const first=await onRequestPut({request:request('PUT',cookie,{data:{foodMyWayExactRecipesV3:[original],pickyRecipesV2:[{id:'synthetic-generated'}]},baseRevision:null}),env});
+  assert.equal(first.status,200);
+  const legacy=await onRequestPut({request:request('PUT',cookie,{data:{pickyRecipesV2:[{id:'legacy-update'}]},baseRevision:1}),env});
+  assert.equal(legacy.status,200);
+  const exported=await (await onRequestGet({request:request('GET',cookie),env})).json();
+  const preserved=exported.snapshot.data.foodMyWayExactRecipesV3[0];
+  assert.equal(preserved.instructionsText,original.instructionsText);assert.equal(preserved.yieldText,'12 bowls');
+  assert.deepEqual(preserved.ingredients,original.ingredients);assert.equal(preserved.nutrition,null);assert.equal(preserved.nutritionStatus,'unavailable');
+  assert.deepEqual(exported.snapshot.data.pickyRecipesV2,[{id:'legacy-update'}]);
+  const stale=await onRequestPut({request:request('PUT',cookie,{data:{pickyRecipesV2:[]},baseRevision:1}),env});
+  assert.equal(stale.status,409);assert.equal((await stale.json()).code,'SYNC_CONFLICT');
+  const stored=JSON.parse(accounts.prepare('SELECT snapshot FROM account_data WHERE user_id=?').get('user_1').snapshot);
+  assert.equal(stored.data.foodMyWayExactRecipesV3[0].nutrition,null);
+  accounts.close();purchases.close();
+});
+
+test('cloud writes retain revision checks and fail closed on corrupt existing originals',async()=>{
+  const {accounts,purchases,env,cookie}=await setup();grantFounding(purchases);
+  const now=Math.floor(Date.now()/1000);
+  accounts.prepare('INSERT INTO account_data (user_id,snapshot,revision,updated_epoch) VALUES (?,?,?,?)').run('user_1','{invalid',3,now);
+  const response=await onRequestPut({request:request('PUT',cookie,{data:{pickyRecipesV2:[]},baseRevision:3}),env});
+  assert.equal(response.status,500);assert.equal((await response.json()).code,'CLOUD_DATA_UNAVAILABLE');
+  assert.equal(accounts.prepare('SELECT snapshot FROM account_data WHERE user_id=?').get('user_1').snapshot,'{invalid');
+  accounts.close();purchases.close();
+});

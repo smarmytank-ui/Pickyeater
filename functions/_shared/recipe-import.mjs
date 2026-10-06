@@ -1,9 +1,9 @@
 const MAX_HTML_CHARS=1_000_000;
-const MAX_INGREDIENTS=50;
-const MAX_STEPS=40;
+const MAX_INGREDIENTS=200;
+const MAX_STEPS=200;
 
 function cleanText(value,max=500){
-  return String(value ?? '')
+  const text=String(value ?? '')
     .replace(/<[^>]*>/g,' ')
     .replace(/&(?:nbsp|#160);/gi,' ')
     .replace(/&amp;/gi,'&')
@@ -11,10 +11,11 @@ function cleanText(value,max=500){
     .replace(/&#(?:39|x27);/gi,"'")
     .replace(/&lt;/gi,'<')
     .replace(/&gt;/gi,'>')
-    .replace(/[\u0000-\u001f\u007f]/g,' ')
-    .replace(/\s+/g,' ')
-    .trim()
-    .slice(0,max);
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g,' ')
+    .replace(/ {2,}/g,' ')
+    .trim();
+  if(text.length>max) throw new Error('Recipe text exceeds the import limit. Copy the original recipe into the exact editor.');
+  return text;
 }
 
 function isPrivateIpv4(hostname){
@@ -60,9 +61,10 @@ function findRecipeNode(value,seen=new Set()){
 function instructionTexts(value){
   const result=[];
   const visit=item=>{
-    if(result.length>=MAX_STEPS || item==null) return;
+    if(item==null) return;
+    if(result.length>=MAX_STEPS) throw new Error('Too many instruction steps; import the original recipe manually.');
     if(typeof item==='string'){
-      const text=cleanText(item,600);
+      const text=cleanText(item,20000);
       if(text) result.push(text);
       return;
     }
@@ -75,7 +77,7 @@ function instructionTexts(value){
     }
   };
   visit(value);
-  return result.slice(0,MAX_STEPS);
+  return result;
 }
 
 function minutesFromDuration(value){
@@ -97,16 +99,17 @@ export function parseRecipeHtml(html,sourceUrl){
   }
   if(!node) throw new Error('No structured recipe was found on that page. Try another link or enter the ingredients manually.');
   const ingredients=(Array.isArray(node.recipeIngredient) ? node.recipeIngredient : [])
-    .map(item=>cleanText(item,220)).filter(Boolean).slice(0,MAX_INGREDIENTS);
+    .map(item=>cleanText(item,2000)).filter(Boolean);
+  if(ingredients.length>MAX_INGREDIENTS) throw new Error('Too many ingredients; import the original recipe manually.');
   if(!ingredients.length) throw new Error('That page did not provide an ingredient list.');
   const steps=instructionTexts(node.recipeInstructions);
   const source=validateRecipeUrl(sourceUrl);
   return {
-    title:cleanText(node.name,140) || 'Imported recipe',
+    title:cleanText(node.name,1000) || 'Imported recipe',
     description:cleanText(node.description,500),
     ingredients,
     instructions:steps,
-    servings:cleanText(node.recipeYield,80),
+    servings:cleanText(node.recipeYield,1000),
     prepMinutes:minutesFromDuration(node.prepTime),
     cookMinutes:minutesFromDuration(node.cookTime),
     totalMinutes:minutesFromDuration(node.totalTime),

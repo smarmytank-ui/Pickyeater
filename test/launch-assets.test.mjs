@@ -70,7 +70,7 @@ test('service worker never caches account or API data',async()=>{
   const worker=await read('service-worker.js');
   assert.match(worker,/url\.pathname\.startsWith\('\/api\/'\)\) return/);
   assert.match(worker,/no-store\|private/);
-  assert.match(worker,/networkFirst=url\.pathname\.endsWith\('\/config\.js'\)/);
+  assert.match(worker,/const networkFirst=[^;]*url\.pathname\.endsWith\('\/config\.js'\)/);
   assert.doesNotMatch(worker,/cache\.put\(event\.request, copy\)/);
 });
 
@@ -320,8 +320,9 @@ test('recipe links can be securely imported with visible source attribution',asy
   assert.match(html,/id="importRecipeBtn"/);
   assert.match(html,/id="recipeSource"/);
   assert.match(script,/fetchWithTimeout\('\.\/api\/recipe-import'/);
-  assert.match(script,/track\('recipe_imported'/);
-  assert.match(script,/replace\(\/\,\+\/g,' '\)/);
+  assert.doesNotMatch(script,/track\('recipe_imported'/);
+  assert.match(script,/openExactRecipeEditor\(recipe\)/);
+  assert.match(script,/item.originalText/);
   assert.match(script,/source:sanitizeRecipeSource\(pendingRecipeSource\)/);
   assert.match(script,/importedTitle:pendingRecipeTitle/);
   assert.match(script,/cleanPortableText\(state\.importedTitle,100\) \|\| titleFrom/);

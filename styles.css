@@ -405,3 +405,8 @@ textarea:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 5px r
 .custom-swap-input{flex:1;min-width:0;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,.12)}
 .custom-swap-action{padding:10px 12px;border-radius:12px}
 @media(max-width:560px){.custom-swap{flex-wrap:wrap}.custom-swap-input{flex-basis:100%}}
+
+/* Private exact recipe editor */
+.exact-recipe-dialog{width:min(700px,90vw);max-height:85vh;overflow:auto;border-radius:16px;padding:24px;background:var(--card,#fff);color:var(--text,#18212b)}
+.exact-recipe-dialog::backdrop{background:rgba(0,0,0,.45)}
+.exact-recipe-field{display:block;width:100%;box-sizing:border-box;margin:8px 0 16px}

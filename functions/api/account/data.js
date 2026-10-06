@@ -21,7 +21,7 @@ export async function onRequestGet({request,env}){
   const row=await env.ACCOUNTS.prepare('SELECT snapshot,revision,updated_epoch FROM account_data WHERE user_id=?1').bind(auth.account.user_id).first();
   let snapshot={version:1,data:{}};
   if(row){
-    try{ snapshot=JSON.parse(row.snapshot); }
+    try{ snapshot=normalizeCloudSnapshot(JSON.parse(row.snapshot)).snapshot; }
     catch{ return json({error:'Cloud data could not be read. Contact support before saving new data.',code:'CLOUD_DATA_UNAVAILABLE'},500); }
   }
   return json({email:auth.account.email,snapshot,revision:row?.revision || null,updatedAt:row?.updated_epoch || null});
@@ -37,9 +37,17 @@ export async function onRequestPut({request,env}){
   let normalized;
   try{ normalized=normalizeCloudSnapshot(input); }catch(error){ return json({error:error.message},400); }
   const now=Math.floor(Date.now()/1000);
-  const current=await env.ACCOUNTS.prepare('SELECT revision FROM account_data WHERE user_id=?1').bind(auth.account.user_id).first();
+  const current=await env.ACCOUNTS.prepare('SELECT snapshot,revision FROM account_data WHERE user_id=?1').bind(auth.account.user_id).first();
   const baseRevision=input?.baseRevision===null || input?.baseRevision===undefined ? null : Number(input.baseRevision);
   if(current){
+    // Older clients omit the new key. Retain originals instead of replacing them with absence.
+    if(!Object.prototype.hasOwnProperty.call(normalized.snapshot.data,'foodMyWayExactRecipesV3')){
+      let previous;
+      try{previous=JSON.parse(current.snapshot);}catch{return json({error:'Cloud data could not be read. Export before saving new data.',code:'CLOUD_DATA_UNAVAILABLE'},500);}
+      if(Object.prototype.hasOwnProperty.call(previous.data || {},'foodMyWayExactRecipesV3')){
+        try{normalized=normalizeCloudSnapshot({data:{...normalized.snapshot.data,foodMyWayExactRecipesV3:previous.data.foodMyWayExactRecipesV3}});}catch(error){return json({error:error.message},400);}
+      }
+    }
     if(!Number.isInteger(baseRevision) || baseRevision!==current.revision) return json({error:'Cloud data changed on another device.',code:'SYNC_CONFLICT',revision:current.revision},409);
     const result=await env.ACCOUNTS.prepare('UPDATE account_data SET snapshot=?1,revision=revision+1,updated_epoch=?2 WHERE user_id=?3 AND revision=?4')
       .bind(normalized.serialized,now,auth.account.user_id,baseRevision).run();

@@ -5,6 +5,8 @@ compatibility_date = "2026-09-20"
 [vars]
 AUTH_FROM_EMAIL = "Food My Way <login@foodmyway.app>"
 AUTH_ORIGIN = "https://foodmyway.app"
+STRIPE_TEST_PAYMENT_LINK_ID = "plink_1UNDxbFKY5YgNIrMTiOlBJGh"
+STRIPE_TEST_CUSTOMER_EMAIL = "support+launch-test@foodmyway.app"
 
 [[d1_databases]]
 binding = "LEADS"
