@@ -25,7 +25,19 @@ This decision does not authorize publishing, attaching payment methods, or spend
 - Downloaded file: `FoodMyWay-Picky-Eater-Survival-Kit (1).pdf`
 - Download verification: `327739` bytes with a valid `%PDF-` signature.
 - The confusing post-login routing was corrected in commit `b8b270d`; buyers now land at `#access` after a newly issued sign-in link.
-- All `166` automated tests pass after the routing fix.
+- All `175` automated tests pass after the routing fix and Digital Kit release.
+
+## Interactive Digital Survival Kit release
+
+Verified in production on October 5, 2026 at `https://foodmyway.app/digital-kit` after deployment of release `2.68.0` (commit `1809f8a`).
+
+- The existing `$19` test purchaser's active `survival_kit` entitlement unlocked the private in-app experience without another checkout or charge.
+- The 14-day plan, two grocery lists, 16 familiar-first recipes, worksheets, food bridges, and safety notes rendered from the protected server endpoint.
+- Day-completion checkboxes and customer notes survived a full browser reload; temporary QA data was removed after verification.
+- The entitled PDF bonus downloaded successfully as `FoodMyWay-Picky-Eater-Survival-Kit (2).pdf`.
+- Active Founding Membership also unlocks this kit; anonymous, free, refunded, unrelated-plan, and malformed sessions remain locked.
+- The full automated suite now passes `175/175` tests, and the JavaScript syntax/security check passes.
+- Notes and progress intentionally remain on the customer's device in this release. Grocery ordering, camera barcode capture, and cloud sync were not added or advertised.
 
 ## Other verified product behavior
 

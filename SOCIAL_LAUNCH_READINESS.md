@@ -81,7 +81,8 @@ Video 1 staging was verified on September 30, 2026. TikTok has the 1080×1920 so
 
 ## Controlled first paid test
 
-- [x] Current application test suite passes: 166/166 tests on October 5, 2026, including the narrated-asset integrity checks, first-test budget gates, every approved Meta/TikTok campaign source-and-creative combination, and rejection of arbitrary attribution/query data.
+- [x] Paid in-app Digital Survival Kit deployed in release `2.68.0` (commit `1809f8a`) and verified live with the existing `$19` purchaser entitlement. The 14-day plan, grocery lists, recipes, worksheets/notes, local progress persistence, and protected PDF bonus all worked in production without a new charge.
+- [x] Current application test suite passes: 175/175 tests on October 5, 2026, including Digital Kit entitlement and endpoint rules, Founding/PDF access, narrated-asset integrity checks, first-test budget gates, every approved Meta/TikTok campaign source-and-creative combination, and rejection of arbitrary attribution/query data.
 - [x] Complete `$19` Stripe test-mode rehearsal verified through checkout, signed webhook, customer email, explicit sign-in confirmation, active entitlement, and a 327,739-byte private PDF download.
 - [x] Live paid-launch verifier passes: 54/54 production checks against `https://foodmyway.app` on September 30, 2026, reverified after the paid-social attribution tests; coverage includes the $19 Survival Kit page, Stripe configuration, authentication, protected download, refund/legal copy, telemetry, and public/API routes.
 - [x] Meta and TikTok campaign names, budgets, targeting, placements, links, and stop rules documented.
