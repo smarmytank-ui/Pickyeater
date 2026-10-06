@@ -1,10 +1,10 @@
-const CACHE_NAME = 'food-my-way-v2-67-2';
+const CACHE_NAME = 'food-my-way-v2-68-0';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=2.67.2',
-  './app.js?v=2.67.2',
-  './config.js?v=2.67.2',
+  './styles.css?v=2.68.0',
+  './app.js?v=2.68.0',
+  './config.js?v=2.68.0',
   './site.webmanifest',
   './picky-mark.svg',
   './favicon.ico',
@@ -28,7 +28,10 @@ const APP_SHELL = [
   './survival-kit.html',
   './survival-kit.css',
   './survival-kit-access.css',
-  './survival-kit.js'
+  './survival-kit.js',
+  './digital-kit.html',
+  './digital-kit.css?v=1',
+  './digital-kit.js?v=1'
 ];
 
 self.addEventListener('install', event=>{

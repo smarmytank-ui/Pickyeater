@@ -14,7 +14,7 @@ export async function onRequestPost({request,env}){
   let email;
   try{ email=normalizeAccountEmail(input?.email); }catch(error){ return json({error:error.message},400); }
   const returnTo=String(input?.returnTo || '');
-  const safeReturnTo=/^\/survival-kit\.html(?:\?download=1)?$/.test(returnTo) ? returnTo : '';
+  const safeReturnTo=/^\/(?:survival-kit\.html(?:\?download=1)?(?:#access)?|digital-kit\.html#digitalKit)$/.test(returnTo) ? returnTo : '';
   const now=Math.floor(Date.now()/1000);
   try{
     await env.ACCOUNTS.batch([

@@ -30,7 +30,7 @@ The free plan includes unlimited recipe creation and ingredient swaps and permit
 
 ### Food My Way Founding Member
 
-The Food My Way Founding Member offer is a one-time purchase of USD $29, plus any applicable tax, limited to the first 250 paid members. It includes the premium features identified at checkout, currently: unlimited saved recipes; texture and separate-plating preferences; weekly meal planning; smart grocery lists; verified founding-member status; and enabled cloud-account features.
+The Food My Way Founding Member offer is a one-time purchase of USD $29, plus any applicable tax, limited to the first 250 paid members. It includes the premium features identified at checkout, currently: the interactive Picky Eater Survival Kit and its printable PDF; unlimited saved recipes; texture and separate-plating preferences; weekly meal planning; smart grocery lists; verified founding-member status; and enabled cloud-account features.
 
 “Founding” or “lifetime” access means access for the commercial lifetime of the Food My Way premium product. It does not mean the purchaser’s lifetime, guarantee perpetual operation, or include every future product or materially different service. Materially different future products may be priced separately. We may improve, replace, or discontinue individual features while maintaining the overall nature of the purchased premium product, subject to non-waivable consumer rights.
 

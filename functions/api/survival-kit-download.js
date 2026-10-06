@@ -1,4 +1,5 @@
 import { currentAccount } from '../_shared/account.mjs';
+import { hasDigitalKitAccess } from '../_shared/survival-kit-access.mjs';
 
 const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store'}});
 
@@ -8,11 +9,12 @@ export async function onRequestGet({request,env}){
   try{ account=await currentAccount(request,env.ACCOUNTS); }
   catch{ return json({error:'Account verification is temporarily unavailable.'},503); }
   if(!account) return json({error:'Sign in with the email used at checkout.'},401);
-  let entitlement;
+  let entitlements=[];
   try{
-    entitlement=await env.PURCHASES.prepare("SELECT status FROM entitlements WHERE email=?1 AND plan='survival_kit' LIMIT 1").bind(account.email).first();
+    const result=await env.PURCHASES.prepare("SELECT plan,status FROM entitlements WHERE email=?1 AND status='active'").bind(account.email).all();
+    entitlements=(result?.results || []).map(row=>({plan:row.plan,status:row.status}));
   }catch{ return json({error:'Purchase verification is temporarily unavailable.'},503); }
-  if(entitlement?.status!=='active') return json({error:'No active Survival Kit purchase was found for this email.'},403);
+  if(!hasDigitalKitAccess({authenticated:true,entitlements})) return json({error:'No active Survival Kit or Founding Membership access was found for this email.'},403);
   let object;
   try{ object=await env.KIT_FILES.get('FoodMyWay-Picky-Eater-Survival-Kit.pdf'); }
   catch{ return json({error:'The download is temporarily unavailable.'},503); }

@@ -37,12 +37,21 @@ async function setup(plan='survival_kit',status='active'){
 }
 
 test('Survival Kit download requires an authenticated matching purchase',async()=>{
-  const state=await setup('founding','active');
+  const state=await setup('survival_kit','refunded');
   const env={ACCOUNTS:new D1(state.accounts),PURCHASES:new D1(state.purchases),KIT_FILES:{async get(){return {body:new TextEncoder().encode('%PDF-test')}}}};
   const anonymous=await onRequestGet({request:new Request('https://foodmyway.app/api/survival-kit-download'),env});
   assert.equal(anonymous.status,401);
   const wrongPlan=await onRequestGet({request:new Request('https://foodmyway.app/api/survival-kit-download',{headers:{cookie:sessionCookie(state.token)}}),env});
   assert.equal(wrongPlan.status,403);
+  state.accounts.close();state.purchases.close();
+});
+
+test('active Founding members receive the Survival Kit PDF bonus',async()=>{
+  const state=await setup('founding','active');
+  const env={ACCOUNTS:new D1(state.accounts),PURCHASES:new D1(state.purchases),KIT_FILES:{async get(){return {body:new TextEncoder().encode('%PDF-founder')}}}};
+  const response=await onRequestGet({request:new Request('https://foodmyway.app/api/survival-kit-download',{headers:{cookie:sessionCookie(state.token)}}),env});
+  assert.equal(response.status,200);
+  assert.equal(await response.text(),'%PDF-founder');
   state.accounts.close();state.purchases.close();
 });
 

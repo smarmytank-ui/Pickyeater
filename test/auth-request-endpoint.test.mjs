@@ -35,11 +35,23 @@ async function setup(){
   }};
 }
 
-function request(email){
+function request(email,returnTo){
   return new Request('https://foodmyway.app/api/auth/request',{
-    method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email})
+    method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email,returnTo})
   });
 }
+
+test('digital-kit sign-in email keeps the exact safe in-app return route',async()=>{
+  const {database,env}=await setup();
+  const originalFetch=globalThis.fetch;
+  let emailBody;
+  globalThis.fetch=async(_url,options)=>{emailBody=JSON.parse(options.body);return new Response('{}',{status:200});};
+  try{
+    const response=await onRequestPost({request:request('buyer@example.com','/digital-kit.html#digitalKit'),env});
+    assert.equal(response.status,200);
+    assert.match(emailBody.text,/returnTo=%2Fdigital-kit\.html%23digitalKit/);
+  }finally{globalThis.fetch=originalFetch;database.close();}
+});
 
 test('sign-in email requests enforce a cooldown before sending again',async()=>{
   const {database,env}=await setup();

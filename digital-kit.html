@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#2b7a63">
+  <title>My Survival Kit - Food My Way</title>
+  <link rel="icon" href="./favicon.ico">
+  <link rel="stylesheet" href="./digital-kit.css?v=1">
+</head>
+<body>
+  <header class="kit-topbar">
+    <a class="kit-brand" href="./"><img src="./food-my-way-pfp-192.png" alt="" width="42" height="42"><span><strong>Food My Way</strong><small>My Survival Kit</small></span></a>
+    <nav><a href="./">App</a><a href="./survival-kit">Kit details</a></nav>
+  </header>
+  <main class="kit-shell">
+    <section class="kit-hero">
+      <p class="eyebrow">Your interactive two-week reset</p>
+      <h1>My Survival Kit</h1>
+      <p>Plan from familiar foods, make small swaps, and keep track of what works—without turning dinner into a test.</p>
+      <div class="access-pill" id="accessPill">Checking your access…</div>
+    </section>
+
+    <section class="state-card" id="loadingState" aria-live="polite"><div class="spinner" aria-hidden="true"></div><p>Opening your kit…</p></section>
+
+    <section class="state-card hidden" id="signInState">
+      <p class="eyebrow">Already purchased?</p>
+      <h2>Sign in to unlock your kit</h2>
+      <p>Use the email from your Survival Kit or Founding Member checkout.</p>
+      <form id="digitalKitSignIn"><label for="digitalKitEmail">Purchase email</label><input id="digitalKitEmail" name="email" type="email" autocomplete="email" required placeholder="you@example.com"><button type="submit">Email my secure sign-in link</button><p id="signInStatus" role="status"></p></form>
+    </section>
+
+    <section class="state-card hidden" id="lockedState">
+      <p class="eyebrow">Premium feature</p>
+      <h2>Your account is signed in, but this kit is locked</h2>
+      <p>The digital Survival Kit is included with the $19 Survival Kit purchase and with active Founding Membership.</p>
+      <div class="button-row"><a class="button primary" href="./survival-kit#buy">Get the Survival Kit — $19</a><a class="button secondary" href="./#pricing">See Founding Membership</a></div>
+    </section>
+
+    <section class="hidden" id="kitApp">
+      <div class="kit-tabs" role="tablist" aria-label="Survival Kit sections">
+        <button role="tab" aria-selected="true" data-view="plan">14-day plan</button>
+        <button role="tab" aria-selected="false" data-view="groceries">Grocery lists</button>
+        <button role="tab" aria-selected="false" data-view="recipes">Recipes</button>
+        <button role="tab" aria-selected="false" data-view="tools">My notes</button>
+      </div>
+      <div id="kitView" tabindex="-1"></div>
+      <aside class="download-card"><div><strong>Want the printable version?</strong><span>Keep the original PDF for offline use.</span></div><a class="button secondary" href="/api/survival-kit-download">Download PDF</a></aside>
+    </section>
+  </main>
+  <footer><span>© 2026 Food My Way · TP Biz Ops LLC</span><span>Your progress and notes stay on this device.</span></footer>
+  <script src="./digital-kit.js?v=1"></script>
+</body>
+</html>
