@@ -60,7 +60,7 @@
     button.disabled=true;
     if(status) status.textContent='Sending your secure link...';
     try{
-      const response=await fetch('/api/auth/request',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email:form.email.value,returnTo:'/survival-kit.html?download=1'})});
+      const response=await fetch('/api/auth/request',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email:form.email.value,returnTo:'/survival-kit.html?download=1#access'})});
       const result=await response.json();
       if(!response.ok) throw new Error(result.error || 'Sign-in link could not be sent.');
       if(status) status.textContent='Check your email. The link expires in 15 minutes.';

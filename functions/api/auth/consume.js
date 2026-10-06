@@ -1,7 +1,7 @@
 import { randomToken, sessionCookie, sha256Hex } from '../../_shared/account.mjs';
 
 function redirectHome(request,result,headers={},returnTo=''){
-  const home=new URL(/^\/survival-kit\.html(?:\?download=1)?$/.test(returnTo) ? returnTo : '/',request.url);
+  const home=new URL(/^\/survival-kit\.html(?:\?download=1)?(?:#access)?$/.test(returnTo) ? returnTo : '/',request.url);
   home.searchParams.set('login',result);
   return new Response(null,{status:302,headers:{location:home.href,'cache-control':'no-store',...headers}});
 }
@@ -28,7 +28,7 @@ export async function onRequestGet({request,env}){
   let valid;
   try{ valid=await validChallenge(token,env); }
   catch{ return redirectHome(request,'unavailable'); }
-  return valid ? confirmationPage(token,/^\/survival-kit\.html(?:\?download=1)?$/.test(returnTo) ? returnTo : '') : redirectHome(request,'invalid');
+  return valid ? confirmationPage(token,/^\/survival-kit\.html(?:\?download=1)?(?:#access)?$/.test(returnTo) ? returnTo : '') : redirectHome(request,'invalid');
 }
 
 export async function onRequestPost({request,env}){
