@@ -53,12 +53,13 @@ export async function onRequestPost({request,env}){
     if(entitlement){
       statements.push(env.PURCHASES.prepare(`INSERT INTO entitlements (email,plan,status,stripe_customer_id,stripe_session_id,stripe_payment_intent_id,amount,currency,stripe_event_created,created_at,updated_at)
         SELECT ?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?10
-        WHERE NOT EXISTS (SELECT 1 FROM refunded_payments WHERE stripe_payment_intent_id=?6 AND stripe_event_created>=?9)
+        WHERE NOT EXISTS (SELECT 1 FROM refunded_payments WHERE stripe_payment_intent_id=?6)
         ON CONFLICT(email,plan) DO UPDATE SET status=excluded.status, stripe_customer_id=excluded.stripe_customer_id,
         stripe_session_id=excluded.stripe_session_id, stripe_payment_intent_id=excluded.stripe_payment_intent_id,
         amount=excluded.amount, currency=excluded.currency, stripe_event_created=excluded.stripe_event_created, updated_at=excluded.updated_at
-        WHERE entitlements.status!='refunded' AND excluded.stripe_event_created>=entitlements.stripe_event_created
-          AND NOT EXISTS (SELECT 1 FROM refunded_payments WHERE stripe_payment_intent_id=excluded.stripe_payment_intent_id AND stripe_event_created>=excluded.stripe_event_created)`)
+        WHERE (entitlements.status!='refunded' OR excluded.stripe_payment_intent_id!=entitlements.stripe_payment_intent_id)
+          AND excluded.stripe_event_created>=entitlements.stripe_event_created
+          AND NOT EXISTS (SELECT 1 FROM refunded_payments WHERE stripe_payment_intent_id=excluded.stripe_payment_intent_id)`)
         .bind(entitlement.email,entitlement.plan,entitlement.status,entitlement.stripeCustomerId,entitlement.stripeSessionId,
           entitlement.stripePaymentIntentId,entitlement.amount,entitlement.currency,eventCreated,now));
     }else{

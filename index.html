@@ -25,7 +25,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="./food-my-way-pfp-32.png">
 <link rel="apple-touch-icon" href="./food-my-way-pfp-180.png">
 <link rel="manifest" href="./site.webmanifest">
-  <link rel="stylesheet" href="./styles.css?v=2.68.0" />
+  <link rel="stylesheet" href="./styles.css?v=2.68.4" />
 </head>
 <body>
 <div class="page">
@@ -39,8 +39,10 @@
     </div>
   </div>
   <nav class="topbar-actions" aria-label="App sections">
+    <button id="memberHomeBtn" class="btn ghost app-nav-control" type="button">Home</button>
+    <button id="newRecipeBtn" class="btn primary app-nav-control" type="button">New Recipe</button>
     <a class="btn ghost topbar-link" href="#how-it-works">How it works</a>
-    <a class="btn ghost topbar-link" href="#pricing">Pricing</a>
+    <a id="memberPricingLink" class="btn ghost topbar-link" href="#pricing">Pricing</a>
     <button id="openProfile" class="btn ghost topbar-btn" type="button" aria-label="Open food preferences"><span class="nav-icon" aria-hidden="true">♡</span><span class="nav-label">My foods</span></button>
     <button id="openAccount" class="btn ghost topbar-btn hidden" type="button" aria-label="Open account"><span class="nav-icon" aria-hidden="true">●</span><span class="nav-label">Account</span></button>
     <a class="btn ghost topbar-btn" href="./digital-kit.html" aria-label="Open My Survival Kit"><span class="nav-icon" aria-hidden="true">🧩</span><span class="nav-label">My Kit</span></a>
@@ -84,6 +86,23 @@
   </div>
 </section>
 
+<section id="memberAccessPanel" class="card member-access-panel hidden" aria-labelledby="memberAccessHeading">
+  <h2 id="memberAccessHeading">Your Food My Way</h2>
+  <p id="memberAccessStatus" role="status" aria-live="polite"></p>
+  <div class="member-access-actions">
+    <a class="btn ghost" href="./digital-kit.html">Open My Kit</a>
+    <button id="memberOpenRecipeBook" class="btn ghost" type="button">My Recipe Book</button>
+    <button id="memberOpenAccount" class="btn ghost" type="button">Account &amp; access</button>
+    <button id="memberRecheck" class="btn ghost hidden" type="button">Check access again</button>
+    <a class="btn ghost" href="./support.html">Get help</a>
+  </div>
+</section>
+
+<section class="draft-notice" aria-label="Unfinished recipe">
+  <p id="draftStatus" role="status" aria-live="polite"></p>
+  <button id="resumeRecipeBtn" class="btn ghost hidden" type="button">Resume unfinished recipe</button>
+</section>
+
 <section id="inputCard" class="card">
   <div class="card-heading">
     <div>
@@ -99,6 +118,22 @@
     <div id="ingredientHelp" class="input-count"><span id="ingredientCount">0 / 12</span> ingredients</div>
   </div>
   <div id="inputError" class="input-error hidden" role="alert">Add at least one ingredient to get started.</div>
+  <section id="speechIngredients" class="hidden" aria-labelledby="speechIngredientsTitle">
+    <h3 id="speechIngredientsTitle">Speak my ingredients <span class="input-count">Preview</span></h3>
+    <p id="speechDisclosure" class="input-count">Optional browser speech recognition. Your browser's speech service may process audio off-device under its own terms. Starting may request microphone permission. Support varies by browser and device. You can always type or paste instead.</p>
+    <div class="recipe-import-row">
+      <button id="speechStart" class="btn ghost" type="button" aria-describedby="speechDisclosure">Start microphone</button>
+      <button id="speechStop" class="btn ghost hidden" type="button">Stop recording</button>
+      <button id="speechCancel" class="btn ghost hidden" type="button">Cancel</button>
+    </div>
+    <p id="speechStatus" class="input-count" role="status" aria-live="polite"></p>
+    <div id="speechReview" class="hidden">
+      <label for="speechTranscript">Review your transcript <span>(one ingredient per line)</span></label>
+      <textarea id="speechTranscript" class="field" maxlength="1200" rows="4" aria-describedby="speechReviewHelp"></textarea>
+      <p id="speechReviewHelp" class="input-count">Correct names, quantities, and line breaks. Using this transcript replaces the ingredients above; it will not create a recipe until you choose Make my recipe.</p>
+      <button id="speechUse" class="btn ghost" type="button">Use reviewed transcript</button>
+    </div>
+  </section>
   <div class="quick-pick-label">Or start with a favorite</div>
   <div class="quick-picks" aria-label="Recipe starters">
     <button class="starter-chip" type="button" data-starter="chicken breast&#10;potatoes&#10;cheddar cheese&#10;broccoli">Chicken dinner</button>
@@ -109,10 +144,12 @@
   <div class="recipe-import">
     <div class="quick-pick-label">Or adapt a recipe link</div>
     <div class="recipe-import-row">
-      <input id="recipeUrlInput" class="field" type="url" inputmode="url" maxlength="1000" autocomplete="url" placeholder="https://example.com/recipe" aria-describedby="recipeImportStatus" />
+      <input aria-label="Recipe page URL" id="recipeUrlInput" class="field" type="url" inputmode="url" maxlength="1000" autocomplete="url" placeholder="https://example.com/recipe" aria-describedby="recipeImportHelp recipeImportStatus" />
       <button id="importRecipeBtn" class="btn ghost" type="button">Import recipe</button>
     </div>
-    <div id="recipeImportStatus" class="input-count" role="status">Review the original ingredients, yield, and instructions before saving an exact recipe.</div>
+    <p id="recipeImportHelp" class="input-count">Use a single recipe page, not a roundup or collection. Import depends on the page providing readable recipe data; a link from another site is not guaranteed to work. Automatic Allrecipes import is not supported here.</p>
+    <details><summary>What can I do if a link will not import?</summary><p>To make a new Food My Way recipe, paste ingredients into the box above and choose <strong>Make my recipe</strong>. This creates new instructions; it does not copy the original recipe.</p><p>To keep the original title, quantities, yield, and instructions, choose <strong>Add a private exact recipe</strong> below. Enter and review those details yourself before saving. Private exact recipes stay separate from generated recipes.</p></details>
+    <div id="recipeImportStatus" class="input-count" role="status">Review imported ingredients, yield, and instructions before saving an exact recipe.</div>
   </div>
   <button id="generateBtn" class="btn primary full generate-cta"><span>Make my recipe</span><span aria-hidden="true">→</span></button>
   <div class="privacy-note">Your recipes stay on this device unless you choose to share them.</div>
@@ -193,7 +230,7 @@
   </div>
 
   <p class="ownership">This is your version now.</p>
-  <button id="backBtn" class="btn ghost full">← Make another</button>
+  <button id="backBtn" class="btn ghost full" type="button">New Recipe</button>
 </section>
 
 <!-- Recipe Book -->
@@ -457,7 +494,8 @@
 {"@context":"https://schema.org","@graph":[{"@type":"SoftwareApplication","@id":"https://foodmyway.app/#app","name":"Food My Way","url":"https://foodmyway.app/","applicationCategory":"LifestyleApplication","operatingSystem":"Web","description":"A flexible recipe and ingredient-swap app built for picky eaters.","offers":[{"@type":"Offer","name":"Free","price":"0","priceCurrency":"USD","availability":"https://schema.org/InStock"},{"@type":"Offer","name":"Founding Member","price":"29","priceCurrency":"USD","availability":"https://schema.org/PreOrder","eligibleQuantity":{"@type":"QuantitativeValue","maxValue":250}}]},{"@type":"FAQPage","@id":"https://foodmyway.app/#faq","mainEntity":[{"@type":"Question","name":"Is this only for children?","acceptedAnswer":{"@type":"Answer","text":"No. Food My Way is for picky adults, parents, neurodivergent households, and anyone who wants less pressure around food."}},{"@type":"Question","name":"Does Food My Way provide medical or allergy advice?","acceptedAnswer":{"@type":"Answer","text":"No. Recipes and nutrition are informational estimates. Always verify labels and speak with a qualified professional about allergies, eating disorders, or medical nutrition needs."}},{"@type":"Question","name":"Where are my recipes stored?","acceptedAnswer":{"@type":"Answer","text":"Recipes stay in your browser by default. When cloud accounts are enabled, signed-in members can explicitly back up, restore, export, or delete their cloud data."}},{"@type":"Question","name":"What stays free?","acceptedAnswer":{"@type":"Answer","text":"You can create and swap recipes without a subscription and save up to three favorites. Founding membership adds the interactive Survival Kit and printable PDF, unlimited saves, household preferences, weekly planning, grocery lists, and cloud account features."}},{"@type":"Question","name":"What does founding lifetime access mean?","acceptedAnswer":{"@type":"Answer","text":"It means access for the commercial lifetime of the Food My Way premium product, not anyone’s personal lifetime and not every product Food My Way may create. Materially different future products may be sold separately."}}]}]}
 </script>
 
-<script src="./config.js?v=2.68.0"></script>
-<script src="./app.js?v=2.68.0"></script>
+<script src="./config.js?v=2.68.4"></script>
+<script src="./app.js?v=2.68.4"></script>
+<script src="./speech-ingredients.js?v=2.68.4"></script>
 </body>
 </html>

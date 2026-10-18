@@ -98,6 +98,50 @@ test('a refund delivered first prevents delayed checkout fulfillment',async()=>{
   database.close();
 });
 
+test('a genuinely new payment restores access after a refund without reviving the refunded payment',async()=>{
+  const {database,env}=await environment();
+  try{
+    await deliver(purchaseEvent(),env);
+    await deliver(refundEvent(),env);
+    const repurchase=purchaseEvent(300);
+    repurchase.data.object.id='cs_repurchase';
+    repurchase.data.object.payment_intent='pi_repurchase';
+    assert.equal((await deliver(repurchase,env)).status,200);
+    assert.deepEqual({...database.prepare('SELECT status,stripe_payment_intent_id FROM entitlements').get()},{status:'active',stripe_payment_intent_id:'pi_repurchase'});
+    // A later-created async event for the original refunded payment must not replace the repurchase.
+    const delayed=purchaseEvent(400);delayed.type='checkout.session.async_payment_succeeded';
+    assert.equal((await deliver(delayed,env)).status,200);
+    await deliver(refundEvent(),env);
+    await deliver(repurchase,env);
+    assert.deepEqual({...database.prepare('SELECT status,stripe_payment_intent_id FROM entitlements').get()},{status:'active',stripe_payment_intent_id:'pi_repurchase'});
+    assert.equal(database.prepare("SELECT COUNT(*) AS count FROM stripe_events WHERE event_id='evt_purchase_300'").get().count,1);
+  }finally{database.close();}
+});
+
+test('refund tombstones prevent same-second and later async events from resurrecting a refunded payment',async()=>{
+  for(const checkoutCreated of [200,300]){
+    const {database,env}=await environment();
+    try{
+      assert.equal((await deliver(refundEvent(200),env)).status,200);
+      const checkout=purchaseEvent(checkoutCreated);checkout.type='checkout.session.async_payment_succeeded';
+      assert.equal((await deliver(checkout,env)).status,200);
+      assert.equal(database.prepare('SELECT COUNT(*) AS count FROM entitlements').get().count,0);
+    }finally{database.close();}
+  }
+});
+
+test('unpaid checkout completion never grants access and a successful async payment does',async()=>{
+  const {database,env}=await environment();
+  try{
+    const pending=purchaseEvent(100);pending.data.object.payment_status='unpaid';
+    assert.equal((await deliver(pending,env)).status,200);
+    assert.equal(database.prepare('SELECT COUNT(*) AS count FROM entitlements').get().count,0);
+    const paid=purchaseEvent(150);paid.type='checkout.session.async_payment_succeeded';
+    assert.equal((await deliver(paid,env)).status,200);
+    assert.equal(database.prepare('SELECT status FROM entitlements').get().status,'active');
+  }finally{database.close();}
+});
+
 test('the isolated rehearsal accepts only its test link and designated email',async()=>{
   const {database,env}=await environment();
   Object.assign(env,{

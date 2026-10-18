@@ -197,7 +197,8 @@ test('Cloudflare headers protect dynamic and sensitive responses',async()=>{
   assert.doesNotMatch(headers,/style-src[^;]*'unsafe-inline'/);
   const structuredData=html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
   assert.ok(structuredData,'homepage needs structured data');
-  const structuredDataHash=createHash('sha256').update(structuredData).digest('base64');
+  // HTML parsing normalizes CRLF to LF before the browser applies CSP hashes.
+  const structuredDataHash=createHash('sha256').update(structuredData.replace(/\r\n?/g,'\n')).digest('base64');
   assert.match(headers,new RegExp(`script-src 'self' 'sha256-${structuredDataHash.replaceAll('+','\\+')}'`));
   assert.match(headers,/\/api\/\*[\s\S]*Cache-Control: no-store/);
 });
@@ -325,7 +326,7 @@ test('recipe links can be securely imported with visible source attribution',asy
   assert.match(script,/item.originalText/);
   assert.match(script,/source:sanitizeRecipeSource\(pendingRecipeSource\)/);
   assert.match(script,/importedTitle:pendingRecipeTitle/);
-  assert.match(script,/cleanPortableText\(state\.importedTitle,100\) \|\| titleFrom/);
+  assert.match(script,/cleanPortableText\(state\.importedTitle \|\| state\.manualTitle,100\) \|\| titleFrom/);
   assert.match(endpoint,/redirect:'manual'/);
   assert.match(endpoint,/validateRecipeUrl\(new URL\(location,current\)\.href\)/);
 });
@@ -452,7 +453,7 @@ test('customer-facing network actions have bounded wait times',async()=>{
 test('account outages preserve the last known session and surface an error',async()=>{
   const script=await readFile(path.join(root,'app.js'),'utf8');
   assert.match(script,/async function refreshAccountSession\(\{reportError=false\}=\{\}\)/);
-  assert.match(script,/catch\(error\)\{\s*renderAccountState\(\);\s*if\(reportError\) showAccountError\(error\.message\);\s*return null;/);
+  assert.match(script,/catch\(error\)\{\s*accountSessionStatus='error';\s*renderAccountState\(\);\s*if\(reportError\) showAccountError\(error\.message\);\s*return null;/);
   assert.doesNotMatch(script,/catch\{ accountSession=\{authenticated:false,configured:false,email:'',entitlement:null\}; \}/);
   assert.match(script,/refreshAccountSession\(\{reportError:true\}\)\.then\(session=>\{\s*if\(!session\) return;/);
 });

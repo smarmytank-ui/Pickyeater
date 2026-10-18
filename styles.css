@@ -46,6 +46,26 @@ textarea{width:100%;min-height:120px;border:1px solid var(--border);border-radiu
 .btn.ghost{background:#fff}
 .full{width:100%;margin-top:14px}
 .hidden{display:none}
+
+/* Keep member navigation visible and usable at small widths. */
+.topbar{flex-wrap:wrap}
+.topbar-actions{min-width:0;flex:1 1 480px;flex-wrap:wrap;justify-content:flex-end}
+.brand{min-width:0;flex:0 1 auto}
+.app-nav-control{white-space:normal;min-height:42px}
+.member-access-panel{border-color:rgba(43,122,99,.3)}
+.member-access-panel h2{margin-top:0}
+.member-access-actions{display:flex;flex-wrap:wrap;gap:8px}
+.member-access-actions .btn{text-decoration:none;color:inherit;white-space:normal}
+.draft-notice{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 14px}
+.draft-notice p:empty{display:none}
+.draft-notice p{margin:0;color:var(--muted);font-size:13px;flex:1 1 200px;overflow-wrap:anywhere}
+.draft-notice .btn{white-space:normal}
+@media(max-width:560px){
+  .topbar-actions{flex-basis:100%;justify-content:flex-start}
+  .topbar-actions .app-nav-control{width:auto;height:auto;padding:10px 14px;font-size:13px}
+  .member-access-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .member-access-actions .btn{padding:10px;min-width:0}
+}
 .recipe-title{font-size:26px;font-weight:800}
 .recipe-description{font-size:14px;color:var(--muted);margin-top:6px;line-height:1.45}
 .pill-row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}

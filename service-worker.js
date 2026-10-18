@@ -1,10 +1,11 @@
-const CACHE_NAME = 'food-my-way-v2-68-0';
+const CACHE_NAME = 'food-my-way-v2-68-4';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=2.68.0',
-  './app.js?v=2.68.0',
-  './config.js?v=2.68.0',
+  './styles.css?v=2.68.4',
+  './app.js?v=2.68.4',
+  './speech-ingredients.js?v=2.68.4',
+  './config.js?v=2.68.4',
   './site.webmanifest',
   './picky-mark.svg',
   './favicon.ico',
@@ -26,9 +27,9 @@ const APP_SHELL = [
   './sensory-friendly-meals.html',
   './easy-weeknight-meals.html',
   './survival-kit.html',
-  './survival-kit.css',
+  './survival-kit.css?v=2.68.4',
   './survival-kit-access.css',
-  './survival-kit.js',
+  './survival-kit.js?v=2.68.4',
   './digital-kit.html',
   './digital-kit.css?v=1',
   './digital-kit.js?v=1'
