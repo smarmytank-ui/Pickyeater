@@ -1,4 +1,5 @@
 import { paidEntitlementFromEvent, foundingRefundFromEvent, stripeSignatureIsValid } from '../_shared/stripe-webhook.mjs';
+import { parseCheckoutReference } from '../../checkout-attribution.mjs';
 
 function json(body,status=200){
   return new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store'}});
@@ -51,6 +52,17 @@ export async function onRequestPost({request,env}){
     const statements=[env.PURCHASES.prepare('INSERT OR IGNORE INTO stripe_events (event_id,event_type,processed_at) VALUES (?1,?2,?3)')
       .bind(event.id,event.type,now)];
     if(entitlement){
+      const campaign=parseCheckoutReference(session.client_reference_id);
+      // Signed payment fields are authoritative; campaign context is untrusted.
+      // Never overwrite an order on replay or resurrect a fully refunded intent.
+      statements.push(env.PURCHASES.prepare(`INSERT OR IGNORE INTO paid_orders
+        (stripe_session_id,stripe_payment_intent_id,plan,amount,currency,payment_mode,status,campaign_source,campaign_creative,campaign_reference,stripe_event_created,recorded_at,refunded_at)
+        VALUES (?1,?2,?3,?4,?5,?6,
+          CASE WHEN EXISTS (SELECT 1 FROM refunded_payments WHERE stripe_payment_intent_id=?2) THEN 'refunded' ELSE 'paid' END,
+          ?7,?8,?9,?10,?11,
+          (SELECT updated_at FROM refunded_payments WHERE stripe_payment_intent_id=?2))`)
+        .bind(entitlement.stripeSessionId,entitlement.stripePaymentIntentId,entitlement.plan,entitlement.amount,entitlement.currency,
+          session.livemode===true?'live':session.livemode===false?'test':'unknown',campaign.source,campaign.creative,campaign.reference,eventCreated,now));
       statements.push(env.PURCHASES.prepare(`INSERT INTO entitlements (email,plan,status,stripe_customer_id,stripe_session_id,stripe_payment_intent_id,amount,currency,stripe_event_created,created_at,updated_at)
         SELECT ?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?10
         WHERE NOT EXISTS (SELECT 1 FROM refunded_payments WHERE stripe_payment_intent_id=?6)
@@ -63,6 +75,8 @@ export async function onRequestPost({request,env}){
         .bind(entitlement.email,entitlement.plan,entitlement.status,entitlement.stripeCustomerId,entitlement.stripeSessionId,
           entitlement.stripePaymentIntentId,entitlement.amount,entitlement.currency,eventCreated,now));
     }else{
+      statements.push(env.PURCHASES.prepare("UPDATE paid_orders SET status='refunded', refunded_at=COALESCE(refunded_at,?1) WHERE stripe_payment_intent_id=?2")
+        .bind(now,refund.stripePaymentIntentId));
       statements.push(env.PURCHASES.prepare(`INSERT INTO refunded_payments (stripe_payment_intent_id,stripe_event_created,created_at,updated_at)
         VALUES (?3,?1,?2,?2)
         ON CONFLICT(stripe_payment_intent_id) DO UPDATE SET stripe_event_created=excluded.stripe_event_created,updated_at=excluded.updated_at
