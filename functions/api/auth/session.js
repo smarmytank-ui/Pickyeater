@@ -10,7 +10,7 @@ export async function onRequestGet({request,env}){
   if(!account) return json({authenticated:false,configured:true});
   let entitlement=null;
   let entitlements=[];
-  let entitlementUnavailable=false;
+  let entitlementUnavailable=!env.PURCHASES;
   if(env.PURCHASES){
     try{
       const result=await env.PURCHASES.prepare("SELECT plan,status FROM entitlements WHERE email=?1 AND status='active' ORDER BY updated_at DESC")
