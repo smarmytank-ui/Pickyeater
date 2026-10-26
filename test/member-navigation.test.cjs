@@ -1,12 +1,12 @@
-﻿const test=require('node:test');const assert=require('node:assert/strict');
+const test=require('node:test');const assert=require('node:assert/strict');
 const fs=require('node:fs');const vm=require('node:vm');const path=require('node:path');
 function harness(store=new Map()){
  const nodes=new Map();let failWrite=false,failRead=false,failRemove=false,approved=true;
  function node(id){const classes=new Set();const handlers={};return {id,value:'',textContent:'',hidden:false,dataset:{},handlers,
  classList:{add:x=>classes.add(x),remove:x=>classes.delete(x),contains:x=>classes.has(x),toggle(x,force){if(force===undefined? !classes.has(x):force)classes.add(x);else classes.delete(x);}},
  setAttribute(){},focus(){this.focused=true;},scrollIntoView(){},addEventListener(type,fn){handlers[type]=fn;},dispatchEvent(event){handlers[event.type]?.(event);}};}
- for(const id of ['ingredientsInput','inputCard','resultCard','recipeBookCard','diaryCard','sharedRecipeCard','plannerCard','saveRow','savedNextStep','draftStatus','resumeRecipeBtn','memberHomeBtn','newRecipeBtn','memberOpenRecipeBook','recipeTitle','nutritionDisclosure'])nodes.set(id,node(id));
- const document={readyState:'loading',addEventListener(){},getElementById:id=>nodes.get(id)||null};
+ for(const id of ['ingredientsInput','inputCard','resultCard','recipeBookCard','diaryCard','sharedRecipeCard','plannerCard','saveRow','savedNextStep','draftStatus','resumeRecipeBtn','memberHomeBtn','newRecipeBtn','memberOpenRecipeBook','recipeTitle','nutritionDisclosure','generateBtn','saveBtn','appToast'])nodes.set(id,node(id));
+ const document={readyState:'loading',addEventListener(){},querySelectorAll:()=>[],querySelector:()=>null,getElementById:id=>nodes.get(id)||null};
  const window={addEventListener(){},dispatchEvent(){},scrollTo(){},dataLayer:[]};
  const localStorage={getItem(k){if(failRead)throw Error('denied');return store.get(k)||null;},setItem(k,v){if(failWrite)throw Error('full');store.set(k,v);},removeItem(k){if(failRemove)throw Error('denied');store.delete(k);}};
  const context=vm.createContext({console,document,window,localStorage,URL,Event:class{constructor(type){this.type=type;}},CustomEvent:class{constructor(type){this.type=type;}},confirm:()=>approved,setTimeout,clearTimeout});
@@ -21,7 +21,7 @@ function harness(store=new Map()){
  input(text){$('ingredientsInput').value=text;},
  inspect(){return JSON.parse(JSON.stringify({state,servings,loadedRecipeId,draftRecipeDirty,input:$('ingredientsInput').value,view:draftVisibleView}));},
  home:showMemberHome,resume:resumeRecipeDraft,persist:persistRecipeDraft,restore:restoreRecipeDraft,start:startNewRecipe,
- replace:approveDraftReplacement,wire:wireMemberNavigation,open:openSavedRecipe,key:RECIPE_DRAFT_KEY,
+ events:wireEvents,replace:approveDraftReplacement,wire:wireMemberNavigation,open:openSavedRecipe,key:RECIPE_DRAFT_KEY,
  };`,context);
  return {api:context.api,nodes,store,fail(kind,value=true){if(kind==='write')failWrite=value;if(kind==='read')failRead=value;if(kind==='remove')failRemove=value;},approve(value){approved=value;}};
 }
@@ -72,4 +72,15 @@ test('member controls wire once and Home has keyboard-usable focus',()=>{
  assert.equal(h.api.inspect().view,'input');assert.equal(h.nodes.get('ingredientsInput').focused,true);
  h.nodes.get('resumeRecipeBtn').handlers.click();assert.equal(h.api.inspect().view,'recipe');
  assert.ok(h.nodes.get('memberOpenRecipeBook').handlers.click);
+});
+
+test('opening saved A then generating and saving B creates a new identity without overwriting A',()=>{
+ const a={id:'saved-A',title:'Original family chicken',servings:2,ingredients:[{id:'chicken',name:'chicken breast',role:'protein',base:{v:1,u:'lb'}}]};
+ const store=new Map([['pickyRecipesV2',JSON.stringify([a])]]);const h=harness(store);
+ h.api.open(a);assert.equal(h.api.inspect().loadedRecipeId,'saved-A');
+ h.api.input('tofu\nbroccoli');h.api.events();h.nodes.get('generateBtn').handlers.click();
+ assert.equal(h.api.inspect().loadedRecipeId,null);assert.match(h.api.inspect().state.title,/Tofu/);
+ h.nodes.get('saveBtn').handlers.click();const saved=JSON.parse(store.get('pickyRecipesV2'));
+ assert.equal(saved.length,2);const original=saved.find(r=>r.id==='saved-A');assert.equal(original.title,a.title);assert.equal(original.ingredients[0].name,'chicken breast');
+ const added=saved.find(r=>r.id!=='saved-A');assert.ok(added);assert.match(added.title,/Tofu/);assert.equal(h.api.inspect().loadedRecipeId,added.id);
 });

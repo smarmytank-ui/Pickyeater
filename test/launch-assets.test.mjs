@@ -197,7 +197,8 @@ test('Cloudflare headers protect dynamic and sensitive responses',async()=>{
   assert.doesNotMatch(headers,/style-src[^;]*'unsafe-inline'/);
   const structuredData=html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
   assert.ok(structuredData,'homepage needs structured data');
-  // HTML parsing normalizes CRLF to LF before the browser applies CSP hashes.
+  // HTML parsing normalizes CRLF/CR to LF before CSP hashes script text.
+  // Windows Git checkouts must validate the same browser text as Linux CI.
   const structuredDataHash=createHash('sha256').update(structuredData.replace(/\r\n?/g,'\n')).digest('base64');
   assert.match(headers,new RegExp(`script-src 'self' 'sha256-${structuredDataHash.replaceAll('+','\\+')}'`));
   assert.match(headers,/\/api\/\*[\s\S]*Cache-Control: no-store/);
@@ -574,7 +575,10 @@ test('funnel measurement separates browser intent from authoritative purchases',
   }
   assert.match(telemetry,/unlimited_saves/);
   assert.match(docs,/signed Stripe webhook records and `PURCHASES` database/);
-  assert.match(docs,/currently_active_sales_usd/);
+  assert.match(docs,/FROM paid_orders/);
+  assert.match(docs,/WHERE payment_mode='live'/);
+  assert.match(docs,/owner\/QA\/rehearsal stripe_session_id exclusions/);
+  assert.match(docs,/not_fully_refunded_charged_usd/);
 });
 
 test('generated recipes collect a privacy-minimized make-it intent signal',async()=>{

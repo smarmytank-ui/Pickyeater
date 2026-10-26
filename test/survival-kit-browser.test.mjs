@@ -1,9 +1,11 @@
+import {hasDigitalKitAccess} from '../survival-kit-access.mjs';
+import {checkoutWithAttribution,attributedInternalUrl} from '../checkout-attribution.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
-const script=await readFile(new URL('../survival-kit.js',import.meta.url),'utf8');
+const script=(await readFile(new URL('../survival-kit.js',import.meta.url),'utf8')).replace(/^import .*;\r?\n/gm,'');
 class Element{
   constructor(hidden=false){
     this.classes=new Set(hidden?['hidden']:[]);
@@ -23,10 +25,10 @@ async function page({state={authenticated:false},sessionStatus=200,downloadStatu
   for(const [id,value] of Object.entries({kitAppReturn:'Try the app free',kitAppHeading:'Try a swap before you buy.',kitAppCopy:'Free app with three saves. $19 Kit.',kitAppLink:'Try Food My Way free',kitQuestionsHeading:'Before you buy'})) ids[id].textContent=value;
   const events=[];const links=[];
   const context={
-    crypto,URL:class extends URL{static createObjectURL(){return 'blob:local-test';}static revokeObjectURL(){}},URLSearchParams,
+    hasDigitalKitAccess,checkoutWithAttribution,attributedInternalUrl,crypto,URL:class extends URL{static createObjectURL(){return 'blob:local-test';}static revokeObjectURL(){}},URLSearchParams,
     location:{search:'',pathname:'/survival-kit.html'},setTimeout(){},
     window:{FMW_CONFIG:{survivalKitCheckoutUrl:checkout,telemetryEnabled}},
-    document:{getElementById:id=>ids[id],querySelector:()=>null,createElement:()=>new Element(),body:{append:element=>links.push(element)}},
+    document:{getElementById:id=>ids[id],querySelector:()=>null,querySelectorAll:()=>[],createElement:()=>new Element(),body:{append:element=>links.push(element)}},
     fetch:async(url,options)=>{
       if(url==='/api/events'){events.push(JSON.parse(options.body));return new Response('{}');}
       if(url==='/api/auth/session')return Response.json(state,{status:sessionStatus});
@@ -44,7 +46,7 @@ test('Founding and Kit buyers can reach their purchased PDF; refunded accounts c
     assert.equal(result.ids.kitDownload.classes.has('hidden'),false);
     assert.equal(result.ids.kitOpen.classes.has('hidden'),false);
     assert.equal(result.ids.kitSignIn.classes.has('hidden'),true);
-    assert.equal(result.ids.kitCheckout.href,'./digital-kit.html');
+    assert.equal(result.ids.kitCheckout.href,'/digital-kit.html');
     assert.equal(result.ids.kitCheckout.textContent,'Open my Kit');
     assert.equal(result.ids.kitPurchaseSummary.classes.has('hidden'),true);
   }
