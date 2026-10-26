@@ -5,6 +5,11 @@ import path from 'node:path';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 
+// Explicit campaign-asset gate: npm run verify:social-assets requires the real
+// ignored output/video binaries and checks their locked hashes and approval state.
+// Product CI's default npm test covers this verifier with disposable fixtures;
+// a clean product checkout must not depend on a historical campaign's binaries.
+
 export async function verifySocialAssets({ projectRoot=root }={}){
   const manifestPath=path.join(projectRoot,'SOCIAL_ASSET_MANIFEST.json');
   const manifest=JSON.parse(await readFile(manifestPath,'utf8'));
