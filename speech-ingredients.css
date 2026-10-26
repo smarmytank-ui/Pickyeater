@@ -1,0 +1,21 @@
+/* Speech-only layout: never reuse absolute-positioned ingredient counters. */
+#speechIngredients .speech-help{position:static;display:block;inset:auto;margin:8px 0;color:#4c5148;font-size:.9rem;line-height:1.5;white-space:normal;overflow-wrap:anywhere;}
+#speechIngredients h3 .speech-help{display:inline;margin-left:.5em;}
+#speechIngredients .recipe-import-row{display:flex;flex-wrap:wrap;gap:8px;}
+#speechIngredients button{max-width:100%;white-space:normal;}
+#speechIngredients textarea{box-sizing:border-box;max-width:100%;width:100%;}
+#speechIngredients #speechStatus{min-height:1.5em;}
+
+.ingredient-label-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.ingredient-label-row label{margin:0;}
+.ingredient-label-row #speechStart{max-width:100%;white-space:normal;}
+#speechIngredients{margin:8px 0;padding:10px 12px;border:1px solid #d9dfd3;border-radius:12px;}
+#speechIngredients .speech-help{font-size:.82rem;margin:5px 0;}
+#speechIngredients textarea{min-height:88px;max-height:160px;resize:vertical;}
+.speech-visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+.ingredient-list-hint{position:static;font-size:.82rem;line-height:1.5;color:#4c5148;margin:8px 0;}
+.ingredient-list-review{padding:12px;border:1px solid #d9dfd3;border-radius:12px;margin:10px 0;}
+.ingredient-list-review textarea{display:block;width:100%;box-sizing:border-box;margin:8px 0;}
+
+/* Scoped paragraph help only; leave the real textarea counter in its shell. */
+#inputCard p.input-count{position:static;inset:auto;display:block;max-width:100%;white-space:normal;overflow-wrap:anywhere;margin:8px 0;}

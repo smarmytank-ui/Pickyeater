@@ -1,3 +1,4 @@
+import { sqliteD1 } from './helpers/sqlite-d1.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -12,10 +13,10 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 class Statement{
   constructor(database,sql){ this.database=database; this.sql=sql; this.values=[]; }
   bind(...values){ this.values=values; return this; }
-  async first(){ return this.database.prepare(this.sql).get(...this.values); }
-  async all(){ return {results:this.database.prepare(this.sql).all(...this.values).map(row=>({...row}))}; }
+  async first(){ return sqliteD1(this.database,this.sql,'get',this.values); }
+  async all(){ return {results:sqliteD1(this.database,this.sql,'all',this.values).map(row=>({...row}))}; }
   async run(){
-    const result=this.database.prepare(this.sql).run(...this.values);
+    const result=sqliteD1(this.database,this.sql,'run',this.values);
     return {meta:{changes:Number(result.changes)}};
   }
 }
@@ -59,7 +60,7 @@ test('sign out removes only the current device session',async()=>{
   accounts.close();
 });
 
-test('an entitlement outage keeps the customer signed in',async()=>{
+for(const missingBinding of [false,true]) test(`${missingBinding?'a missing purchases binding':'an entitlement outage'} keeps the customer signed in and marks access unavailable`,async()=>{
   const accounts=new DatabaseSync(':memory:');
   accounts.exec('PRAGMA foreign_keys=ON');
   accounts.exec(await readFile(path.join(root,'migrations/0004_cloud_accounts.sql'),'utf8'));
@@ -74,7 +75,7 @@ test('an entitlement outage keeps the customer signed in',async()=>{
 
   const response=await onRequestGet({
     request:new Request('https://foodmyway.app/api/auth/session',{headers:{cookie:sessionCookie(token)}}),
-    env:{ACCOUNTS:new D1(accounts),PURCHASES:unavailablePurchases}
+    env:{ACCOUNTS:new D1(accounts),...(missingBinding?{}:{PURCHASES:unavailablePurchases})}
   });
 
   assert.equal(response.status,200);

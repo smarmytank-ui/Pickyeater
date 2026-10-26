@@ -1,14 +1,48 @@
 (()=>{
   const STORAGE_KEY='fmw.digitalKitProgress.v1';
   const $=id=>document.getElementById(id);
+  // Keep only bounded campaign context when returning to either public offer.
+  import('./checkout-attribution.mjs').then(({attributedInternalUrl})=>{
+    document.querySelectorAll('.kit-topbar a').forEach(link=>{
+      link.href=attributedInternalUrl(link.getAttribute('href'),location.search);
+    });
+  }).catch(()=>{});
   let content=null;
+  let unreadableProgress=false;
   let progress=loadProgress();
 
+  function storageStatus(message){if($('progressStatus')) $('progressStatus').textContent=message;}
   function loadProgress(){
-    try{return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {days:{},groceries:{},notes:{}};}catch{return {days:{},groceries:{},notes:{}};}
+    const empty=()=>({days:{},groceries:{},notes:{}});
+    try{
+      const raw=localStorage.getItem(STORAGE_KEY);
+      if(raw===null) return empty();
+      const value=JSON.parse(raw);
+      const record=item=>item!==null && typeof item==='object' && !Array.isArray(item);
+      if(!record(value)) throw new Error('Invalid saved progress.');
+      const restored=empty();
+      for(const key of ['days','groceries','notes']){
+        if(value[key]===undefined) continue;
+        if(!record(value[key]) || Object.values(value[key]).some(item=>typeof item!==(key==='notes'?'string':'boolean'))) throw new Error('Invalid saved progress.');
+        restored[key]=value[key];
+      }
+      return restored;
+    }catch{
+      unreadableProgress=true;
+      storageStatus('Your saved progress could not be read. It has not been replaced. New changes will last only for this visit; copy any notes before leaving and contact support for help.');
+      return empty();
+    }
   }
   function saveProgress(){
-    try{localStorage.setItem(STORAGE_KEY,JSON.stringify(progress));}catch{}
+    if(unreadableProgress) return false;
+    try{
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(progress));
+      storageStatus('Saved on this device.');
+      return true;
+    }catch{
+      storageStatus('Your changes could not be saved on this device. Keep this page open and copy any notes before leaving. Check browser storage settings or contact support.');
+      return false;
+    }
   }
   function escapeHtml(value=''){return String(value).replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));}
   function show(id){for(const target of ['loadingState','signInState','lockedState','kitApp']) $(target)?.classList.toggle('hidden',target!==id);}
@@ -34,7 +68,7 @@
 
   function renderTools(){
     const prompts=[...(content.preferencePrompts||[]),...(content.trackerPrompts||[]).map((prompt,index)=>typeof prompt==='string'?{id:`tracker-${index}`,label:prompt,placeholder:'Write what you noticed…'}:prompt)];
-    $('kitView').innerHTML=heading('My notes','Notes stay only in this browser unless a future version explicitly offers cloud sync.')+`<div class="tool-grid">${prompts.map(prompt=>`<article class="tool-card"><h3>${escapeHtml(prompt.label)}</h3><textarea data-note="${escapeHtml(prompt.id)}" placeholder="${escapeHtml(prompt.placeholder||'Write what works for your household…')}">${escapeHtml(progress.notes[prompt.id]||'')}</textarea></article>`).join('')}</div>`+heading('Food bridges','Keep familiar features and change only what feels manageable.')+content.foodBridges.map(bridge=>`<div class="bridge"><strong>${escapeHtml(bridge.title)}</strong><div>${bridge.steps.map(escapeHtml).join(' → ')}</div></div>`).join('');
+    $('kitView').innerHTML=heading('My notes','Notes stay only in this browser unless a future version explicitly offers cloud sync.')+`<div class="tool-grid">${prompts.map(prompt=>`<article class="tool-card"><h3>${escapeHtml(prompt.label)}</h3><textarea data-note="${escapeHtml(prompt.id)}" aria-label="${escapeHtml(prompt.label)}" placeholder="${escapeHtml(prompt.placeholder||'Write what works for your household…')}">${escapeHtml(progress.notes[prompt.id]||'')}</textarea></article>`).join('')}</div>`+heading('Food bridges','Keep familiar features and change only what feels manageable.')+content.foodBridges.map(bridge=>`<div class="bridge"><strong>${escapeHtml(bridge.title)}</strong><div>${bridge.steps.map(escapeHtml).join(' → ')}</div></div>`).join('');
     $('kitView').querySelectorAll('[data-note]').forEach(input=>input.addEventListener('input',()=>{progress.notes[input.dataset.note]=input.value;saveProgress();}));
   }
 

@@ -1,3 +1,4 @@
+import { sqliteD1 } from './helpers/sqlite-d1.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -8,7 +9,7 @@ import { onRequestGet } from '../functions/api/digital-kit.js';
 import { sessionCookie, sha256Hex } from '../functions/_shared/account.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-class Statement{constructor(database,sql){this.database=database;this.sql=sql;this.values=[];}bind(...values){this.values=values;return this;}async first(){return this.database.prepare(this.sql).get(...this.values);}async all(){return {results:this.database.prepare(this.sql).all(...this.values).map(row=>({...row}))};}}
+class Statement{constructor(database,sql){this.database=database;this.sql=sql;this.values=[];}bind(...values){this.values=values;return this;}async first(){return sqliteD1(this.database,this.sql,'get',this.values);}async all(){return {results:sqliteD1(this.database,this.sql,'all',this.values).map(row=>({...row}))};}}
 class D1{constructor(database){this.database=database;}prepare(sql){return new Statement(this.database,sql);}}
 
 async function setup(plan,status='active'){

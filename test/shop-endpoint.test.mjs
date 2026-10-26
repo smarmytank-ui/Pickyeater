@@ -1,3 +1,4 @@
+import { sqliteD1 } from './helpers/sqlite-d1.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -12,8 +13,8 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 class Statement{
   constructor(database,sql){ this.database=database; this.sql=sql; this.values=[]; }
   bind(...values){ this.values=values; return this; }
-  async first(){ return this.database.prepare(this.sql).get(...this.values); }
-  async run(){ return this.database.prepare(this.sql).run(...this.values); }
+  async first(){ return sqliteD1(this.database,this.sql,'get',this.values); }
+  async run(){ return sqliteD1(this.database,this.sql,'run',this.values); }
 }
 
 class D1{

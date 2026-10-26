@@ -52,14 +52,20 @@ test('recipe import endpoint has controlled method and network failures',async()
   finally{ globalThis.fetch=originalFetch; }
 });
 
-test('recipe import explains when Allrecipes blocks automated access',async()=>{
+test('recipe import explains its Allrecipes limitation without an upstream claim',async()=>{
   const originalFetch=globalThis.fetch;
   let called=false;
   globalThis.fetch=async()=>{ called=true; throw new Error('fetch should not run'); };
   try{
-    const response=await onRequestPost({request:request('https://www.allrecipes.com/recipe/16330/stuffed-peppers/')});
+    for(const url of ['https://www.allrecipes.com/recipe/16330/stuffed-peppers/','https://www.allrecipes.com/no-boil-pasta-bakes-12139398','https://allrecipes.com/recipe/example']){
+    const response=await onRequestPost({request:request(url)});
     assert.equal(response.status,422);
-    assert.match((await response.json()).error,/Allrecipes currently blocks automatic imports/);
+    const {error}=await response.json();
+    assert.match(error,/Automatic import from Allrecipes is not supported here/);
+    assert.match(error,/new recipe with new instructions/);
+    assert.match(error,/private exact recipe/);
+    assert.doesNotMatch(error,/blocks|another site/);
+    }
     assert.equal(called,false);
   }finally{ globalThis.fetch=originalFetch; }
 });

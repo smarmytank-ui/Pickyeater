@@ -12,7 +12,7 @@ export async function onRequestPost({request}){
   let current;
   try{ current=validateRecipeUrl(input?.url); }catch(error){ return json({error:error.message},400); }
   if(current.hostname==='allrecipes.com' || current.hostname.endsWith('.allrecipes.com')){
-    return json({error:'Allrecipes currently blocks automatic imports. Try a recipe link from another site, or copy its ingredients into the box above.'},422);
+    return json({error:'Automatic import from Allrecipes is not supported here. Paste ingredients to create a new recipe with new instructions, or choose Add a private exact recipe to enter and keep the original details.'},422);
   }
   let response;
   try{

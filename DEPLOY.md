@@ -50,6 +50,10 @@ The app generates share links from its current origin. Point `foodmyway.app` at 
 
 ## Versioning
 
+### Release 2.68.5 prerequisite
+
+Apply additive `migrations/0008_paid_orders.sql` to the existing **PURCHASES** binding before deploying 2.68.5. It creates a separate signed-order ledger without changing current entitlements or backfilling historical sales. Verify the table/index exist before switching code; otherwise webhook batches return 503 and Stripe must retry. Keep the table on rollback to 2.68.0, and reconcile any payments received during rollback separately. See `TELEMETRY.md` for source limitations and owner/QA exclusions. Do not interpret the migration or a test-mode transaction as a customer sale.
+
 `package.json`, the `app.js`/`styles.css` query strings in `index.html`, and the service-worker cache name must carry the same release number. The automated asset test enforces this. If production breaks, roll Cloudflare Pages back to the last deployment whose commit passed both automated suites and the deployment verifier.
 
 ---

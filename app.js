@@ -53,7 +53,7 @@ async function requestRecipeImport(url){
   const result=await response.json().catch(()=>({}));
   if(!response.ok){
     const fallback=response.status===502
-      ? 'That recipe site blocked automatic importing. Try another recipe site, or copy its ingredients into the box above.'
+      ? 'That recipe page could not be imported. Paste ingredients to create a new recipe, or add a private exact recipe.'
       : 'That recipe could not be imported.';
     throw new Error(result.error || fallback);
   }
@@ -113,7 +113,10 @@ function setupTelemetry(){
   window.addEventListener('foodmyway:analytics',event=>send(event.detail || {}));
   window.addEventListener('error',()=>send({event:'client_error',source:'runtime'}));
   window.addEventListener('unhandledrejection',()=>send({event:'client_error',source:'promise'}));
-  track('page_view');
+  import('./checkout-attribution.mjs').then(({campaignFromSearch})=>{
+    const campaign=campaignFromSearch(location.search);
+    track('page_view',{campaign_source:campaign.source,campaign_creative:campaign.creative});
+  }).catch(()=>track('page_view'));
 }
 
 const CHECKOUT_PENDING_KEY='foodMyWayCheckoutPending';
@@ -144,8 +147,10 @@ function handleCheckoutReturn(){
   const result=new URLSearchParams(location.search).get('founding');
   if(result==='success'){
     markCheckoutPending();
-    showToast('Payment received. Sign in to unlock founding access.');
-  }else if(result==='cancel') showToast('Checkout canceled. You were not charged.');
+    showToast('Checking your purchase. Sign in with your checkout email to check access.');
+  }else if(result==='cancel') showToast(checkoutIsPending()
+    ? 'Checkout canceled. An earlier checkout is still awaiting an access check.'
+    : 'Checkout canceled. You can try again when you are ready.');
   if(checkoutIsPending()) $('checkoutStatus')?.classList.remove('hidden');
   if(['success','cancel'].includes(result)){
     track('founder_checkout_returned',{result});
@@ -154,6 +159,15 @@ function handleCheckoutReturn(){
 }
 
 let accountSession={authenticated:false,configured:false,email:'',entitlement:null};
+let accountSessionStatus='loading';
+
+function accountHasActivePlan(plan){
+  if(!accountSession.authenticated || accountSession.entitlementUnavailable || accountSessionStatus!=='ready') return false;
+  return (Array.isArray(accountSession.entitlements)?accountSession.entitlements:[accountSession.entitlement]).some(item=>item?.plan===plan && item?.status==='active');
+}
+function accountMembershipUnknown(){
+  return getPublicConfig().accountsEnabled && (accountSessionStatus!=='ready' || accountSession.entitlementUnavailable===true);
+}
 
 async function accountApi(path,options={}){
   let response;
@@ -179,15 +193,23 @@ function renderAccountState(){
   const signedIn=Boolean(accountSession.authenticated);
   $('accountSignedIn')?.classList.toggle('hidden',!signedIn);
   $('accountSignedOut')?.classList.toggle('hidden',signedIn);
-  const founding=accountSession.entitlement?.plan==='founding' && accountSession.entitlement?.status==='active';
-  const entitlementUnavailable=accountSession.entitlementUnavailable===true;
+  const founding=accountHasActivePlan('founding');
+  const kit=founding || accountHasActivePlan('survival_kit');
+  const entitlementUnavailable=accountMembershipUnknown();
   if($('accountStatus')) $('accountStatus').textContent=signedIn ? `Signed in as ${accountSession.email}${founding ? ' · Founding member' : entitlementUnavailable ? ' · Membership check unavailable' : ''}` : 'Sign in to back up and restore your Food My Way data across devices.';
   $('accountBackup')?.classList.toggle('hidden',!founding);
+  $('pricing')?.classList.toggle('hidden',founding || entitlementUnavailable);
+  $('memberPricingLink')?.classList.toggle('hidden',founding || entitlementUnavailable);
+  $('memberAccessPanel')?.classList.toggle('hidden',!kit && !entitlementUnavailable);
+  if($('memberAccessStatus')) $('memberAccessStatus').textContent=founding ? 'Founding membership active. Your premium app and Survival Kit are included.' : kit ? 'Your Survival Kit is ready. Founding membership is a separate optional upgrade.' : 'Membership has not been verified. Open Account to sign in or check again; you do not need to buy again to recover a purchase.';
   const founderCta=$('founderCta');
   const savedFounderCta=$('savedFounderCta');
   if(founding){
-    if(founderCta){ founderCta.textContent='Founding member ✓'; founderCta.disabled=true; }
-    if(savedFounderCta){ savedFounderCta.textContent='Founding access active ✓'; savedFounderCta.disabled=true; }
+    if(founderCta){ founderCta.textContent='Open membership'; founderCta.disabled=false; }
+    if(savedFounderCta){ savedFounderCta.textContent='Open membership'; savedFounderCta.disabled=false; }
+  }else if(entitlementUnavailable){
+    if(founderCta){ founderCta.textContent='Check membership'; founderCta.disabled=false; }
+    if(savedFounderCta){ savedFounderCta.textContent='Check membership'; savedFounderCta.disabled=false; }
   }else{
     if(founderCta){ founderCta.textContent=validCheckoutUrl(getPublicConfig().founderCheckoutUrl) ? 'Become a founding member — $29' : 'Join the founding list'; founderCta.disabled=false; }
     if(savedFounderCta){ savedFounderCta.textContent='Get founding updates'; savedFounderCta.disabled=false; }
@@ -210,8 +232,9 @@ function renderAccountState(){
 }
 
 async function refreshAccountSession({reportError=false}={}){
-  try{ accountSession=await accountApi('./api/auth/session'); }
+  try{ accountSession=await accountApi('./api/auth/session'); accountSessionStatus='ready'; }
   catch(error){
+    accountSessionStatus='error';
     renderAccountState();
     if(reportError) showAccountError(error.message);
     return null;
@@ -394,7 +417,7 @@ async function setupAccounts(){
 
 function requirePremium(feature){
   if(!getPublicConfig().premiumEnforced) return true;
-  if(accountSession.entitlement?.plan==='founding' && accountSession.entitlement?.status==='active') return true;
+  if(accountHasActivePlan('founding')) return true;
   const labels={
     household_profile:'Household taste profiles',
     weekly_planning:'Weekly planning and grocery lists',
@@ -409,7 +432,7 @@ function requirePremium(feature){
     showAccountError('Checking your Founding membership…');
     refreshAccountSession({reportError:true}).then(session=>{
       if(!session) return;
-      const refreshed=session.entitlement?.plan==='founding' && session.entitlement?.status==='active';
+      const refreshed=accountHasActivePlan('founding');
       if(refreshed){
         showAccountError();
         closeDialog(overlay);
@@ -510,16 +533,22 @@ function uid(){
 
 function canonName(s){
   const t = String(s||'').trim().toLowerCase();
-  if(!t) return '';
+  if(!t || /^(?:divided|for serving|to serve|optional)$/.test(t)) return '';
   const x = t
     .replace(/\([^)]*\)/g,' ')
-    .replace(/^\s*(?:\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)\s*(?:lb|lbs|pound|pounds|oz|ounce|ounces|cup|cups|tbsp|tablespoons?|tsp|teaspoons?|cloves?|pieces?|slices?|cans?|packages?|medium|large|small)?\s+/i,'')
+    .replace(/\b(?:broth\s+or\s+stock|stock\s+or\s+broth)\b/g,match=>match.split(/\s+or\s+/)[0])
+    .replace(/[,;]\s*(?:divided|optional|for serving|to serve)\b.*$/g,' ')
+    .replace(/\bdivided\b/g,' ')
+    .replace(/^\s*(?:\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)\s*(?:kg|kilograms?|g|grams?|lb|lbs|pound|pounds|oz|ounce|ounces|cup|cups|tbsp|tablespoons?|tsp|teaspoons?|cloves?|pieces?|slices?|cans?|packages?|medium|large|small)?\s+/i,'')
     .replace(/\b(boneless|skinless|fresh|frozen|cooked|uncooked|raw|chopped|diced|minced|sliced|shredded|grated|lean|extra lean)\b/g,' ')
+    .replace(/^(?:packages?|packets?|cans?)\s+(?:of\s+)?/,'')
     .replace(/\bfillet\b/g,'')
     .replace(/\bfilet\b/g,'')
     .replace(/\s+/g,' ')
     .trim();
 
+  if(x === 'spinach leaves') return 'spinach';
+  if(x === 'artichoke hearts in water') return 'artichoke hearts';
   if(x === 'potato') return 'potatoes';
   if(x === 'onions') return 'onion';
   if(x === 'lemons') return 'lemon';
@@ -539,7 +568,53 @@ function canonName(s){
 }
 
 function parseLines(s){
-  return (s||'').replace(/,+/g,'\n').split(/\n+/).map(x=>x.trim()).filter(Boolean);
+  // Explicit list punctuation only, outside parenthetical preparation/package notes.
+  let depth=0,part='',parts=[];
+  for(const character of String(s || '')){
+    if(character==='(' || character==='[') depth+=1;
+    if(character===')' || character===']') depth=Math.max(0,depth-1);
+    if(character==='\n' || character==='\r' || (!depth && /[,;•●▪◦]/.test(character))){parts.push(part);part='';}
+    else part+=character;
+  }
+  parts.push(part);
+  return parts.map(x=>x.replace(/^\s*(?:[-*]\s+|\d+[.)]\s+)/,'').trim()).filter(x=>x && canonName(x));
+}
+function suggestIngredientList(value){
+  const raw=String(value || '').trim();
+  // Suggestions are not quantities, prose interpretation or arbitrary word splitting.
+  if(!raw || raw.length>1200 || /[\d,;\n\r•●▪◦()\[\]]/.test(raw)) return null;
+  const words=raw.split(/\s+/);if(words.length>60) return null;
+  const known=new Set([...Object.keys(NUTRITION_PER_100G),...Object.keys(CANON_DEFAULT_BASE),
+    ...Object.values(SWAP_CATALOG).flat().map(item=>item.name),
+    'chicken','onions','cheddar','mac and cheese','macaroni and cheese','chicken broth','chicken stock','peanut butter']);
+  const memo=new Map();
+  const solve=index=>{
+    if(index===words.length) return [[]];
+    if(memo.has(index)) return memo.get(index);
+    const paths=[];
+    for(let end=words.length;end>index;end--){
+      const phrase=words.slice(index,end).join(' ');
+      if(!known.has(phrase.toLowerCase())) continue;
+      for(const rest of solve(end)){paths.push([phrase,...rest]);if(paths.length>1) break;}
+      if(paths.length>1) break;
+    }
+    memo.set(index,paths);return paths;
+  };
+  const paths=solve(0);
+  return paths.length===1 && paths[0].length>1 && paths[0].length<=MAX_RECIPE_INGREDIENTS ? paths[0] : null;
+}
+let ingredientSuggestionSource='';
+function offerIngredientListSuggestion(){
+  const input=$('ingredientsInput');if(!input) return;
+  const suggested=suggestIngredientList(input.value);
+  $('ingredientSplitReview')?.classList.toggle('hidden',!suggested);
+  if(suggested){ingredientSuggestionSource=input.value;if($('ingredientSplitText')) $('ingredientSplitText').value=suggested.join('\n');}
+}
+function formatPastedIngredientList(){
+  const input=$('ingredientsInput');if(!input) return;
+  const parsed=parseLines(input.value);
+  if(parsed.length>1){input.value=parsed.join('\n');input.setSelectionRange?.(input.value.length,input.value.length);input.dispatchEvent(new Event('input',{bubbles:true}));}
+  offerIngredientListSuggestion();
 }
 
 const MAX_RECIPE_INGREDIENTS=12;
@@ -561,11 +636,15 @@ function validateRecipeInput(value){
 }
 
 function parseInputIngredient(raw){
-  const text = String(raw || '').trim();
+  let text = String(raw || '').trim();
+  // A stated package size is evidence of weight; a bare package is not.
+  const packageSize=text.match(/^(\d+(?:\.\d+)?)\s*\((\d+(?:\.\d+)?)\s*(oz|ounces?|g|grams?|kg|kilograms?)\)\s*(?:packages?|cans?)\s+(?:of\s+)?(.+)$/i);
+  if(packageSize) text=`${Number(packageSize[1])*Number(packageSize[2])} ${packageSize[3]} ${packageSize[4]}`;
+  else text=text.replace(/^(\d+)\s*\([^)]*\)\s*(packages?|cans?)\b/i,'$1 $2');
   const preparation = /\b(?:pre[ -]?cooked|cooked|rotisserie|leftovers?)\b/i.test(text)
     ? 'cooked'
     : (/\bfrozen\b/i.test(text) ? 'frozen' : null);
-  const match = text.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)\s*(lb|lbs|pound|pounds|oz|ounce|ounces|cup|cups|tbsp|tablespoons?|tsp|teaspoons?|cloves?|pieces?|slices?|cans?|packages?|medium|large|small)\b/i);
+  const match = text.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)\s*(kg|kilograms?|g|grams?|lb|lbs|pound|pounds|oz|ounce|ounces|cup|cups|tbsp|tablespoons?|tsp|teaspoons?|cloves?|pieces?|slices?|cans?|packages?|medium|large|small)\b/i);
   if(!match){
     const counted=text.match(/^(\d+(?:\.\d+)?)\s+(.+)$/);
     if(counted){
@@ -592,6 +671,7 @@ function parseInputIngredient(raw){
   }else quantity = Number(numberText);
   const rawUnit = match[2].toLowerCase();
   const unitMap = {
+    gram:'g', grams:'g', kilogram:'kg', kilograms:'kg',
     lbs:'lb', pound:'lb', pounds:'lb', ounce:'oz', ounces:'oz', cup:'cups',
     tablespoon:'tbsp', tablespoons:'tbsp', teaspoon:'tsp', teaspoons:'tsp',
     clove:'cloves', piece:'pieces', slice:'slices', can:'count', cans:'count',
@@ -626,28 +706,32 @@ function formatQty(value) {
 const ROLE_RULES = [
   // Prepared safe foods need package/preferred-method guidance, not raw-ingredient cooking steps.
   [/\b(chicken nuggets?|fish sticks?|hot dogs?|meatballs?|bagels?|pancakes?|waffles?|french fries|fries|pizza|mac(?:aroni)? and cheese|cereal|sandwich(?:es)?|crackers?)\b/i,'other'],
+  // Pantry liquids must precede meat/vegetable words in their names.
+  [/\b(broth|stock|bouillon)\b/i,'other'],
   // Specific phrases FIRST (prevents "green beans" matching "beans")
   [/\bgreen beans\b/i,'veg'],
-  [/\b(bell pepper|broccoli|carrots?|zucchini|spinach|tomatoes?|corn|peas|cauliflower)\b/i,'veg'],
+  [/\b(bell pepper|broccoli|carrots?|zucchini|spinach|tomatoes?|corn|peas|cauliflower|artichoke hearts?)\b/i,'veg'],
 
   // Theme / blends
   [/\btaco seasoning\b/i,'seasoning'],
   [/\b(bbq|barbecue)\b/i,'seasoning'],
 
   // Dairy + bread
-  [/\b(cheese|cheddar|mozzarella|parmesan|feta|greek yogurt|sour cream)\b/i,'dairy'],
+  [/\b(cheese|cheddar|mozzarella|parmesan|feta|greek yogurt|sour cream|heavy cream)\b/i,'dairy'],
   [/\b(tortilla|tortillas|bread|bun|buns|wrap|pita)\b/i,'bread'],
 
   // Seasonings (general)
-  [/\b(salt|pepper|black pepper|kosher salt|sea salt|garlic powder|onion powder|paprika|smoked paprika|italian seasoning|oregano|basil|parsley|thyme|rosemary|cumin|chili flakes|red pepper flakes|herbs)\b/i,'seasoning'],
+  [/\b(salt|pepper|black pepper|kosher salt|sea salt|garlic powder|onion powder|paprika|smoked paprika|italian (?:herb )?seasoning|oregano|basil|parsley|thyme|rosemary|cumin|chili flakes|red pepper flakes|herbs)\b/i,'seasoning'],
 
   [/\b(olive oil|butter)\b/i,'fat'],
   [/\b(lemon|lemon juice|vinegar)\b/i,'acid'],
   [/\b(salmon|chicken|chicken breast|beef|ground beef|lean beef|steak|turkey|pork|tofu|lentils|egg|eggs)\b/i,'protein'],
   [/\bbeans\b/i,'protein'],
-  [/\b(rice|pasta|potato|potatoes|quinoa|sweet potato|sweet potatoes)\b/i,'starch'],
+  [/\b(rice|orzo|pasta|potato|potatoes|quinoa|sweet potato|sweet potatoes)\b/i,'starch'],
   [/\b(onion|onions|green onion|scallion|scallions|shallot|garlic)\b/i,'aromatic']
 ];
+
+function isPantryLiquid(name){ return /\b(broth|stock|bouillon)\b/i.test(name); }
 
 function roleFor(n){
   for(const [r,role] of ROLE_RULES) if(r.test(n)) return role;
@@ -905,6 +989,8 @@ function nutrientFor(name, role){
 // Quantity conversions → grams
 // -------------------------------
 const UNIT_TO_GRAMS = {
+  g: 1,
+  kg: 1000,
   lb: 453.592,
   oz: 28.3495,
   eggs: 50,
@@ -1069,7 +1155,7 @@ function buildInstructions(ingredients,preferences={}){
     const name = pretty(starch.name);
     let text;
     if(starch.name.includes('rice')) text = `Cook ${name} according to the package directions, then fluff.`;
-    else if(starch.name.includes('pasta')) text = `Boil ${name} according to the package directions, then drain.`;
+    else if(/\b(?:pasta|orzo)\b/.test(starch.name)) text = `Boil ${name} according to the package directions, then drain.`;
     else if(starch.name.includes('quinoa')) text = `Rinse ${name}, simmer until the liquid is absorbed, then rest 5 minutes and fluff.`;
     else if(profile.texture==='crisp') text = `Cook ${name} until crisp outside and tender inside; roasting or air-frying works well.`;
     else if(profile.texture==='soft') text = `Cook ${name} until very soft and easy to bite; boiling or microwaving works well.`;
@@ -1100,7 +1186,9 @@ function buildInstructions(ingredients,preferences={}){
 
   active.filter(i=>i.role==='other').forEach((item,index)=>{
     const name=pretty(item.name);
-    steps.push({key:`other-${index}`,text:`Prepare ${name} according to its package directions or the method and texture you prefer.`});
+    steps.push({key:`other-${index}`,text:/\b(broth|stock|bouillon)\b/i.test(item.name)
+      ? `Use ${name} as a cooking liquid only where the ingredient's package directions allow it; check the required liquid amount before cooking.`
+      : `Prepare ${name} according to its package directions or the method and texture you prefer.`});
   });
 
   const acids = namesFor('acid');
@@ -1141,18 +1229,29 @@ function recipeDetails(ingredients){
 // Naming (dynamic after swaps)
 // -------------------------------
 function titleFrom(ings){
-  const protein = ings.find(i=>i.role==='protein' && i.name!=='skip it');
-  const primary = protein || ings.find(i=>i.name!=='skip it' && i.base?.v>0 && !['fat','acid','seasoning','aromatic'].includes(i.role));
+  // Use only present ingredients; pantry liquids and removed items are not mains.
+  const active = ings.filter(isActiveIngredient);
+  const candidates = active.filter(i=>!(/\b(broth|stock|bouillon)\b/i.test(i.name)));
+  const sorted = role => candidates.filter(i=>i.role===role).sort((a,b)=>a.name.localeCompare(b.name));
+  const protein = sorted('protein')[0];
+  const starch = sorted('starch')[0];
+  const vegetables = sorted('veg');
+  const primary = protein || starch || vegetables[0] || candidates.find(i=>!['fat','acid','seasoning','aromatic','dairy'].includes(i.role));
   const main = primary ? pretty(primary.name) : 'Familiar Food';
-  const all = ings.map(i=>i.name).join(' ').toLowerCase();
+  const all = candidates.map(i=>i.name).join(' ').toLowerCase();
 
-  if(all.includes('taco') || all.includes('tortilla')) return protein ? `${main} Tacos` : 'Flexible Tacos';
-  if(all.includes('pizza')) return protein ? `${main} Pizza` : 'Simple Pizza';
-  if(all.includes('bbq') || all.includes('barbecue')) return `BBQ ${main}`;
+  if(/\btortillas?\b/.test(all)) return protein ? `${main} Tacos` : 'Flexible Tacos';
+  if(/\bpizza\b/.test(all)) return protein ? `${main} Pizza` : 'Simple Pizza';
+  if(/\b(?:bbq|barbecue)\b/.test(all)) return `BBQ ${main}`;
 
-  const hasStarch = ings.some(i=>i.role==='starch' && i.name!=='skip it');
-  const style = hasStarch ? 'Dinner' : 'Plate';
-  return `Simple ${main} ${style}`;
+  // Pasta is an actual ingredient/format, not an invented cooking method or cuisine.
+  if(starch && /\b(?:orzo|pasta)\b/.test(starch.name)){
+    const name=pretty(starch.name);
+    const partners=[protein && pretty(protein.name),vegetables[0] && pretty(vegetables[0].name)].filter(Boolean);
+    return partners.length ? `${name} with ${partners.join(' & ')}` : `${name}, Your Way`;
+  }
+  if(!protein && starch && vegetables.length) return `${pretty(starch.name)} with ${pretty(vegetables[0].name)}`;
+  return `Simple ${main} ${starch ? 'Dinner' : 'Plate'}`;
 }
 
 // -------------------------------
@@ -1242,7 +1341,7 @@ function ensureNutritionDisclosure(){
       <button id="ndToggle" class="inline-detail-toggle" type="button" aria-expanded="false" aria-controls="ndDetails">Details</button>
     </div>
     <div id="ndDetails" class="nutrition-detail hidden">
-      Values can vary by brand, prep method, and exact portioning. Use this as guidance, not a medical claim.
+      Amounts without explicit measures use starting defaults. Nutrition may use broad ingredient-category estimates; package sizes and missing conversions cannot be inferred. Check labels and portions. This is guidance, not a medical claim.
     </div>
   `;
 
@@ -1260,6 +1359,12 @@ function ensureNutritionDisclosure(){
 
 function computeMacrosPerServing(){
   if(!state) return { cal:0, p:0, c:0, f:0 };
+  if(hasUnmeasuredRecipeIngredient(state.ingredients)){
+    if($('calories')) $('calories').textContent='Nutrition unavailable: ingredient amount needs checking';
+    for(const id of ['protein','carbs','fat']) if($(id)) $(id).textContent='';
+    ensureNutritionDisclosure();
+    return null;
+  }
 
   let cal=0, p=0, c=0, f=0;
 
@@ -1296,11 +1401,13 @@ function bump(el, cls='bump', ms=450){
 }
 
 function setOwned(){
+  draftRecipeDirty=true;
   owned = true;
   const sr = $('saveRow');
   if(sr) sr.classList.remove('hidden');
   if($('saveBtn')) $('saveBtn').textContent=loadedRecipeId ? 'Save changes' : '⭐ Save to Favorites';
   $('savedNextStep')?.classList.add('hidden');
+  persistRecipeDraft();
 }
 
 // -------------------------------
@@ -1326,13 +1433,14 @@ function applySwap(ingId, opt, optsArg){
   // - Catalog swaps: role follows ingredient
   // - Jackpot swaps: role stays on slot (persist behavior)
   const detectedRole=roleFor(ing.name);
-  ing.role = keepRole && detectedRole==='other' ? prevRole : detectedRole;
-  ing.intent = keepRole ? (prevIntent || intentForRole(ing.role)) : intentForRole(ing.role);
+  ing.role = keepRole && detectedRole==='other' && !isPantryLiquid(ing.name) ? prevRole : detectedRole;
+  const roleChanged = ing.role !== prevRole;
+  ing.intent = keepRole && !roleChanged ? (prevIntent || intentForRole(ing.role)) : intentForRole(ing.role);
 
   // Quantity handling:
   // - Catalog swaps: reset baseline per role, then apply overrides
-  // - Jackpot swaps: keep slot qty/unit
-  if(keepQty){
+  // - Custom swaps: keep slot qty/unit only when the ingredient role is unchanged.
+  if(keepQty && !roleChanged){
     ing.base = prevBase;
   } else {
     ing.base = { ...(BASE_QTY[ing.role] || BASE_QTY.veg) };
@@ -1368,7 +1476,7 @@ function render(){
   if(!state) return;
 
   // Keep naming current (swaps/amount edits)
-  state.title = cleanPortableText(state.importedTitle,100) || titleFrom(state.ingredients);
+  state.title = cleanPortableText(state.importedTitle || state.manualTitle,100) || titleFrom(state.ingredients);
   const details = recipeDetails(state.ingredients);
   state.description = details.description;
   state.prepMinutes = details.prepMinutes;
@@ -1539,6 +1647,7 @@ function render(){
 
   computeMacrosPerServing();
   ensureDiaryButton();
+  persistRecipeDraft();
 }
 
 // -------------------------------
@@ -1546,7 +1655,7 @@ function render(){
 // -------------------------------
 const RECIPE_BOOK_KEY = 'pickyRecipesV2';
 const MAX_SHARED_RECIPE_CHARS = 24000;
-const SAVED_UNITS = new Set(['','serving','count','cups','tbsp','tsp','lb','oz','eggs','cloves','medium','pieces','slices','package']);
+const SAVED_UNITS = new Set(['','serving','count','cups','tbsp','tsp','g','kg','lb','oz','eggs','cloves','medium','pieces','slices','package']);
 const SAVED_ROLES = new Set(Object.keys(BASE_QTY));
 
 function safeClone(value){
@@ -1579,7 +1688,7 @@ function sanitizeSavedIngredients(value){
     const inferredRole=roleFor(name);
     const role=name==='skip it'
       ? (SAVED_ROLES.has(item.role) ? item.role : 'other')
-      : (inferredRole==='other' && SAVED_ROLES.has(item.role) ? item.role : inferredRole);
+      : (inferredRole==='other' && !isPantryLiquid(name) && SAVED_ROLES.has(item.role) ? item.role : inferredRole);
     if(name==='skip it'){
       if(!['fat','acid','seasoning','aromatic','dairy','bread'].includes(role) || optionalSkips.has(role)) continue;
       optionalSkips.add(role);
@@ -1589,9 +1698,10 @@ function sanitizeSavedIngredients(value){
     }
     const fallback={...(CANON_DEFAULT_BASE[name] || BASE_QTY[role] || BASE_QTY.other)};
     const rawQuantity=Number(item.base?.v);
-    const quantity=Number.isFinite(rawQuantity) ? Math.min(50,Math.max(0,rawQuantity)) : fallback.v;
     const rawUnit=cleanPortableText(item.base?.u,16);
     const unit=SAVED_UNITS.has(rawUnit) ? rawUnit : fallback.u;
+    const maxQuantity=unit==='g' ? 50000 : 50;
+    const quantity=Number.isFinite(rawQuantity) ? Math.min(maxQuantity,Math.max(0,rawQuantity)) : fallback.v;
     ingredients.push({
       id:cleanPortableText(item.id,80) || uid(),
       name,
@@ -1605,8 +1715,12 @@ function sanitizeSavedIngredients(value){
   return activeCount && ingredients.some(isActiveIngredient) ? ingredients : [];
 }
 
+function hasUnmeasuredRecipeIngredient(ingredients){
+  return ingredients.filter(isActiveIngredient).some(ing=>gramsFor(ing.name,ing.base.u,ing.base.v)<=0);
+}
+
 function recipeMacros(recipeState = state, recipeServings = servings){
-  if(recipeState?.exact) return null;
+  if(recipeState?.exact || (recipeState && hasUnmeasuredRecipeIngredient(recipeState.ingredients))) return null;
   if(!recipeState) return { calories:0, protein:0, carbs:0, fat:0 };
   let cal=0, p=0, c=0, f=0;
   recipeState.ingredients.forEach(ing=>{
@@ -1890,6 +2004,7 @@ async function shopCurrentRecipe(){
 }
 
 function showPlannerView(){
+  persistRecipeDraft();
   $('inputCard')?.classList.add('hidden');
   $('resultCard')?.classList.add('hidden');
   $('recipeBookCard')?.classList.add('hidden');
@@ -1960,23 +2075,176 @@ function setRecipeIntentPrompt(visible){
   $('recipeIntentThanks')?.classList.add('hidden');
 }
 
+
+// One bounded, local-only working record. Entry text and the resumable recipe are
+// independent: resuming a recipe never replaces newer ingredients typed at Home.
+const RECIPE_DRAFT_KEY='foodMyWayWorkingDraftV1';
+const MAX_RECIPE_DRAFT_CHARS=100000;
+let draftRecipeInput='';
+let draftRecipeDirty=false;
+let draftVisibleView='input';
+let restoringRecipeDraft=false;
+function draftMessage(text){
+  const status=$('draftStatus');
+  if(status) status.textContent=text;
+  const resume=$('resumeRecipeBtn');
+  if(resume){resume.hidden=!state;resume.classList.toggle('hidden',!state);}
+}
+function readRecipeDraft(){
+  try{
+    const raw=localStorage.getItem(RECIPE_DRAFT_KEY);
+    if(!raw) return null;
+    if(raw.length>MAX_RECIPE_DRAFT_CHARS) throw new Error('Draft is too large');
+    const value=JSON.parse(raw);
+    if(!value || value.version!==1 || typeof value.input!=='string' || value.input.length>6000) throw new Error('Invalid draft');
+    const recipe=value.recipe ? normalizeSavedRecipe(value.recipe) : null;
+    if(value.recipe && (!recipe || recipe.exact)) throw new Error('Invalid draft recipe');
+    return {...value,recipe};
+  }catch{
+    draftMessage('Your device draft could not be read. Recipe Book and account data are unchanged.');
+    return null;
+  }
+}
+function persistRecipeDraft(){
+  if(restoringRecipeDraft) return true;
+  const input=$('ingredientsInput')?.value || '';
+  const record={version:1,input:input.slice(0,6000),recipe:state ? snapshotCurrentRecipe() : null,
+    recipeInput:draftRecipeInput.slice(0,6000),dirty:draftRecipeDirty,
+    loadedRecipeId:loadedRecipeId || null,owned:!!owned,view:draftVisibleView,
+    titleOverride:state ? cleanPortableText(state.importedTitle || state.manualTitle,100) : '',
+    pendingTitle:cleanPortableText(pendingRecipeTitle,100),pendingSource:sanitizeRecipeSource(pendingRecipeSource)};
+  try{
+    const json=JSON.stringify(record);
+    if(input.length>6000 || json.length>MAX_RECIPE_DRAFT_CHARS) throw new Error('Draft is too large');
+    localStorage.setItem(RECIPE_DRAFT_KEY,json);
+    draftMessage(state ? 'Entry and recipe draft kept on this device. Resume does not replace your ingredient entry.' : 'Ingredient draft kept on this device.');
+    return true;
+  }catch{
+    draftMessage('Draft could not be saved on this device. Keep this tab open; copy ingredients or save the recipe to Recipe Book before leaving.');
+    return false;
+  }
+}
+function hideRecipeWorkspace(){
+  for(const id of ['inputCard','resultCard','recipeBookCard','diaryCard','sharedRecipeCard','plannerCard']) $(id)?.classList.add('hidden');
+}
+function showMemberHome({focus=true}={}){
+  draftVisibleView='input';
+  persistRecipeDraft();
+  hideRecipeWorkspace();
+  $('inputCard')?.classList.remove('hidden');
+  if(focus) $('ingredientsInput')?.focus();
+}
+function resumeRecipeDraft(){
+  if(!state){showMemberHome();return;}
+  draftVisibleView='recipe';
+  hideRecipeWorkspace();
+  $('resultCard')?.classList.remove('hidden');
+  $('saveRow')?.classList.remove('hidden');
+  render();
+  $('recipeTitle')?.setAttribute('tabindex','-1');
+  $('recipeTitle')?.focus();
+}
+function restoreRecipeDraft(){
+  const draft=readRecipeDraft();
+  if(!draft) return false;
+  restoringRecipeDraft=true;
+  try{
+    if($('ingredientsInput')) $('ingredientsInput').value=draft.input;
+    draftRecipeInput=typeof draft.recipeInput==='string' ? draft.recipeInput.slice(0,6000) : '';
+    pendingRecipeTitle=cleanPortableText(draft.pendingTitle,100);
+    pendingRecipeSource=sanitizeRecipeSource(draft.pendingSource);
+    draftRecipeDirty=draft.dirty===true;
+    if(draft.recipe){
+      const recipe=draft.recipe;
+      state={...recipe,importedTitle:recipe.source ? cleanPortableText(draft.titleOverride || recipe.title,100) : '',
+        manualTitle:!recipe.source ? cleanPortableText(draft.titleOverride,100) : ''};
+      servings=recipe.servings;
+      loadedRecipeId=typeof draft.loadedRecipeId==='string' ? cleanPortableText(draft.loadedRecipeId,80) : null;
+      owned=draft.owned===true;
+    }
+    draftVisibleView=draft.view==='recipe' && state ? 'recipe' : 'input';
+    if(draftVisibleView==='recipe') resumeRecipeDraft();
+    else showMemberHome({focus:false});
+    $('ingredientsInput')?.dispatchEvent(new Event('input',{bubbles:true}));
+  }finally{restoringRecipeDraft=false;}
+  draftMessage('Restored your local entry and recipe draft. Nothing was added to Recipe Book.');
+  return true;
+}
+function startNewRecipe(choice){
+  if(choice==='cancel') return false;
+  if(!['keep','discard'].includes(choice)) return false;
+  // Keeping is only promised after the current work has actually persisted.
+  if(choice==='keep' && !persistRecipeDraft()) return false;
+  if(choice==='discard'){
+    try{localStorage.removeItem(RECIPE_DRAFT_KEY);}catch{draftMessage('Could not discard the device draft. Your current work is still here.');return false;}
+    state=null;servings=2;owned=false;loadedRecipeId=null;draftRecipeDirty=false;draftRecipeInput='';
+  }
+  if(choice==='discard'){
+    pendingRecipeSource=null;pendingRecipeTitle='';
+    if($('ingredientsInput')) $('ingredientsInput').value='';
+  }
+  showMemberHome();
+  $('ingredientsInput')?.dispatchEvent(new Event('input',{bubbles:true}));
+  return true;
+}
+function requestNewRecipe(){
+  if(!state && !$('ingredientsInput')?.value.trim()){showMemberHome();return;}
+  let dialog=$('newRecipeDecision');
+  if(!dialog){
+    dialog=document.createElement('dialog');dialog.id='newRecipeDecision';
+    dialog.setAttribute('aria-labelledby','newRecipeDecisionTitle');
+    const heading=document.createElement('h2');heading.id='newRecipeDecisionTitle';heading.textContent='Start a new recipe?';
+    const text=document.createElement('p');text.textContent='Keep returns to your existing ingredient entry so you can edit it while retaining your recipe to Resume. Discard clears this working draft and starts a blank entry. Recipe Book, diary and membership stay unchanged.';
+    dialog.append(heading,text);
+    for(const [choice,label] of [['keep','Keep work & edit ingredients'],['discard','Discard draft & start new'],['cancel','Cancel']]){
+      const button=document.createElement('button');button.type='button';button.className=choice==='keep'?'btn primary':'btn ghost';button.textContent=label;
+      button.addEventListener('click',()=>{
+        if(choice==='cancel' || startNewRecipe(choice)) dialog.close();
+      });
+      dialog.appendChild(button);
+    }
+    dialog.addEventListener('close',()=>$('newRecipeBtn')?.focus());
+    document.body.appendChild(dialog);
+  }
+  dialog.showModal();
+}
+function approveDraftReplacement(){
+  return !state || !draftRecipeDirty || confirm('Replace your current unsaved recipe with this recipe? Cancel keeps it available to Resume. Your ingredient entry and Recipe Book stay unchanged.');
+}
+function wireMemberNavigation(){
+  for(const [id,handler] of [['memberHomeBtn',showMemberHome],['newRecipeBtn',requestNewRecipe],['resumeRecipeBtn',resumeRecipeDraft],['memberOpenRecipeBook',showRecipeBookView]]){
+    const button=$(id);
+    if(button && !button.dataset.draftWired){button.dataset.draftWired='1';button.addEventListener('click',()=>handler());}
+  }
+  const input=$('ingredientsInput');
+  if(input && !input.dataset.draftWired){input.dataset.draftWired='1';input.addEventListener('input',()=>{persistRecipeDraft();$('ingredientSplitReview')?.classList.add('hidden');});
+    input.addEventListener('paste',()=>setTimeout(formatPastedIngredientList,0));}
+  const apply=$('ingredientSplitApply'),cancel=$('ingredientSplitCancel');
+  if(apply && !apply.dataset.wired){apply.dataset.wired='1';apply.addEventListener('click',()=>{
+    if($('ingredientsInput').value!==ingredientSuggestionSource){offerIngredientListSuggestion();draftMessage('Your ingredients changed. Review the updated entry before applying a suggested list.');return;}
+    const reviewed=$('ingredientSplitText')?.value || '';
+    if(!validateRecipeInput(reviewed).ok || reviewed.length>1200){draftMessage('Correct the suggested list before applying it. Use one ingredient per line.');return;}
+    $('ingredientsInput').value=reviewed;$('ingredientsInput').dispatchEvent(new Event('input',{bubbles:true}));$('ingredientSplitReview')?.classList.add('hidden');$('ingredientsInput').focus();$('ingredientsInput').setSelectionRange?.(0,0);$('ingredientsInput').scrollTop=0;
+  });}
+  if(cancel && !cancel.dataset.wired){cancel.dataset.wired='1';cancel.addEventListener('click',()=>$('ingredientSplitReview')?.classList.add('hidden'));}
+  window.addEventListener('pagehide',persistRecipeDraft);
+}
+
 function showCreateView(){
-  $('recipeBookCard')?.classList.add('hidden');
-  $('diaryCard')?.classList.add('hidden');
-  $('sharedRecipeCard')?.classList.add('hidden');
-  $('plannerCard')?.classList.add('hidden');
-  if(state) $('resultCard')?.classList.remove('hidden');
-  else $('inputCard')?.classList.remove('hidden');
+  if(draftVisibleView==='recipe' && state) resumeRecipeDraft();
+  else showMemberHome({focus:false});
 }
 
 function openSavedRecipe(recipe){
   if(recipe?.exact){openExactRecipeEditor(recipe);return;}
+  if(!approveDraftReplacement()) return;
   const normalized = normalizeSavedRecipe(recipe);
   if(!normalized) return;
   servings = normalized.servings;
   state = {
     title: normalized.title,
     importedTitle:normalized.source ? normalized.title : '',
+    manualTitle:!normalized.source && normalized.title!==titleFrom(normalized.ingredients) ? normalized.title : '',
     ingredients: safeClone(normalized.ingredients),
     steps: safeClone(normalized.steps),
     preferences:safeClone(normalized.preferences),
@@ -1984,6 +2252,7 @@ function openSavedRecipe(recipe){
   };
   owned = true;
   loadedRecipeId = normalized.id;
+  draftRecipeDirty=false;draftVisibleView='recipe';
   $('recipeBookCard')?.classList.add('hidden');
   $('inputCard')?.classList.add('hidden');
   $('sharedRecipeCard')?.classList.add('hidden');
@@ -2067,6 +2336,7 @@ function renderRecipeBook(query = ''){
 }
 
 function showRecipeBookView(){
+  persistRecipeDraft();
   $('inputCard')?.classList.add('hidden');
   $('resultCard')?.classList.add('hidden');
   $('sharedRecipeCard')?.classList.add('hidden');
@@ -2485,6 +2755,7 @@ function addSelectedFoodToDiary(){
 }
 
 function showDiaryView(){
+  persistRecipeDraft();
   const card = $('diaryCard');
   $('inputCard')?.classList.add('hidden');
   $('resultCard')?.classList.add('hidden');
@@ -2540,6 +2811,10 @@ function hideMealPicker(){ closeDialog(document.getElementById('mealOverlay')); 
 
 function addCurrentRecipeToMeal(meal){
   if(!state) return;
+  if(hasUnmeasuredRecipeIngredient(state.ingredients)){
+    showToast('Check ingredient amounts before adding nutrition to your diary. Use a food label or food search for measured nutrition.');
+    return;
+  }
 
   const cal = parseNum(document.getElementById('calories')?.textContent);
   const p = parseNum(document.getElementById('protein')?.textContent);
@@ -2683,9 +2958,16 @@ function wireEvents(){
   if(gen && !gen.dataset.wired){
     gen.dataset.wired = '1';
     gen.addEventListener('click', ()=>{
+      if(suggestIngredientList($('ingredientsInput')?.value)){
+        offerIngredientListSuggestion();$('ingredientSplitText')?.focus();
+        showInputError('Review the suggested ingredient list below, then choose Use reviewed list before making your recipe.');return;
+      }
       const validation=validateRecipeInput($('ingredientsInput')?.value);
       if(!validation.ok) return showInputError(validation.error);
+      if(!approveDraftReplacement()) return;
       const raw=validation.lines;
+      draftRecipeInput=$('ingredientsInput')?.value || '';
+      draftRecipeDirty=true;draftVisibleView='recipe';
 
       const ingredients = normalize(raw);
 
@@ -2755,6 +3037,7 @@ function wireEvents(){
       const saved=saveRecipe(snapshotCurrentRecipe(),{replaceId:loadedRecipeId});
       if(!saved) return;
       loadedRecipeId=saved.id;
+      draftRecipeDirty=false;persistRecipeDraft();
       saveBtn.textContent = replacing ? '✓ Changes saved' : '✓ Saved';
       $('savedNextStep')?.classList.remove('hidden');
       showToast(replacing ? 'Changes saved to your Recipe Book.' : 'Saved to your Recipe Book.');
@@ -2783,18 +3066,7 @@ function wireEvents(){
 
   if(backBtn && !backBtn.dataset.wired){
     backBtn.dataset.wired='1';
-    backBtn.addEventListener('click', ()=>{
-      servings = 2;
-      state = null;
-      owned = false;
-      loadedRecipeId = null;
-      $('resultCard')?.classList.add('hidden');
-      $('inputCard')?.classList.remove('hidden');
-      $('saveRow')?.classList.add('hidden');
-      $('savedNextStep')?.classList.add('hidden');
-      setRecipeIntentPrompt(false);
-      if($('saveBtn')) $('saveBtn').textContent = '⭐ Save to Favorites';
-    });
+    backBtn.addEventListener('click', ()=>requestNewRecipe());
   }
 
   // Diary wiring
@@ -2854,6 +3126,7 @@ function wireEvents(){
   const savedFounderCta = $('savedFounderCta');
   const checkoutUrl = getPublicConfig().founderCheckoutUrl;
   const checkoutReady=validCheckoutUrl(checkoutUrl);
+  for(const id of ['memberRecheck','memberOpenAccount']) $(id)?.addEventListener('click',()=> $('openAccount')?.click());
   $('checkoutSignIn')?.addEventListener('click',()=>{
     if(getPublicConfig().accountsEnabled) $('openAccount')?.click();
     else showToast('Account sign-in is temporarily unavailable. Your payment is recorded; contact support if this continues.');
@@ -2868,10 +3141,23 @@ function wireEvents(){
     closeDialog(founderOverlay);
     $('founderError')?.classList.add('hidden');
   };
-  const openFounderOffer = ()=>{
+  const openFounderOffer = async()=>{
+    if(accountHasActivePlan('founding') || accountMembershipUnknown()){
+      $('openAccount')?.click();
+      if(accountMembershipUnknown()) showAccountError('Check membership before continuing. Sign in with your checkout email to recover access without buying again.');
+      return;
+    }
     if(checkoutReady){
-      track('founder_checkout_started',{price:29,currency:'USD'});
-      location.assign(checkoutUrl);
+      let destination=checkoutUrl;
+      let details={price:29,currency:'USD'};
+      try{
+        const {checkoutWithAttribution,campaignFromSearch}=await import('./checkout-attribution.mjs');
+        destination=checkoutWithAttribution(checkoutUrl,location.search);
+        const campaign=campaignFromSearch(location.search);
+        details={...details,campaign_source:campaign.source,campaign_creative:campaign.creative};
+      }catch{ /* Attribution must never prevent access to checkout. */ }
+      track('founder_checkout_started',details);
+      location.assign(destination);
       return;
     }
     openDialog(founderOverlay,founderEmail);
@@ -2953,8 +3239,11 @@ function wireEvents(){
   $('clearLocalData')?.addEventListener('click', ()=>{
     if(!confirm('Delete all Food My Way recipes, plans, diary entries, and preferences stored in this browser? This cannot be undone.')) return;
     [RECIPE_BOOK_KEY, WEEKLY_PLAN_KEY, GROCERY_CHECKS_KEY, TASTE_PROFILE_KEY, 'pickyDiaryMeals', 'pickyAuth', 'foodMyWayFounderInterest', 'pickyFavorites', 'picky_saved_recipes'].forEach(key=>localStorage.removeItem(key));
+    localStorage.removeItem(RECIPE_DRAFT_KEY);
     closeProfile();
     state=null; servings=2; owned=false; loadedRecipeId=null;
+    draftRecipeDirty=false;draftRecipeInput='';draftVisibleView='input';
+    if($('ingredientsInput')) $('ingredientsInput').value='';
     showCreateView();
     showToast('Local Food My Way data deleted.');
     track('local_data_deleted');
@@ -3147,12 +3436,19 @@ function openExactRecipeEditor(recipe={}){
 
 // Safe init
 function init(){
+  import('./checkout-attribution.mjs').then(({attributedInternalUrl})=>{
+    document.querySelectorAll('a[href="./survival-kit.html"],a[href="/survival-kit"],a[href="./digital-kit.html"]').forEach(link=>{
+      link.href=attributedInternalUrl(link.getAttribute('href'),location.search);
+    });
+  }).catch(()=>{});
   const exactButton=document.createElement('button'); exactButton.type='button'; exactButton.className='btn ghost';
   exactButton.id='exactRecipeBtn'; exactButton.textContent='Add a private exact recipe'; exactButton.onclick=()=>openExactRecipeEditor();
   $('recipeImportStatus')?.after(exactButton);
   setupTelemetry();
   syncPendingFounderInterest();
   wireEvents();
+  wireMemberNavigation();
+  restoreRecipeDraft();
   setupAccounts();
   ensureNutritionDisclosure();
   ensureDiaryButton();
@@ -3178,6 +3474,8 @@ if(typeof document !== 'undefined'){
 
 if(typeof module !== 'undefined' && module.exports){
   module.exports = {
+    parseLines,
+    suggestIngredientList,
     canonName,
     parseInputIngredient,
     validateRecipeInput,
