@@ -62,19 +62,35 @@ GROUP BY day,source,creative,event_name
 ORDER BY day DESC,source,creative,event_name;
 ```
 
-Count paid orders and current recognized revenue from the authoritative purchase ledger, split by offer:
+## Signed orders and campaign attribution (release 2.68.5)
+
+Apply `migrations/0008_paid_orders.sql` to **PURCHASES before deploying** the corresponding webhook code. The migration is additive; do not backfill entitlement rows as sales. A missing table causes the webhook batch to fail atomically with 503 so Stripe can retry after configuration is corrected. This release preparation does not apply a production migration.
+
+`entitlements` is current access by email/plan, not an immutable sales ledger: a repurchase can replace its amount/session. `paid_orders` instead records each verified paid Stripe Checkout session once, preserves first-recorded payment and attribution fields on replay, and marks full refunds by payment intent. Refund-before-payment delivery creates a refunded order when the signed payment arrives. The order's `payment_mode` is `live`, `test`, or `unknown` from Stripe's signed payload; unknown must not be counted as confirmed live sales. It stores no email or recipe data.
+
+Both Kit and Founding checkouts carry allowlisted source/creative via Stripe `client_reference_id`. `fmw1-<source>-<creative>` optionally includes the existing opaque `vz_` reference. Legacy standalone VEYZLO references remain supported. Unknown/malformed input stays unknown; arbitrary query strings and personal metadata are discarded. Source/creative remain customer-controlled attribution context even when received inside a signed payment: they do not prove acquisition, causality, identity or a platform click. A signed successful payment proves payment, not genuine non-owner demand.
+
+For the ten-sale objective, reconcile distinct live Stripe checkout/session records against owner, QA and rehearsal receipts first. **There is no automatic owner/QA classifier.** Exclude those exact sessions in the reporting query; do not infer zero unknown sales or retrospectively assign sources. Existing sales need separate signed-record reconciliation, since this table starts at rollout. Repeated sessions are sales, not necessarily distinct customers; verify distinct non-owner customers separately if that is the target.
+
+Example gross/refund breakdown **before manual owner/QA exclusions** (amount includes tax where charged; it is not recognized/net accounting revenue):
 
 ```sql
-SELECT substr(created_at,1,10) AS purchase_day, plan,
-       count(*) AS paid_orders,
-       sum(amount) / 100.0 AS gross_sales_usd,
-       sum(CASE WHEN status='active' THEN amount ELSE 0 END) / 100.0 AS currently_active_sales_usd,
-       sum(CASE WHEN status='refunded' THEN 1 ELSE 0 END) AS refunded_orders
-FROM entitlements
-GROUP BY purchase_day,plan ORDER BY purchase_day DESC,plan;
+SELECT date(stripe_event_created,'unixepoch') AS payment_day, plan,
+       campaign_source, campaign_creative,
+       count(*) AS verified_live_orders,
+       sum(amount) / 100.0 AS gross_charged_usd,
+       sum(CASE WHEN status='refunded' THEN 1 ELSE 0 END) AS fully_refunded_orders,
+       sum(CASE WHEN status='paid' THEN amount ELSE 0 END) / 100.0 AS not_fully_refunded_charged_usd
+FROM paid_orders
+WHERE payment_mode='live'
+-- Add reviewed owner/QA/rehearsal stripe_session_id exclusions here before demand reporting.
+GROUP BY payment_day,plan,campaign_source,campaign_creative
+ORDER BY payment_day DESC,plan;
 ```
 
-Compare daily `founder_checkout_started` sessions with Founding `paid_orders`, and `kit_checkout_started` sessions with `survival_kit` orders, for directional checkout conversion. They live in separate privacy-minimized databases and are intentionally not joined by email or another persistent person-level identifier. `account_signed_in` with `{"founding":true}` measures paid-member activation after purchase; `kit_downloaded` measures Survival Kit fulfillment after authenticated access.
+Partial refunds are not classified as full refunds by this ledger; reconcile Stripe signed refund/payment records before reporting net revenue. The existing entitlement policy remains unchanged for partial refunds. Do not label the last monetary column net revenue.
+
+Compare daily `founder_checkout_started` with Founding orders and `kit_checkout_started` with Kit orders directionally by source/creative, after exclusions. First-party tab sessions, checkout sessions and customers are different denominators. There is intentionally no persistent person-level telemetry join. `account_signed_in` with `{"founding":true}` measures member activation; download-click telemetry is not proof that a PDF transfer completed. Missing/blocked telemetry is unknown, not zero.
 
 Generic client-error rate:
 

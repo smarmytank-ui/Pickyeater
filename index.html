@@ -25,7 +25,8 @@
 <link rel="icon" type="image/png" sizes="32x32" href="./food-my-way-pfp-32.png">
 <link rel="apple-touch-icon" href="./food-my-way-pfp-180.png">
 <link rel="manifest" href="./site.webmanifest">
-  <link rel="stylesheet" href="./styles.css?v=2.68.4" />
+  <link rel="stylesheet" href="./styles.css?v=2.68.7" />
+<link rel="stylesheet" href="./speech-ingredients.css?v=2.68.7">
 </head>
 <body>
 <div class="page">
@@ -77,7 +78,7 @@
 
 <section id="checkoutStatus" class="checkout-status hidden" aria-live="polite">
   <div>
-    <strong id="checkoutStatusTitle">Payment received.</strong>
+    <strong id="checkoutStatusTitle">Checking your purchase.</strong>
     <span id="checkoutStatusMessage">Sign in with the email used at checkout to unlock your founding access.</span>
   </div>
   <div class="checkout-status-actions">
@@ -112,26 +113,35 @@
     </div>
     <button id="surpriseBtn" class="btn ghost compact" type="button">Surprise me</button>
   </div>
-  <label for="ingredientsInput">Ingredients <span>(one per line)</span></label>
+  <div class="ingredient-label-row"><label for="ingredientsInput">Ingredients <span>(one per line)</span></label><button id="speechStart" class="btn ghost compact hidden" type="button" aria-label="Speak ingredients" aria-describedby="speechDisclosure"><span aria-hidden="true">🎙</span> Speak</button></div>
   <div class="textarea-shell">
     <textarea id="ingredientsInput" maxlength="1200" aria-describedby="ingredientHelp inputError" placeholder="Chicken&#10;Potatoes&#10;Cheddar cheese&#10;Broccoli"></textarea>
     <div id="ingredientHelp" class="input-count"><span id="ingredientCount">0 / 12</span> ingredients</div>
   </div>
+  <section id="ingredientSplitReview" class="hidden ingredient-list-review" aria-labelledby="ingredientSplitTitle">
+    <h3 id="ingredientSplitTitle">Is this the ingredient list you meant?</h3>
+    <p>These known foods can form a list. Review names and quantities before applying; your original entry stays unchanged until you choose Use reviewed list.</p>
+    <label for="ingredientSplitText">Suggested ingredients, one per line</label>
+    <textarea id="ingredientSplitText" rows="4" maxlength="1200"></textarea>
+    <button id="ingredientSplitApply" type="button" class="btn primary">Use reviewed list</button>
+    <button id="ingredientSplitCancel" type="button" class="btn ghost">Keep original entry</button>
+  </section>
+  <p class="ingredient-list-hint">Use commas, semicolons or new lines between foods. Keep food names such as green beans together.</p>
   <div id="inputError" class="input-error hidden" role="alert">Add at least one ingredient to get started.</div>
   <section id="speechIngredients" class="hidden" aria-labelledby="speechIngredientsTitle">
-    <h3 id="speechIngredientsTitle">Speak my ingredients <span class="input-count">Preview</span></h3>
-    <p id="speechDisclosure" class="input-count">Optional browser speech recognition. Your browser's speech service may process audio off-device under its own terms. Starting may request microphone permission. Support varies by browser and device. You can always type or paste instead.</p>
+    <h3 id="speechIngredientsTitle" class="speech-visually-hidden">Review spoken ingredients</h3>
+    <p id="speechDisclosure" class="speech-help">Optional browser speech recognition. Your browser's speech service may process audio off-device under its own terms. Starting may request microphone permission. Support varies by browser and device. You can always type or paste instead.</p>
     <div class="recipe-import-row">
-      <button id="speechStart" class="btn ghost" type="button" aria-describedby="speechDisclosure">Start microphone</button>
       <button id="speechStop" class="btn ghost hidden" type="button">Stop recording</button>
       <button id="speechCancel" class="btn ghost hidden" type="button">Cancel</button>
     </div>
-    <p id="speechStatus" class="input-count" role="status" aria-live="polite"></p>
+    <p id="speechStatus" class="speech-help" role="status" aria-live="polite"></p>
     <div id="speechReview" class="hidden">
       <label for="speechTranscript">Review your transcript <span>(one ingredient per line)</span></label>
-      <textarea id="speechTranscript" class="field" maxlength="1200" rows="4" aria-describedby="speechReviewHelp"></textarea>
-      <p id="speechReviewHelp" class="input-count">Correct names, quantities, and line breaks. Using this transcript replaces the ingredients above; it will not create a recipe until you choose Make my recipe.</p>
-      <button id="speechUse" class="btn ghost" type="button">Use reviewed transcript</button>
+      <textarea id="speechTranscript" class="field" maxlength="1200" rows="3" aria-describedby="speechReviewHelp"></textarea>
+      <p id="speechReviewHelp" class="speech-help">Correct names, quantities, and line breaks. Append preserves existing ingredients; Replace asks confirmation. Neither action creates a recipe.</p>
+      <button id="speechUse" class="btn ghost" type="button">Add ingredients</button>
+      <button id="speechReplace" class="btn ghost" type="button">Replace existing ingredients</button>
     </div>
   </section>
   <div class="quick-pick-label">Or start with a favorite</div>
@@ -494,8 +504,8 @@
 {"@context":"https://schema.org","@graph":[{"@type":"SoftwareApplication","@id":"https://foodmyway.app/#app","name":"Food My Way","url":"https://foodmyway.app/","applicationCategory":"LifestyleApplication","operatingSystem":"Web","description":"A flexible recipe and ingredient-swap app built for picky eaters.","offers":[{"@type":"Offer","name":"Free","price":"0","priceCurrency":"USD","availability":"https://schema.org/InStock"},{"@type":"Offer","name":"Founding Member","price":"29","priceCurrency":"USD","availability":"https://schema.org/PreOrder","eligibleQuantity":{"@type":"QuantitativeValue","maxValue":250}}]},{"@type":"FAQPage","@id":"https://foodmyway.app/#faq","mainEntity":[{"@type":"Question","name":"Is this only for children?","acceptedAnswer":{"@type":"Answer","text":"No. Food My Way is for picky adults, parents, neurodivergent households, and anyone who wants less pressure around food."}},{"@type":"Question","name":"Does Food My Way provide medical or allergy advice?","acceptedAnswer":{"@type":"Answer","text":"No. Recipes and nutrition are informational estimates. Always verify labels and speak with a qualified professional about allergies, eating disorders, or medical nutrition needs."}},{"@type":"Question","name":"Where are my recipes stored?","acceptedAnswer":{"@type":"Answer","text":"Recipes stay in your browser by default. When cloud accounts are enabled, signed-in members can explicitly back up, restore, export, or delete their cloud data."}},{"@type":"Question","name":"What stays free?","acceptedAnswer":{"@type":"Answer","text":"You can create and swap recipes without a subscription and save up to three favorites. Founding membership adds the interactive Survival Kit and printable PDF, unlimited saves, household preferences, weekly planning, grocery lists, and cloud account features."}},{"@type":"Question","name":"What does founding lifetime access mean?","acceptedAnswer":{"@type":"Answer","text":"It means access for the commercial lifetime of the Food My Way premium product, not anyone’s personal lifetime and not every product Food My Way may create. Materially different future products may be sold separately."}}]}]}
 </script>
 
-<script src="./config.js?v=2.68.4"></script>
-<script src="./app.js?v=2.68.4"></script>
-<script src="./speech-ingredients.js?v=2.68.4"></script>
+<script src="./config.js?v=2.68.7"></script>
+<script src="./app.js?v=2.68.7"></script>
+<script src="./speech-ingredients.js?v=2.68.7"></script>
 </body>
 </html>

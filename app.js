@@ -113,7 +113,10 @@ function setupTelemetry(){
   window.addEventListener('foodmyway:analytics',event=>send(event.detail || {}));
   window.addEventListener('error',()=>send({event:'client_error',source:'runtime'}));
   window.addEventListener('unhandledrejection',()=>send({event:'client_error',source:'promise'}));
-  track('page_view');
+  import('./checkout-attribution.mjs').then(({campaignFromSearch})=>{
+    const campaign=campaignFromSearch(location.search);
+    track('page_view',{campaign_source:campaign.source,campaign_creative:campaign.creative});
+  }).catch(()=>track('page_view'));
 }
 
 const CHECKOUT_PENDING_KEY='foodMyWayCheckoutPending';
@@ -144,8 +147,10 @@ function handleCheckoutReturn(){
   const result=new URLSearchParams(location.search).get('founding');
   if(result==='success'){
     markCheckoutPending();
-    showToast('Payment received. Sign in to unlock founding access.');
-  }else if(result==='cancel') showToast('Checkout canceled. You were not charged.');
+    showToast('Checking your purchase. Sign in with your checkout email to check access.');
+  }else if(result==='cancel') showToast(checkoutIsPending()
+    ? 'Checkout canceled. An earlier checkout is still awaiting an access check.'
+    : 'Checkout canceled. You can try again when you are ready.');
   if(checkoutIsPending()) $('checkoutStatus')?.classList.remove('hidden');
   if(['success','cancel'].includes(result)){
     track('founder_checkout_returned',{result});
@@ -563,7 +568,53 @@ function canonName(s){
 }
 
 function parseLines(s){
-  return (s||'').replace(/,+/g,'\n').split(/\n+/).map(x=>x.trim()).filter(x=>x && canonName(x));
+  // Explicit list punctuation only, outside parenthetical preparation/package notes.
+  let depth=0,part='',parts=[];
+  for(const character of String(s || '')){
+    if(character==='(' || character==='[') depth+=1;
+    if(character===')' || character===']') depth=Math.max(0,depth-1);
+    if(character==='\n' || character==='\r' || (!depth && /[,;•●▪◦]/.test(character))){parts.push(part);part='';}
+    else part+=character;
+  }
+  parts.push(part);
+  return parts.map(x=>x.replace(/^\s*(?:[-*]\s+|\d+[.)]\s+)/,'').trim()).filter(x=>x && canonName(x));
+}
+function suggestIngredientList(value){
+  const raw=String(value || '').trim();
+  // Suggestions are not quantities, prose interpretation or arbitrary word splitting.
+  if(!raw || raw.length>1200 || /[\d,;\n\r•●▪◦()\[\]]/.test(raw)) return null;
+  const words=raw.split(/\s+/);if(words.length>60) return null;
+  const known=new Set([...Object.keys(NUTRITION_PER_100G),...Object.keys(CANON_DEFAULT_BASE),
+    ...Object.values(SWAP_CATALOG).flat().map(item=>item.name),
+    'chicken','onions','cheddar','mac and cheese','macaroni and cheese','chicken broth','chicken stock','peanut butter']);
+  const memo=new Map();
+  const solve=index=>{
+    if(index===words.length) return [[]];
+    if(memo.has(index)) return memo.get(index);
+    const paths=[];
+    for(let end=words.length;end>index;end--){
+      const phrase=words.slice(index,end).join(' ');
+      if(!known.has(phrase.toLowerCase())) continue;
+      for(const rest of solve(end)){paths.push([phrase,...rest]);if(paths.length>1) break;}
+      if(paths.length>1) break;
+    }
+    memo.set(index,paths);return paths;
+  };
+  const paths=solve(0);
+  return paths.length===1 && paths[0].length>1 && paths[0].length<=MAX_RECIPE_INGREDIENTS ? paths[0] : null;
+}
+let ingredientSuggestionSource='';
+function offerIngredientListSuggestion(){
+  const input=$('ingredientsInput');if(!input) return;
+  const suggested=suggestIngredientList(input.value);
+  $('ingredientSplitReview')?.classList.toggle('hidden',!suggested);
+  if(suggested){ingredientSuggestionSource=input.value;if($('ingredientSplitText')) $('ingredientSplitText').value=suggested.join('\n');}
+}
+function formatPastedIngredientList(){
+  const input=$('ingredientsInput');if(!input) return;
+  const parsed=parseLines(input.value);
+  if(parsed.length>1){input.value=parsed.join('\n');input.setSelectionRange?.(input.value.length,input.value.length);input.dispatchEvent(new Event('input',{bubbles:true}));}
+  offerIngredientListSuggestion();
 }
 
 const MAX_RECIPE_INGREDIENTS=12;
@@ -2166,7 +2217,16 @@ function wireMemberNavigation(){
     if(button && !button.dataset.draftWired){button.dataset.draftWired='1';button.addEventListener('click',()=>handler());}
   }
   const input=$('ingredientsInput');
-  if(input && !input.dataset.draftWired){input.dataset.draftWired='1';input.addEventListener('input',()=>persistRecipeDraft());}
+  if(input && !input.dataset.draftWired){input.dataset.draftWired='1';input.addEventListener('input',()=>{persistRecipeDraft();$('ingredientSplitReview')?.classList.add('hidden');});
+    input.addEventListener('paste',()=>setTimeout(formatPastedIngredientList,0));}
+  const apply=$('ingredientSplitApply'),cancel=$('ingredientSplitCancel');
+  if(apply && !apply.dataset.wired){apply.dataset.wired='1';apply.addEventListener('click',()=>{
+    if($('ingredientsInput').value!==ingredientSuggestionSource){offerIngredientListSuggestion();draftMessage('Your ingredients changed. Review the updated entry before applying a suggested list.');return;}
+    const reviewed=$('ingredientSplitText')?.value || '';
+    if(!validateRecipeInput(reviewed).ok || reviewed.length>1200){draftMessage('Correct the suggested list before applying it. Use one ingredient per line.');return;}
+    $('ingredientsInput').value=reviewed;$('ingredientsInput').dispatchEvent(new Event('input',{bubbles:true}));$('ingredientSplitReview')?.classList.add('hidden');$('ingredientsInput').focus();$('ingredientsInput').setSelectionRange?.(0,0);$('ingredientsInput').scrollTop=0;
+  });}
+  if(cancel && !cancel.dataset.wired){cancel.dataset.wired='1';cancel.addEventListener('click',()=>$('ingredientSplitReview')?.classList.add('hidden'));}
   window.addEventListener('pagehide',persistRecipeDraft);
 }
 
@@ -2898,6 +2958,10 @@ function wireEvents(){
   if(gen && !gen.dataset.wired){
     gen.dataset.wired = '1';
     gen.addEventListener('click', ()=>{
+      if(suggestIngredientList($('ingredientsInput')?.value)){
+        offerIngredientListSuggestion();$('ingredientSplitText')?.focus();
+        showInputError('Review the suggested ingredient list below, then choose Use reviewed list before making your recipe.');return;
+      }
       const validation=validateRecipeInput($('ingredientsInput')?.value);
       if(!validation.ok) return showInputError(validation.error);
       if(!approveDraftReplacement()) return;
@@ -3077,15 +3141,23 @@ function wireEvents(){
     closeDialog(founderOverlay);
     $('founderError')?.classList.add('hidden');
   };
-  const openFounderOffer = ()=>{
+  const openFounderOffer = async()=>{
     if(accountHasActivePlan('founding') || accountMembershipUnknown()){
       $('openAccount')?.click();
       if(accountMembershipUnknown()) showAccountError('Check membership before continuing. Sign in with your checkout email to recover access without buying again.');
       return;
     }
     if(checkoutReady){
-      track('founder_checkout_started',{price:29,currency:'USD'});
-      location.assign(checkoutUrl);
+      let destination=checkoutUrl;
+      let details={price:29,currency:'USD'};
+      try{
+        const {checkoutWithAttribution,campaignFromSearch}=await import('./checkout-attribution.mjs');
+        destination=checkoutWithAttribution(checkoutUrl,location.search);
+        const campaign=campaignFromSearch(location.search);
+        details={...details,campaign_source:campaign.source,campaign_creative:campaign.creative};
+      }catch{ /* Attribution must never prevent access to checkout. */ }
+      track('founder_checkout_started',details);
+      location.assign(destination);
       return;
     }
     openDialog(founderOverlay,founderEmail);
@@ -3364,6 +3436,11 @@ function openExactRecipeEditor(recipe={}){
 
 // Safe init
 function init(){
+  import('./checkout-attribution.mjs').then(({attributedInternalUrl})=>{
+    document.querySelectorAll('a[href="./survival-kit.html"],a[href="/survival-kit"],a[href="./digital-kit.html"]').forEach(link=>{
+      link.href=attributedInternalUrl(link.getAttribute('href'),location.search);
+    });
+  }).catch(()=>{});
   const exactButton=document.createElement('button'); exactButton.type='button'; exactButton.className='btn ghost';
   exactButton.id='exactRecipeBtn'; exactButton.textContent='Add a private exact recipe'; exactButton.onclick=()=>openExactRecipeEditor();
   $('recipeImportStatus')?.after(exactButton);
@@ -3397,6 +3474,8 @@ if(typeof document !== 'undefined'){
 
 if(typeof module !== 'undefined' && module.exports){
   module.exports = {
+    parseLines,
+    suggestIngredientList,
     canonName,
     parseInputIngredient,
     validateRecipeInput,

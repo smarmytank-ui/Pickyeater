@@ -18,7 +18,7 @@ Updated: September 26, 2026
 ## Purchase not recognized
 
 1. Ask for the Stripe receipt email and approximate purchase time, not card information.
-2. Search Stripe for the Checkout Session and confirm it is paid, USD $29, and tagged `offer=food_my_way_founding`.
+2. Search Stripe for the Checkout Session and confirm it is paid and matches the purchased offer: USD $29 subtotal with `offer=food_my_way_founding`, or USD $19 subtotal with `offer=food_my_way_survival_kit`. Applicable tax may increase the total. Never direct an existing buyer to repurchase merely because their access check failed.
 3. Check `stripe_events` for the event ID and `entitlements` for the normalized customer email.
 4. If the webhook failed, correct the configuration and use Stripe's event resend feature. Do not create access solely from a screenshot.
 5. Confirm access after the replay has produced an active entitlement.

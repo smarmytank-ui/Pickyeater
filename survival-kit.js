@@ -1,3 +1,5 @@
+import { hasDigitalKitAccess } from './survival-kit-access.mjs';
+import { checkoutWithAttribution, attributedInternalUrl } from './checkout-attribution.mjs';
 (()=>{
   const sessionId=crypto.randomUUID();
   const query=new URLSearchParams(location.search);
@@ -16,16 +18,8 @@
   };
   emit('kit_page_viewed');
   let checkoutUrl=String(window.FMW_CONFIG?.survivalKitCheckoutUrl || '').trim();
-  // Carry only VEYZLO's opaque campaign reference. It is attribution, never payment proof.
-  if(/^vz_[a-f0-9]{48}$/.test(veyzloReference || '')){
-    try{
-      const checkout=new URL(checkoutUrl);
-      if(checkout.protocol==='https:' && checkout.hostname==='buy.stripe.com' && !checkout.username && !checkout.password && !checkout.port){
-        checkout.searchParams.set('client_reference_id',veyzloReference);
-        checkoutUrl=checkout.href;
-      }
-    }catch{}
-  }
+  checkoutUrl=checkoutWithAttribution(checkoutUrl,location.search);
+  document.querySelectorAll('a[href="./"]')?.forEach(link=>{link.href=attributedInternalUrl(link.getAttribute('href'),location.search);});
   const valid=(()=>{try{const url=new URL(checkoutUrl);return url.protocol==='https:' && ['buy.stripe.com','checkout.stripe.com'].includes(url.hostname) && !url.username && !url.password && !url.port;}catch{return false;}})();
   let kitOfferState='checking';
   let kitOwnedPlan=null;
@@ -36,8 +30,10 @@
     for(const id of ['kitCheckout','kitCheckoutBottom']){
       const link=document.getElementById(id);
       if(!link) continue;
-      link.href=owned?'./digital-kit.html':available?checkoutUrl:'#access';
-      link.textContent=owned?'Open my Kit':available?'Get the Kit — $19':'Check my Kit access';
+      link.href=owned?attributedInternalUrl('./digital-kit.html',location.search):available?checkoutUrl:'#access';
+      link.classList.toggle('is-unavailable',!owned && !available);
+      if(owned || available) link.removeAttribute('aria-disabled'); else link.setAttribute('aria-disabled','true');
+      link.textContent=owned?'Open my Kit':available?'Get the Kit ΓÇö $19':'Check my Kit access';
     }
     for(const id of ['kitPurchaseSummary','kitPurchaseFineprint']) document.getElementById(id)?.classList.toggle('hidden',owned || kitOfferState!=='free');
     const memberCopy={
@@ -69,7 +65,7 @@
     }else{
       link.classList.add('is-unavailable');
       link.setAttribute('aria-disabled','true');
-      link.addEventListener('click',event=>{event.preventDefault();link.textContent='Checkout opening soon';});
+      link.addEventListener('click',event=>{if(kitOfferState!=='owned'){event.preventDefault();link.textContent='Checkout opening soon';}});
     }
   }
   renderKitOffer();
@@ -82,7 +78,7 @@
       const response=await fetch('/api/auth/session',{headers:{accept:'application/json'}});
       const state=await response.json();
       if(!response.ok || state.entitlementUnavailable) throw new Error('Purchase verification is temporarily unavailable. Please refresh this page to try again.');
-      const ownsKit=state.authenticated && (state.entitlements || [state.entitlement]).some(item=>['survival_kit','founding'].includes(item?.plan) && item?.status==='active');
+      const ownsKit=hasDigitalKitAccess(state);
       kitOwnedPlan=ownsKit?((state.entitlements || [state.entitlement]).some(item=>item?.plan==='founding' && item?.status==='active')?'founding':'survival_kit'):null;
       kitOfferState=ownsKit?'owned':'free';
       renderKitOffer();

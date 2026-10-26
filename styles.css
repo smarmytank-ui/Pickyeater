@@ -102,9 +102,9 @@ textarea{width:100%;min-height:120px;border:1px solid var(--border);border-radiu
 
 
 /* --- v1.9.0 additions: topbar button --- */
-.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
 .topbar-btn{white-space:nowrap}
-.topbar-actions{display:flex;gap:8px;align-items:center}
+.topbar-actions{display:flex;flex-wrap:wrap;max-width:100%;gap:8px;align-items:center}
 
 /* --- Diary UI --- */
 .diary-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -314,6 +314,7 @@ textarea{
 }
 textarea:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 5px rgba(40,120,95,.1)}
 .input-count{position:absolute;right:13px;bottom:12px;color:var(--muted);font-size:11px;background:#fdfefa;padding-left:8px}
+.recipe-import .input-count{position:static;inset:auto;display:block;max-width:100%;margin:8px 0;padding:0;background:transparent;line-height:1.5;white-space:normal;overflow-wrap:anywhere}
 .input-error{font-size:12px;color:#a4382d;background:#fff0ed;border:1px solid #ffd2ca;border-radius:10px;padding:9px 11px;margin-top:8px}
 .quick-pick-label{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:20px}
 .quick-picks{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
