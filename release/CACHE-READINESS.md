@@ -10,9 +10,11 @@ The read-only owner-status action is LOCAL ONLY until separately reviewed/deploy
 
 PASS: HTTP200 and exactly {"state":"owner-excluded"}, private/no-store and Vary Cookie. HTTP401 requires normal sign-in; HTTP403 not-authorized means no exclusion match; HTTP503 unavailable means missing/malformed/unreviewed protected config or unavailable identity. All block activation. Never fabricate an eligible customer. Record revision/time/status/enum only, no cookies, identity or hashes. Repeat for the second existing owner account. This verifies the real exclusion rather than mistaking global OFF for an exclusion success.
 
+Production coordinator reports an existing signed-in, paid-access session whose visible account matches neither confirmed exclusion. Its identity remains withheld and classification UNKNOWN. Paid access is not customer classification. A not-authorized result proves only that this account does not match the reviewed email pair; it does not establish eligibility, customer status or provider-validation authority. Do not grant consent or use this session for provider testing without explicit owner classification. currentAccount performs one sessions/users SELECT only; the check neither refreshes cookies nor writes auth data. No purchase rows are read. Existing protected exclusions remain unchanged.
+
 ## Evidence and gates
 
-Local full suite 359/359 runner entries passed (includes helper modules); syntax checks, immutable-identity check and git apply --check of the UNAPPLIED activation patch passed. Fixtures prove path collision refusal, OFF zero calls, authenticated subject-free enum isolation, bad-config refusal and no purchase-store access. They do not prove live provider delivery/attribution or a customer purchase.
+Local full suite 360/360 runner entries passed (includes helper modules); syntax checks, immutable-identity check and git apply --check of the UNAPPLIED activation patch passed. Fixtures prove path collision refusal, OFF zero calls, authenticated subject-free enum isolation, bad-config refusal and no purchase-store access. They do not prove live provider delivery/attribution or a customer purchase.
 
 Coordinator independently verified live OFF rendering, decline/unavailable states and zero TikTok script tags. Existing Cloudflare beacon remains: no all-network-quiet claim. Visual OFF-page acceptance is complete; isolated Node browser failure is not a remaining visual blocker. Runtime owner exclusions remain pending. No CSP/global-auth/Stripe/schema/retention changes in this follow-up.
 
