@@ -1,8 +1,8 @@
 {
   "base": "0e79d54c85e22ef17bb425b55f898a3781f5aa75",
-  "local_only": true,
+  "local_only": false,
   "tracking_enabled": false,
-  "deployed": false,
+  "deployed": true,
   "runner_tests_passed": 367,
   "private_source_scan": "PASS",
   "hashes": {
@@ -28,5 +28,16 @@
     "test/helpers/measurement-dom.mjs": "094c35aa2e41d5a91ab249e1b1eab297ebe4240f211e0109bb0018a23db7a01c",
     "test/ad-minimal-browser.test.mjs": "5c1756ead7ce8d1e39291caede6274a86e67c44beba394af4098b0b7a798e7f1",
     "test/ad-signedout-journey.test.mjs": "45acc8bca9bb498270093741c8f2367e3d12a4556595a274bc3f9d80ade7f97a"
-  }
+  },
+  "deployed_main": "10a9509b16e5a7206665c44da64fba8aa0e262ac",
+  "pages_deployment": "4da765b5-6863-46a8-ae06-c9042f98c6ae",
+  "first_cron": {
+    "at": "2026-11-01T04:45:00Z",
+    "outcome": "ok",
+    "attemptsRedacted": 0,
+    "consentsDeleted": 0,
+    "permanentFencesRetained": true,
+    "aged_deletion_proven": false
+  },
+  "runtime_owner_exclusions": "PENDING"
 }
