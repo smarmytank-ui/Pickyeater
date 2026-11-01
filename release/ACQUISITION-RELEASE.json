@@ -228,5 +228,79 @@
     "protected_candidate_files": 14,
     "passed": true,
     "cloudflare_runtime_or_activation_accepted": false
+  },
+  "coordinator_permission_receipt": {
+    "source": "Current owner/coordinator release checkpoint",
+    "separately_owner_approved_workers_write": true,
+    "keyring_oauth_completed_by_coordinator": true,
+    "whoami_scopes": [
+      "account:read",
+      "d1:write",
+      "workers:write",
+      "offline_access"
+    ],
+    "further_grants_needed": false,
+    "further_grants_authorized": false,
+    "source_owner_did_not_read_credentials_or_request_oauth": true
+  },
+  "migration_rehearsal": {
+    "source": "Coordinator checkpoint receipt",
+    "reported_at_utc": "2026-11-01 04:16 UTC",
+    "restored_purchases_sql": true,
+    "existing_business_schema_counts_unchanged": true,
+    "integrity_fk_pass": true,
+    "new_tables": 2,
+    "new_triggers": 11,
+    "bytes_sha256": "07bdb7951038b14a73340c94737967166ba4004d070d52b9c72b895bacb55515",
+    "lf_sha256": "1fd2e2aca4e2e4d0112960d32ba32af321f3fc0172b0771403087fe8c07fe959",
+    "live_migration_confirmation": false,
+    "repeated_by_morgan": false
+  },
+  "retention_delivery": {
+    "bundle": "output/ad-retention-worker.mjs",
+    "bundle_sha256": "5e29099c72841288193f7b1a2f4469577f68e6ce709aeb3e918efaff7001d2e2",
+    "zip": "output/fmw-retention-2.68.8-disabled.zip",
+    "zip_sha256": "52a7e5380e1a5c657b299f54eb5036cb8bbc42271568fd5db501a9eed5b045e7",
+    "entries": [
+      "worker.mjs",
+      "wrangler.json",
+      "README.txt",
+      "SHA256SUMS.json"
+    ],
+    "content_hashes": {
+      "worker.mjs": "5e29099c72841288193f7b1a2f4469577f68e6ce709aeb3e918efaff7001d2e2",
+      "wrangler.json": "5c246f48825d99d66a371bb93313f99a34cb7a6b30dbd833a347e0e0ada62ae0",
+      "README.txt": "4a5f750ea8fe1eb0b2762ee2eb1224fedc0558651a0a39a92db0374eb79dfccc"
+    },
+    "credentials_private_hashes_or_rows_included": false,
+    "disabled": true,
+    "cron_active": false,
+    "deployment_performed_by_morgan": false
+  },
+  "server_configuration_contract": "release/SERVER-CONFIGURATION-2.68.8.json",
+  "coordinator_package_report": "release/COORDINATOR-PACKAGE-20261101.md",
+  "export_performed_scope": "Legacy false means no export by Morgan; coordinator completed the one verified export recorded in backup_evidence. No repeated export.",
+  "package_artifact_sha256": {
+    "release/SERVER-CONFIGURATION-2.68.8.json": "65d7ea94c22093f56f07e6a40699d39e45a7e9e95e3ebb14ca2f937a82d3ecdd",
+    "output/retention-deploy-2.68.8/worker.mjs": "5e29099c72841288193f7b1a2f4469577f68e6ce709aeb3e918efaff7001d2e2",
+    "output/retention-deploy-2.68.8/wrangler.json": "5c246f48825d99d66a371bb93313f99a34cb7a6b30dbd833a347e0e0ada62ae0",
+    "output/retention-deploy-2.68.8/README.txt": "4a5f750ea8fe1eb0b2762ee2eb1224fedc0558651a0a39a92db0374eb79dfccc",
+    "output/retention-deploy-2.68.8/SHA256SUMS.json": "890e004e05ebe077c984e9cc4254504149a81a817c783294ebde1038f4054a3e"
+  },
+  "live_gates_confirmed_to_morgan": {
+    "migration": false,
+    "retention": false,
+    "protected_configuration": false
+  },
+  "coordinator_package_review": {
+    "scope": "LOCAL_METADATA_AND_ARCHIVE_ONLY",
+    "raw_pins_verified": 27,
+    "lf_canonical_pins_verified": 34,
+    "zip_entries": 4,
+    "embedded_checksums_verified": 3,
+    "relevant_tests_passed": 9,
+    "ci_wrapper_tests_passed": 349,
+    "runtime_unchanged_from": "a6dc3fdb6a39687b29ace827db99887c0dbad879",
+    "live_gate_acceptance": false
   }
 }
