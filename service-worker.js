@@ -1,12 +1,12 @@
-const CACHE_NAME = 'food-my-way-v2-68-7';
+const CACHE_NAME = 'food-my-way-v2-68-8';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=2.68.7',
-  './app.js?v=2.68.7',
-  './speech-ingredients.js?v=2.68.7',
-  './speech-ingredients.css?v=2.68.7',
-  './config.js?v=2.68.7',
+  './styles.css?v=2.68.8',
+  './app.js?v=2.68.8',
+  './speech-ingredients.js?v=2.68.8',
+  './speech-ingredients.css?v=2.68.8',
+  './config.js?v=2.68.8',
   './site.webmanifest',
   './picky-mark.svg',
   './favicon.ico',
@@ -28,18 +28,21 @@ const APP_SHELL = [
   './sensory-friendly-meals.html',
   './easy-weeknight-meals.html',
   './survival-kit.html',
-  './survival-kit.css?v=2.68.7',
+  './survival-kit.css?v=2.68.8',
   './survival-kit-access.css',
-  './survival-kit.js?v=2.68.7',
+  './survival-kit.js?v=2.68.8',
   './survival-kit-access.mjs',
   './checkout-attribution.mjs',
   './digital-kit.html',
   './digital-kit.css?v=1',
-  './digital-kit.js?v=2.68.7'
+  './digital-kit.js?v=2.68.8'
 ];
 
+// Privacy-sensitive measurement code must NEVER use SW cache or app fallback.
+const isMeasurementUrl=url=>url.pathname==='/ad-measurement'||url.pathname==='/ad-measurement.html'||url.pathname.startsWith('/tracking/');
+
 self.addEventListener('install', event=>{
-  event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)));
+  event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL.filter(asset=>!isMeasurementUrl(new URL(asset,self.location.origin+'/'))))));
   self.skipWaiting();
 });
 
@@ -47,6 +50,8 @@ self.addEventListener('activate', event=>{
   event.waitUntil(
     caches.keys()
       .then(keys=>Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key))))
+      .then(()=>caches.open(CACHE_NAME))
+      .then(async cache=>{const requests=await cache.keys();await Promise.all(requests.filter(request=>isMeasurementUrl(new URL(request.url))).map(request=>cache.delete(request)));})
       .then(()=>self.clients.claim())
   );
 });
@@ -56,6 +61,7 @@ self.addEventListener('fetch', event=>{
   if(event.request.method !== 'GET' || url.origin !== self.location.origin) return;
 
   // Account, purchase, telemetry, and cloud data must always go directly to the network.
+  if(isMeasurementUrl(url)){event.respondWith(fetch(event.request,{cache:'no-store'}));return;} // no HTTP/SW cache or app-shell fallback
   if(url.pathname.startsWith('/api/')) return;
 
   if(event.request.mode === 'navigate'){

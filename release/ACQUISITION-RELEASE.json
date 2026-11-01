@@ -1,0 +1,419 @@
+{
+  "release_version": "2.68.8",
+  "status": "OFF_RELEASE_PUSH_PR_CI_AUTHORIZED_MERGE_HOLD_CONFIGURATION",
+  "target_branch": "main",
+  "recorded_main_commit": "508a8fa97e4f2ea431c5b4c7d55f7ef129e7b70b",
+  "recorded_main_tree": "3b5bed7ec4c422a0a9b41a2d6ada4a4eacdaf49f",
+  "local_verified_equivalent_base": "fc6deb7",
+  "current_remote_main_freshly_verified": true,
+  "required_before_release": "Recheck current main at release action time; stop/reconcile if it drifts from the parent-verified SHA/tree. No fetch/push was performed for this reconciliation.",
+  "source_start": "32d83249bd110de8ffee7da7c293053491de2d21",
+  "service_worker_cache": "food-my-way-v2-68-8",
+  "pixel_id_reference": "DBJA0E3C77U7TR2UDESG",
+  "default_enabled": false,
+  "migration_candidate": "migrations/0009_ad_measurement.sql",
+  "new_tables": [
+    "ad_consents",
+    "ad_purchase_attempts"
+  ],
+  "migration_applied": true,
+  "csp_applied": true,
+  "provider_acceptance_verified": false,
+  "export_performed": false,
+  "prepared_from": "084ff40f69b055594efb20019584aff5caa07eaf",
+  "scope": "Consent-bound click handoff and enforceable local 30-day ad detail redaction; no live activation",
+  "retention_helper": "functions/_shared/ad-retention.mjs",
+  "retention_automatic_production_invocation": true,
+  "retention_detailed_days": 30,
+  "permanent_event_state_tombstones": true,
+  "click_attribution": "Signed-out consented bounded ttclid pending cookie -> unchanged login -> clean authenticated confirmation -> unchanged Payment Link -> exact owned signed paid receipt; synthetic transports only, provider acceptance unknown",
+  "release_report": "release/PRODUCTION-2.68.8-OFF-20261101.md",
+  "sha256": {
+    "migrations/0009_ad_measurement.sql": "07bdb7951038b14a73340c94737967166ba4004d070d52b9c72b895bacb55515",
+    "functions/_shared/ad-measurement.mjs": "c0b8c565f5345ae7698000f3cc16a17736cd8e9807df7b2510e635a51211c774",
+    "functions/_shared/ad-retention.mjs": "611c4872aafc0b65323b28f4d80cccce6a87b1e0d867afbf5a95acaf7ed6059d",
+    "functions/api/tracking/measurement.js": "755885fa3bb0ec1816ee587bc673bc5775d0af9ade73b98cecf04b5d85b5f5d6",
+    "tracking/click-id.mjs": "4131efc6339d5cbaf4b87ad8f5d0319bc16af4779c37ce329cd10bb5abfc5d38",
+    "tracking/pixel-browser.mjs": "199129d696d1988a38780cd2e24ea7b55ec907de70d22df5151739d57531c7b1",
+    "tracking/measurement-page.mjs": "3744f7dd8ddcc2d10219a1c4e699a03b4ae95c32a8d9a5bdac5221519f93c104",
+    "ad-measurement.html": "5c23c35948c2411b94a62106c72997b286a12b7a464f8718419fae6eec6cfb29",
+    "release/ad-measurement-csp.PROPOSED.patch": "3790ad91b30ae344884c97f10982efe6b96bb45631dc8e66f2df7374f5d6508f",
+    "functions/ad-measurement.js": "160a05a73ab6a248af6ed04c00f48496e080461279dbd6b822a6e81402b0f11e",
+    "config.js": "00c8943cdea2e04a7e5a05538439afbe9d372876535c768890f1fcf760d6daf6",
+    "service-worker.js": "83bd810f0408745427ba42f503701ca6063429f9c969f6f450fba364dde4c124",
+    "index.html": "058912dfbb2539dcba3147e05f360e630a7d9c4e49d702337d55372f2d3b7975",
+    "survival-kit.html": "fb8ac53e15004728fd657e98c7023192477a900f11121bf6273e2cdfa0a3866e",
+    "digital-kit.html": "6ea31c07c1c47b139afe65aae9c3eb43f869829a1d20c9c1598647d4a650d9e7",
+    "package.json": "343e991ebbbe57bef7e464ac99f1582cc5a48902bc0c30cedfa22afc2053ec98",
+    "release/ACTIVATE-TIKTOK-2.68.8.PROPOSED.patch": "3a2397ff24340a0ebdb24564937ae8474bd8e470f7c9b05c1ab2935601cb552f"
+  },
+  "current_remote_main_verification": {
+    "source": "Parent read-only existing authenticated gh api, scoped network approval",
+    "endpoint": "repos/smarmytank-ui/Pickyeater/commits/main",
+    "sha": "508a8fa97e4f2ea431c5b4c7d55f7ef129e7b70b",
+    "tree": "3b5bed7ec4c422a0a9b41a2d6ada4a4eacdaf49f",
+    "committer_at": "2026-10-26T03:30:56Z",
+    "as_of": "Parent-reported successful current-main check in this reconciliation; exact observation timestamp not supplied",
+    "matches_local_base_tree": "fc6deb7",
+    "action_time_drift_recheck_required": true
+  },
+  "signedout_prepared_from": "fbfaca3",
+  "signedout_report": "release/SIGNEDOUT-ATTRIBUTION-20261101.md",
+  "pending_handoff": {
+    "storage": "Secure SameSite=Lax first-party cookie scoped /ad-measurement",
+    "native_max_age_seconds": 900,
+    "encoded_character_cap": 3000,
+    "before_permission": false,
+    "raw_click_local_storage": false,
+    "automatic_grant": false,
+    "login_flow": "Existing Kit request/consume/session unchanged; explicit clean return and confirmation before payment",
+    "expiry_evidence": "Native cookie Max-Age900 in runtime since e2ff87e; modeled close/reopen/no-extension/withdrawal/parser tests, actual browser acceptance unverified"
+  },
+  "owner_exclusion_preparation": {
+    "confirmed_login_count": 2,
+    "offline_email_hash_count": 2,
+    "resolved_actor_count": 0,
+    "uuid_resolution_required_for_confirmed_pair": false,
+    "configuration_applied": false,
+    "private_inputs_outside_deployment_root": true,
+    "pending_literal_count": 0,
+    "rejected_typo_candidate_count": 1,
+    "email_hash_config_required": "FMW_AD_EXCLUDED_EMAIL_HASHES_JSON",
+    "email_hash_review_flag": "FMW_AD_EMAIL_EXCLUSIONS_REVIEWED",
+    "config_contract": "Exactly two unique lowercase64hex internal normalized-email hashes plus explicit review; missing/malformed fails closed. Preserve actor/payment exclusions; no positive roster.",
+    "activation_gate": "Apply prepared values only to protected server configuration after explicit release/privacy approval; no lookup needed for confirmed pair. Global exclusions/start/revision and live validation gates remain."
+  },
+  "local_verification": {
+    "direct_file_tests": 344,
+    "direct_file_files": 53,
+    "npm_test_pass": 349,
+    "npm_test_note": "Includes five auto-discovered helper-module file entries; no skipped/failed tests",
+    "syntax_check_pass": true,
+    "cloudflare_runtime_verified": false
+  },
+  "retention_consent_survivor": "none: expired/unlinked grants deleted after attempt redaction",
+  "retention_permanent_survivor": [
+    "hashed event_id",
+    "state"
+  ],
+  "retention_invocation_plan": "release/RETENTION-INVOCATION-20261101.md",
+  "retention_operation": {
+    "entry": "operations/ad-retention-worker.mjs",
+    "callable": "runRetentionOnce(env)",
+    "builder": "scripts/build-ad-retention-worker.mjs --emit",
+    "disabled_config": "operations/ad-retention.wrangler.PROPOSED.json",
+    "unapplied_activation": "operations/ad-retention.ACTIVATION.PROPOSED.patch",
+    "enabled": null,
+    "installed": true,
+    "deployed": true,
+    "cron_active": true,
+    "proposed_cron_utc": "*/15 * * * *",
+    "public_endpoint": false,
+    "d1_binding_verified_live": true,
+    "bundle_matches_reviewed_candidate": false,
+    "bundle_lf_canonical_matches_reviewed_candidate": true,
+    "reviewed_original_bundle_sha256": "9ec6339d3b969c6c929f5a8312738530d74287dffa55de3b70fec4f159bfd074",
+    "bundle_difference": "Windows CRLF to LF packaging only; helper/entry logical source identical to reviewed candidate",
+    "remote_deployment_state": "COORDINATOR_VERIFIED_DEPLOYED_SCHEDULE_CONFIGURED_FIRST_RECEIPT_PENDING",
+    "successful_live_deployment_verified": true,
+    "prepared_package_enabled": false,
+    "prepared_package_cron_active": false,
+    "enabled_scope": "Coordinator verified deployed/scheduled activation; standalone enable-variable readback not separately supplied and first scheduled receipt pending. Prepared archive enabledfalse is separate."
+  },
+  "retention_operation_sha256": {
+    "operations/ad-retention-worker.mjs": "f26ada989318f7bff5514217f5fbcf03a41314e68272fcdc0e28556074741f3d",
+    "operations/ad-retention.wrangler.PROPOSED.json": "e498021327935cfe2b66dfad4aaebc0ba293f5244c786aeea668378b77196aba",
+    "operations/ad-retention.ACTIVATION.PROPOSED.patch": "1e9655ee49d34a4fbabc0e253aa96bfa239dec420d98b7d071cd1fec1e04791e",
+    "scripts/build-ad-retention-worker.mjs": "5be622008d3d364ac1913f8ba625e7e0aeb3d82ac3983fd9da064e6325fbafce",
+    "output/ad-retention-worker.mjs": "5e29099c72841288193f7b1a2f4469577f68e6ce709aeb3e918efaff7001d2e2"
+  },
+  "owner_exclusion_report": "release/OWNER-EMAIL-EXCLUSIONS-20261101.md",
+  "reviewed_candidate_tree": "dc332251571dcfd8b46780432b054dc2fbedee5c",
+  "actual_main_parent": "508a8fa97e4f2ea431c5b4c7d55f7ef129e7b70b",
+  "actual_main_tree": "3b5bed7ec4c422a0a9b41a2d6ada4a4eacdaf49f",
+  "release_branch": "release/fmw-2.68.8-off-20261101",
+  "csp_deployed": false,
+  "public_activation_patch": "release/ACTIVATE-TIKTOK-2.68.8.PROPOSED.patch",
+  "cloudflare_mutation_owner": "Parent coordinator: configuration, migration and retention deployment; Morgan does not duplicate",
+  "sharing_approval": {
+    "source": "Exact bounded owner approval supplied in current release instruction",
+    "owner_reported_at_utc": "2026-11-01 04:12 UTC (minute precision)",
+    "scope": "consent-only dedicated page; ttclid/page/verified paid Purchase plus disclosed SDK network/cookie context; no PII/health/recipe custom fields; no ad launch/payment/fabricated Purchase",
+    "new_cloudflare_grants": false
+  },
+  "backup_evidence": {
+    "path": "C:/Users/pablo/Documents/Codex/2026-10-26/task/FMW-BACKUP-VERIFIED-20261101.md",
+    "export_start_utc": "2026-11-01T04:09:52.320Z",
+    "export_end_utc": "2026-11-01T04:09:56.136Z",
+    "sql_sha256": "2afb342506b44e9788a3ce057f676f7c615aa838cfad84fe92ecf2129116077e",
+    "restore_integrity_foreign_keys_reopen": true,
+    "scope": "PURCHASES only; no new Time Travel bookmark; not account/code/credential backup",
+    "repeat_export": false
+  },
+  "push_merge_gate": "PUSH reviewed OFF branch, create draft PR and run CI now under explicit authorization. Do NOT merge until coordinator private Pages initial-OFF configuration receipt. No activation or extra Cloudflare operation.",
+  "protected_candidate_files_sha256_lf": {
+    "functions/_shared/account.mjs": "3cf57fdb96a771fe41283458efdbd7c89af2e97e834afedb6b63db30caa5df67",
+    "functions/api/stripe-webhook.js": "4e9cfd78ea153a2a43b39b79232008f79fc6d3821e5a0a1a7e598fc2363a59b5",
+    "functions/api/auth/request.js": "c1f769e1c66dd2db4e46fd86698b9e6c94eef861eb754346d025e1fbb83699db",
+    "functions/api/auth/consume.js": "00f4979fd69269b4c02271b4399bf9b981dfa17805d12b5554acf8c0685554f0",
+    "functions/api/auth/session.js": "9eb1b50fb46d203dbde6dcfd33e50c86577be65a931ed41963c419aec96e3ee8",
+    "checkout-attribution.mjs": "67495e3f0c4eeccbbbaf744c4f7a47311cd468efadb920c143b91240f3554257",
+    "app.js": "1b6c33cbf678ece4ba47e84b9aef94691ba38d6ce0d5bd8d7e30c8a00ec12878",
+    "survival-kit.js": "b66ea56815fe7529bb9f428be72248025c5a7481f6300b7969cce9d195540c90",
+    "digital-kit.js": "7e3707c53e8cdd917b8406cb88033288e243d1aa10541d7c1ae8156cbac41871",
+    "_headers": "a6db2a7a16efab39421ccbdd1d6b988a549abc8e93981259d9f7d7b2d3c44d62",
+    "migrations/0008_paid_orders.sql": "5defad76be106a402a8c019668b9d94fe991aef98d174738dec764089362666a",
+    "migrations/0009_ad_measurement.sql": "1fd2e2aca4e2e4d0112960d32ba32af321f3fc0172b0771403087fe8c07fe959",
+    "functions/_shared/ad-retention.mjs": "5aa70b996511b34b27efd26d5a8996126912ba5aa549f8dd58fb110318380a05",
+    "functions/_shared/ad-measurement.mjs": "30b6a6a02950b48b7b1c3cbf6c94f300623936ae2dd441dda1a81307a66e4ab9"
+  },
+  "candidate_runtime_tree_equivalence": {
+    "reviewed_candidate": "084ff40f69b055594efb20019584aff5caa07eaf",
+    "reviewed_tree": "dc332251571dcfd8b46780432b054dc2fbedee5c",
+    "verified_before_packaging": true
+  },
+  "canonical_artifacts_sha256_lf": {
+    "migrations/0009_ad_measurement.sql": "1fd2e2aca4e2e4d0112960d32ba32af321f3fc0172b0771403087fe8c07fe959",
+    "functions/_shared/ad-retention.mjs": "5aa70b996511b34b27efd26d5a8996126912ba5aa549f8dd58fb110318380a05",
+    "operations/ad-retention-worker.mjs": "eed3d24525893d56323602ce268beaf42aa208e273db0eaa71218954031e65a7"
+  },
+  "server_configuration_profile": {
+    "initial_tracking_flag": "FMW_AD_ENABLED=false",
+    "pixel_reference": "DBJA0E3C77U7TR2UDESG",
+    "private_email_hashes": "External private preparation file only; never in source/manifest",
+    "reviewed_email_flag_required": "FMW_AD_EMAIL_EXCLUSIONS_REVIEWED=true",
+    "global_review_and_existing_actor_payment_lists_required": true,
+    "eligibility_revision_proposed": "fmw_2_68_8_release_20261101",
+    "start_cutoff": "Coordinator sets verified action-time UTC milliseconds before activation; no backfill",
+    "activation_not_applied": true
+  },
+  "coordinator_gates": {
+    "before_public_activation": [
+      "OFF deployment/version/headers/refusal/auth checks",
+      "Coordinator schema and retention live receipts",
+      "Private global exclusions/start/revision configured and reviewed",
+      "Explicit coordinated source activation patch plus server flag; no fabricated Purchase"
+    ],
+    "cloudflare_mutations_by_morgan": false,
+    "new_cloudflare_grants": false,
+    "critical_hold": false,
+    "source_push_pr_ci_authorized": true,
+    "merge_hold": true,
+    "merge_release_condition": "Explicit coordinator private Pages initial-OFF configuration receipt",
+    "superseded_before_source_push_merge_conditions": [
+      "Exact final source/manifest reviewed by coordinator",
+      "Additive 0009 readiness receipt with matching canonical migration hash",
+      "Retention readiness receipt for pinned bundle/binding/cadence",
+      "Server initial FMW_AD_ENABLED=false and protected exclusion configuration review"
+    ],
+    "before_source_push_pr_ci": [
+      "Fresh main drift check against verified508a8fa",
+      "Private owner value scan of staged source",
+      "Current local OFF release tests/syntax pass"
+    ],
+    "before_merge": [
+      "Coordinator private Pages initial-OFF configuration receipt",
+      "PR CI and reviewed source pin match; no automatic merge"
+    ]
+  },
+  "sha256_lf": {
+    "migrations/0009_ad_measurement.sql": "1fd2e2aca4e2e4d0112960d32ba32af321f3fc0172b0771403087fe8c07fe959",
+    "functions/_shared/ad-measurement.mjs": "30b6a6a02950b48b7b1c3cbf6c94f300623936ae2dd441dda1a81307a66e4ab9",
+    "functions/_shared/ad-retention.mjs": "5aa70b996511b34b27efd26d5a8996126912ba5aa549f8dd58fb110318380a05",
+    "functions/api/tracking/measurement.js": "3654f407ab65c5d094a4e911f3cfb4c32ff289e80e1b0afd16efdf3fc777a9b9",
+    "tracking/click-id.mjs": "8153e9e69ae5b63c1d8217dc0b035579f65df6e570fc7e722e8c6f2ebe01e39e",
+    "tracking/pixel-browser.mjs": "df241b3ec206e46633d9d9aa2f5241d2ce523a1b1c55f745cb90cf1432dfe5ff",
+    "tracking/measurement-page.mjs": "0d0da6854ce1c4b722c9cf92bb6fc788068dbd49b6c446feaa7d4a74de13ef3e",
+    "ad-measurement.html": "f49889c3322da38ea83fd4777b954734cf447970274fc14215af75b4379b86c8",
+    "release/ad-measurement-csp.PROPOSED.patch": "4e11383544766d11d286f55af4adcb3294dcd06be6ffaf22188c8c3658da48b9",
+    "functions/ad-measurement.js": "160a05a73ab6a248af6ed04c00f48496e080461279dbd6b822a6e81402b0f11e",
+    "config.js": "0b06103e65d76b98a352150e0d746c1e9e7bb5b70317f6debe5a4ed34730c773",
+    "service-worker.js": "3a43f76824c377b0e0ff5971a958b944a383b4859484fefb4b1bbf6d66d956e6",
+    "index.html": "d434747f80d7c76fa82b54befbe841c3f781c72a96641ae8d121778119f610d4",
+    "survival-kit.html": "1e212e99bc7659ab035c798e6143c9fb54f83aa605c32fa951ded08b5ccc256f",
+    "digital-kit.html": "db9ddafc5af8feca5e4889293502027d149c2eb28bd09192b9c469f1758cd33f",
+    "package.json": "343e991ebbbe57bef7e464ac99f1582cc5a48902bc0c30cedfa22afc2053ec98",
+    "release/ACTIVATE-TIKTOK-2.68.8.PROPOSED.patch": "3a2397ff24340a0ebdb24564937ae8474bd8e470f7c9b05c1ab2935601cb552f"
+  },
+  "hash_convention": "sha256 pins current local bytes; sha256_lf pins canonical LF source for Git/Linux deployment. No claim that platform-transformed bundles have unchanged byte hashes.",
+  "independent_release_review": {
+    "scope": "LOCAL_PACKAGING_ONLY",
+    "direct_tests": 344,
+    "files": 53,
+    "raw_artifact_hashes": 22,
+    "runtime_lf_hashes": 17,
+    "canonical_artifact_hashes": 3,
+    "protected_candidate_files": 14,
+    "passed": true,
+    "cloudflare_runtime_or_activation_accepted": false
+  },
+  "coordinator_permission_receipt": {
+    "source": "Current verified coordinator checkpoint",
+    "owner_approved_added_scope": "workers_scripts:write",
+    "owner_approval_reported_utc": "2026-11-01 04:25 UTC",
+    "whoami_scopes": [
+      "account:read",
+      "d1:write",
+      "workers:write",
+      "workers_scripts:write",
+      "offline_access"
+    ],
+    "exact_five_verified": true,
+    "new_scope_requested_by_morgan": false,
+    "further_grants_authorized": false
+  },
+  "migration_rehearsal": {
+    "source": "Coordinator checkpoint receipt",
+    "reported_at_utc": "2026-11-01 04:16 UTC",
+    "restored_purchases_sql": true,
+    "existing_business_schema_counts_unchanged": true,
+    "integrity_fk_pass": true,
+    "new_tables": 2,
+    "new_triggers": 11,
+    "bytes_sha256": "07bdb7951038b14a73340c94737967166ba4004d070d52b9c72b895bacb55515",
+    "lf_sha256": "1fd2e2aca4e2e4d0112960d32ba32af321f3fc0172b0771403087fe8c07fe959",
+    "live_migration_confirmation": false,
+    "repeated_by_morgan": false
+  },
+  "retention_delivery": {
+    "bundle": "output/ad-retention-worker.mjs",
+    "bundle_sha256": "5e29099c72841288193f7b1a2f4469577f68e6ce709aeb3e918efaff7001d2e2",
+    "zip": "output/fmw-retention-2.68.8-disabled.zip",
+    "zip_sha256": "52a7e5380e1a5c657b299f54eb5036cb8bbc42271568fd5db501a9eed5b045e7",
+    "entries": [
+      "worker.mjs",
+      "wrangler.json",
+      "README.txt",
+      "SHA256SUMS.json"
+    ],
+    "content_hashes": {
+      "worker.mjs": "5e29099c72841288193f7b1a2f4469577f68e6ce709aeb3e918efaff7001d2e2",
+      "wrangler.json": "5c246f48825d99d66a371bb93313f99a34cb7a6b30dbd833a347e0e0ada62ae0",
+      "README.txt": "4a5f750ea8fe1eb0b2762ee2eb1224fedc0558651a0a39a92db0374eb79dfccc"
+    },
+    "credentials_private_hashes_or_rows_included": false,
+    "disabled": true,
+    "cron_active": false,
+    "deployment_performed_by_morgan": false
+  },
+  "server_configuration_contract": "release/SERVER-CONFIGURATION-2.68.8.json",
+  "coordinator_package_report": "release/COORDINATOR-PACKAGE-20261101.md",
+  "export_performed_scope": "Legacy false means no export by Morgan; coordinator completed the one verified export recorded in backup_evidence. No repeated export.",
+  "package_artifact_sha256": {
+    "release/SERVER-CONFIGURATION-2.68.8.json": "65d7ea94c22093f56f07e6a40699d39e45a7e9e95e3ebb14ca2f937a82d3ecdd",
+    "output/retention-deploy-2.68.8/worker.mjs": "5e29099c72841288193f7b1a2f4469577f68e6ce709aeb3e918efaff7001d2e2",
+    "output/retention-deploy-2.68.8/wrangler.json": "5c246f48825d99d66a371bb93313f99a34cb7a6b30dbd833a347e0e0ada62ae0",
+    "output/retention-deploy-2.68.8/README.txt": "4a5f750ea8fe1eb0b2762ee2eb1224fedc0558651a0a39a92db0374eb79dfccc",
+    "output/retention-deploy-2.68.8/SHA256SUMS.json": "890e004e05ebe077c984e9cc4254504149a81a817c783294ebde1038f4054a3e"
+  },
+  "live_gates_confirmed_to_morgan": {
+    "migration": true,
+    "retention_configuration": true,
+    "retention_first_scheduled_receipt": false,
+    "protected_configuration": false
+  },
+  "coordinator_package_review": {
+    "scope": "LOCAL_METADATA_AND_ARCHIVE_ONLY",
+    "raw_pins_verified": 27,
+    "lf_canonical_pins_verified": 34,
+    "zip_entries": 4,
+    "embedded_checksums_verified": 3,
+    "relevant_tests_passed": 9,
+    "ci_wrapper_tests_passed": 349,
+    "runtime_unchanged_from": "a6dc3fdb6a39687b29ace827db99887c0dbad879",
+    "live_gate_acceptance": false
+  },
+  "release_hold": {
+    "active": true,
+    "scope": "MERGE_AND_TRACKING_ACTIVATION_ONLY",
+    "source": "Current explicit coordinator release instruction",
+    "push_pr_ci_authorized": true,
+    "hold_actions": [
+      "merge until coordinator private Pages OFF configuration receipt",
+      "tracking activation; no activation inferred"
+    ],
+    "first_retention_receipt_pending": true,
+    "report": "release/COORDINATOR-GATES-20261101.md",
+    "automatic_merge": false
+  },
+  "retention_automatic_production_invocation_scope": "Coordinator verified scheduled configuration active; first scheduled execution/result receipt not yet received; no Cloudflare operation by Morgan",
+  "terminal_local_result": {
+    "local_package_complete": true,
+    "ci_tests_passed": 349,
+    "syntax_check_pass": true,
+    "independent_hold_tests_passed": 9,
+    "unchanged_raw_pins": 27,
+    "runtime_unchanged_from": "a6dc3fdb6a39687b29ace827db99887c0dbad879",
+    "production_status": "OFF_STAGING_AUTHORIZED_MERGE_HOLD",
+    "automatic_next_action": null
+  },
+  "release_hold_history": [
+    {
+      "source": "Explicit current coordinator critical release gate",
+      "active": false,
+      "failed_actor": "Coordinator",
+      "attempt": "First dormant retention deployment",
+      "exit_code": 1,
+      "method": "GET",
+      "path": "/accounts/4aea17af632a4607a8a0974c3729553e/workers/scripts/food-my-way-ad-retention/deployments",
+      "reported_error": "No access to specified resource",
+      "http_status": null,
+      "numeric_api_error_code": null,
+      "root_cause": "Unresolved; declared OAuth scope does not establish resource access",
+      "remote_state": "UNKNOWN pending coordinator-supported read-only reconciliation",
+      "successful_deployment_verified": false,
+      "scope_presence_verified_by_coordinator": true,
+      "hold_actions": [
+        "production migration",
+        "retention deployment/retry",
+        "source push/PR/merge",
+        "tracking activation"
+      ],
+      "prohibited_workarounds": [
+        "repeat failed deployment",
+        "browser alternate deployment bypass",
+        "independent scope/grant/credential expansion"
+      ],
+      "coordinator_owns_reconciliation": true,
+      "retry_queued": false,
+      "report": "release/RELEASE-HOLD-20261101.md",
+      "superseded_by": "Coordinator verified owner-approved fifth scope, successful reconciliation/deploy/migration/schedule; see latest receipt"
+    }
+  ],
+  "live_migration_receipt": {
+    "source": "Coordinator verified applied ONCE",
+    "queries": 13,
+    "bookmark": "0000003e-00000008-00005116-6baa52ac3cc821bc0f2171620a3b70b2",
+    "new_tables": 2,
+    "new_triggers": 11,
+    "new_tables_empty": true,
+    "business_counts": {
+      "entitlements": 4,
+      "entitlements_before_survival_kit": 1,
+      "paid_orders": 0,
+      "refunded_payments": 1,
+      "stripe_events": 5
+    },
+    "business_counts_unchanged": true,
+    "foreign_key_violations": 0,
+    "repeated_by_morgan": false
+  },
+  "retention_live_receipt": {
+    "source": "Coordinator verified and independently read back binding in UI",
+    "previous_existing_worker_deployment_read_passed_entries": 10,
+    "fresh_inventory_no_prior_retention_worker": true,
+    "approved_single_retry_dormant_version": "e6eff70d-9676-4698-b630-0c40297d267e",
+    "urls": false,
+    "purchases_binding_verified": true,
+    "activated_schedule_version": "93cb1f84-e114-4f4b-b248-ea3da75f699b",
+    "cron_utc": "*/15 * * * *",
+    "first_scheduled_receipt": "PENDING",
+    "deployed_or_retried_by_morgan": false
+  },
+  "source_staging_validation": {
+    "runtime_unchanged": true,
+    "portable_sqlite_temp_paths_fixed_in_two_tests": true,
+    "assertions_preserved": true,
+    "cloudflare_actions_by_morgan": false
+  }
+}

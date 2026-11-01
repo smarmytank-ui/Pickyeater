@@ -7,13 +7,15 @@ import vm from 'node:vm';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 
-async function harness(){
+async function harness({cacheRequests=[]}={}){
   const handlers={};
-  const writes=[];
+  const writes=[],purged=[],precached=[];
   const matches=[];
   let fetchImpl=async()=>new Response('network');
   const cache={
-    addAll:async()=>{},
+    addAll:async assets=>{precached.push(...assets);},
+    keys:async()=>cacheRequests.map(p=>new Request('https://foodmyway.app'+p)),
+    delete:async request=>{purged.push(request.url);return true;},
     put:async(request,response)=>writes.push({url:request.url,status:response.status})
   };
   const caches={
@@ -31,7 +33,9 @@ async function harness(){
   const source=await readFile(path.join(root,'service-worker.js'),'utf8');
   vm.runInNewContext(source,{self,caches,fetch:(...args)=>fetchImpl(...args),URL,Response,Request,Promise,console});
   return {
-    writes,matches,
+    writes,matches,purged,precached,
+    async install(){let pending;handlers.install({waitUntil(p){pending=p;}});await pending;},
+    async activate(){let pending;handlers.activate({waitUntil(p){pending=p;}});await pending;},
     setFetch(value){ fetchImpl=value; },
     async dispatch(request){
       let responsePromise;
@@ -68,3 +72,5 @@ test('configuration is fetched before any cached fallback',async()=>{
   assert.deepEqual(worker.writes,[{url:'https://foodmyway.app/config.js',status:200}]);
   assert.deepEqual(worker.matches,[]);
 });
+test('measurement document/modules are network-only no-store and never use stale cache or app fallback',async()=>{for(const path of ['/ad-measurement','/ad-measurement.html?old=1','/tracking/pixel-browser.mjs?v=old','/tracking/measurement-page.mjs','/tracking/measurement.css']){const worker=await harness(),fetches=[];worker.setFetch(async(request,options)=>{fetches.push({url:request.url,options});return new Response('fresh measurement');});assert.equal(await(await worker.dispatch({url:'https://foodmyway.app'+path,method:'GET',mode:path.includes('measurement.html')?'navigate':'cors'})).text(),'fresh measurement');assert.equal(fetches[0].options.cache,'no-store');assert.deepEqual(worker.writes,[]);assert.deepEqual(worker.matches,[]);worker.setFetch(async()=>{throw Error('offline');});await assert.rejects(worker.dispatch({url:'https://foodmyway.app'+path,method:'GET',mode:'navigate'}),/offline/);assert.deepEqual(worker.matches,[]);}});
+test('activation purges only previously cached measurement assets; precache excludes them',async()=>{const worker=await harness({cacheRequests:['/ad-measurement','/ad-measurement.html?stale=1','/tracking/pixel-browser.mjs?v=old','/app.js?v=2.68.7','/config.js?v=2.68.7']});await worker.install();assert.equal(worker.precached.some(p=>p.includes('ad-measurement')||p.includes('tracking/')),false);await worker.activate();assert.deepEqual(worker.purged,['https://foodmyway.app/ad-measurement','https://foodmyway.app/ad-measurement.html?stale=1','https://foodmyway.app/tracking/pixel-browser.mjs?v=old']);});

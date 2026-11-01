@@ -1,0 +1,32 @@
+{
+  "status": "PREPARED_NOT_APPLIED_COORDINATOR_OWNED",
+  "target": "Existing Food My Way Pages project picky-eater-preview production environment",
+  "server_only": true,
+  "public_browser_enabled": false,
+  "initial_off_set": {
+    "FMW_AD_ENABLED": "false",
+    "FMW_AD_PIXEL_ID": "DBJA0E3C77U7TR2UDESG",
+    "FMW_AD_EMAIL_EXCLUSIONS_REVIEWED": "true"
+  },
+  "private_value": {
+    "name": "FMW_AD_EXCLUDED_EMAIL_HASHES_JSON",
+    "source": "owner-email-exclusions.private.json outside repository/deployment assets",
+    "contract": "JSON string of exactly two distinct reviewed lowercase64hex internal hashes",
+    "printed_or_included_in_archive": false
+  },
+  "preserve_existing_reviewed_values_or_use_safe_unset_defaults": {
+    "FMW_AD_EXCLUDED_ACTORS_JSON": "[]",
+    "FMW_AD_EXCLUDED_PAYMENTS_JSON": "[]",
+    "FMW_AD_EXCLUSIONS_REVIEWED": "false",
+    "FMW_AD_ELIGIBILITY_REVISION": "fmw_2_68_8_release_20261101",
+    "FMW_AD_START_MS": "0"
+  },
+  "merge_rule": "Do not overwrite nonempty existing actor/payment exclusions or previously reviewed metadata silently. Defaults are only for absent values; global false and cutoff0 intentionally block activation.",
+  "before_activation": {
+    "FMW_AD_EXCLUSIONS_REVIEWED": "true only after coordinator reviews all exclusions/configuration",
+    "FMW_AD_START_MS": "positive decimal string of coordinator-recorded action-time UTC milliseconds (Date.now()), never backdated",
+    "FMW_AD_ENABLED": "true only after source/schema/retention/config/runtime gates; public enable patch must be coordinated too"
+  },
+  "leave_unchanged": "Existing auth, Stripe, other application variables, records and journals",
+  "credentials_or_new_permissions": "None created here; no further grants authorized"
+}

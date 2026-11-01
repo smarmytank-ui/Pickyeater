@@ -1,0 +1,16 @@
+export async function onRequest(context){
+ const url=new URL(context.request.url),response=await context.next();
+ const keys=[...url.searchParams.keys()],click=url.searchParams.get('ttclid');
+ const landing=keys.length===1&&keys[0]==='ttclid'&&/^[A-Za-z0-9._-]{1,1024}$/.test(click||'');
+ if(url.origin!=='https://foodmyway.app'||url.pathname!=='/ad-measurement'||(url.search&&!landing)||url.hash)return response;
+ const headers=new Headers(response.headers);
+ headers.set('Content-Security-Policy',"default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: https://analytics.tiktok.com https://anlytics-ipv6.tiktokw.us; font-src 'self'; style-src 'self'; script-src 'self' https://analytics.tiktok.com/i18n/pixel/events.js https://anlytics-ipv6.tiktokw.us; connect-src 'self' https://analytics.tiktok.com https://anlytics-ipv6.tiktokw.us; form-action 'self'; worker-src 'none'; upgrade-insecure-requests");
+ headers.set('Strict-Transport-Security','max-age=31536000; includeSubDomains; preload');
+ headers.set('Referrer-Policy','no-referrer');
+ headers.set('Cache-Control','no-store');
+ headers.set('X-Content-Type-Options','nosniff');
+ headers.set('X-Frame-Options','DENY');
+ headers.set('Permissions-Policy','camera=(), microphone=(), geolocation=(), payment=()');
+ headers.set('Cross-Origin-Opener-Policy','same-origin');
+ return new Response(response.body,{status:response.status,statusText:response.statusText,headers});
+}

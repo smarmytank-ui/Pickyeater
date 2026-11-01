@@ -1,0 +1,10 @@
+# UNAPPLIED source activation only. Coordinate schema, retention, private exclusions and server OFF/ON gates first.
+# No Cloudflare grant, migration, payment, fabricated Purchase or ad launch is authorized by this file.
+diff --git a/config.js b/config.js
+--- a/config.js
++++ b/config.js
+@@ -4,3 +4,3 @@
+   survivalKitCheckoutUrl: 'https://buy.stripe.com/3cI14n7YYeLogNk1KxaMU01',
+-  adPixel: Object.freeze({enabled:false,pixelId:'DBJA0E3C77U7TR2UDESG',advertiserId:'7702295908318494741',accountVerified:true,dataSharingApproved:true,sdkApproved:true,settingsVerified:true,safeScopeApproved:true}),
++  adPixel: Object.freeze({enabled:true,pixelId:'DBJA0E3C77U7TR2UDESG',advertiserId:'7702295908318494741',accountVerified:true,dataSharingApproved:true,sdkApproved:true,settingsVerified:true,safeScopeApproved:true}),
+   commerceEnabled: false,
