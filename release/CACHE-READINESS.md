@@ -14,10 +14,12 @@ Production coordinator reports an existing signed-in, paid-access session whose 
 
 ## Evidence and gates
 
-Local full suite 360/360 runner entries passed (includes helper modules); syntax checks, immutable-identity check and git apply --check of the UNAPPLIED activation patch passed. Fixtures prove path collision refusal, OFF zero calls, authenticated subject-free enum isolation, bad-config refusal and no purchase-store access. They do not prove live provider delivery/attribution or a customer purchase.
+Local full suite 362/362 runner entries passed (includes helper modules); syntax checks, immutable-identity check and git apply --check of the UNAPPLIED activation patch passed. Fixtures prove path collision refusal, OFF zero calls, authenticated subject-free enum isolation, bad-config refusal and no purchase-store access. They do not prove live provider delivery/attribution or a customer purchase.
 
 Coordinator independently verified live OFF rendering, decline/unavailable states and zero TikTok script tags. Existing Cloudflare beacon remains: no all-network-quiet claim. Visual OFF-page acceptance is complete; isolated Node browser failure is not a remaining visual blocker. Runtime owner exclusions remain pending. No CSP/global-auth/Stripe/schema/retention changes in this follow-up.
 
 Coordinator supplied first scheduled production retention receipt: version 93cb1f84-e114-4f4b-b248-ea3da75f699b at 2026-11-01 04:45 UTC, outcome ok, exceptions empty, revision retention-v2-consent-delete-20261101, attemptsRedacted 0, consentsDeleted 0, permanentFencesRetained true. Temporary tail stopped and exit verified. This clears the scheduled-execution gate, not live aged-data deletion proof.
 
 Next: reviewed OFF follow-up source staging/deployment; verify new live source/config identity and both owner results; only then clear activation gates. No activation, fake Purchase, new payment or ad launch here.
+
+Privacy follow-up: November 1 material-change date; optional measurement disclosure aligned with dedicated-page consent, SDK browser/network context, verified-purchase fields, refusal/withdrawal, 30-day local redaction and permanent minimal event/state fences. Privacy HTML remains static with no SDK/loader. No expanded data use.

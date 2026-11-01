@@ -3,7 +3,7 @@
   "local_only": true,
   "tracking_enabled": false,
   "deployed": false,
-  "runner_tests_passed": 360,
+  "runner_tests_passed": 362,
   "private_source_scan": "PASS",
   "hashes": {
     "assets/config/0b06103e65d76b98a352150e0d746c1e9e7bb5b70317f6debe5a4ed34730c773.js": "0b06103e65d76b98a352150e0d746c1e9e7bb5b70317f6debe5a4ed34730c773",
@@ -20,6 +20,8 @@
     "survival-kit.html": "c13e94f63231ac83631fe4a304a55936c6db26cd0dfaa359eea8c995dad09206",
     "test/ad-release-packaging.test.mjs": "98576ded3d46bf67efe1c2cb5bdde9683d1ecc25fb6e8c43e97417a6c57fb1aa",
     "test/launch-assets.test.mjs": "8fb5f933e444430c04fa84b86bf6438f931fd62db53399e0cd1697c73b7e64b9",
-    ".gitattributes": "9a1053e879a983aa20552268ad9aa99695c8eb384fe2c0592e40be226a20306f"
+    ".gitattributes": "9a1053e879a983aa20552268ad9aa99695c8eb384fe2c0592e40be226a20306f",
+    "privacy.html": "d9a34496d350aabf5c40800b3e0ed32a5edb44fdd61a4c16f7a19c3fd806f1d9",
+    "test/ad-privacy.test.mjs": "3088a293ed5281c1e5b20c6721584d5d9e1a50ba459877e38d0b49346d13f59d"
   }
 }
