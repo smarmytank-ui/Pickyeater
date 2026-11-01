@@ -1,6 +1,6 @@
 {
   "release_version": "2.68.8",
-  "status": "PRODUCTION_RELEASE_PREPARED_OFF_NOT_PUSHED_NOT_DEPLOYED",
+  "status": "LOCAL_COMPLETE_PRODUCTION_HOLD_RETENTION_RESOURCE_ACCESS",
   "target_branch": "main",
   "recorded_main_commit": "508a8fa97e4f2ea431c5b4c7d55f7ef129e7b70b",
   "recorded_main_tree": "3b5bed7ec4c422a0a9b41a2d6ada4a4eacdaf49f",
@@ -104,16 +104,20 @@
     "disabled_config": "operations/ad-retention.wrangler.PROPOSED.json",
     "unapplied_activation": "operations/ad-retention.ACTIVATION.PROPOSED.patch",
     "enabled": false,
-    "installed": false,
-    "deployed": false,
-    "cron_active": false,
+    "installed": null,
+    "deployed": null,
+    "cron_active": null,
     "proposed_cron_utc": "*/15 * * * *",
     "public_endpoint": false,
     "d1_binding_verified_live": false,
     "bundle_matches_reviewed_candidate": false,
     "bundle_lf_canonical_matches_reviewed_candidate": true,
     "reviewed_original_bundle_sha256": "9ec6339d3b969c6c929f5a8312738530d74287dffa55de3b70fec4f159bfd074",
-    "bundle_difference": "Windows CRLF to LF packaging only; helper/entry logical source identical to reviewed candidate"
+    "bundle_difference": "Windows CRLF to LF packaging only; helper/entry logical source identical to reviewed candidate",
+    "remote_deployment_state": "UNKNOWN_AFTER_COORDINATOR_FAILED_LOOKUP",
+    "successful_live_deployment_verified": false,
+    "prepared_package_enabled": false,
+    "prepared_package_cron_active": false
   },
   "retention_operation_sha256": {
     "operations/ad-retention-worker.mjs": "f26ada989318f7bff5514217f5fbcf03a41314e68272fcdc0e28556074741f3d",
@@ -145,7 +149,7 @@
     "scope": "PURCHASES only; no new Time Travel bookmark; not account/code/credential backup",
     "repeat_export": false
   },
-  "push_merge_gate": "Report local source/manifests first; wait coordinator schema/retention/config readiness before any push or merge. main auto-deploy enabled; final publication deliberate.",
+  "push_merge_gate": "HOLD: coordinator must first reconcile failed retention resource access and uncertain remote state, then explicitly clear migration/retention/config gates. No push/PR/merge or activation now.",
   "protected_candidate_files_sha256_lf": {
     "functions/_shared/account.mjs": "3cf57fdb96a771fe41283458efdbd7c89af2e97e834afedb6b63db30caa5df67",
     "functions/api/stripe-webhook.js": "4e9cfd78ea153a2a43b39b79232008f79fc6d3821e5a0a1a7e598fc2363a59b5",
@@ -196,7 +200,8 @@
       "Explicit coordinated source activation patch plus server flag; no fabricated Purchase"
     ],
     "cloudflare_mutations_by_morgan": false,
-    "new_cloudflare_grants": false
+    "new_cloudflare_grants": false,
+    "critical_hold": true
   },
   "sha256_lf": {
     "migrations/0009_ad_measurement.sql": "1fd2e2aca4e2e4d0112960d32ba32af321f3fc0172b0771403087fe8c07fe959",
@@ -302,5 +307,46 @@
     "ci_wrapper_tests_passed": 349,
     "runtime_unchanged_from": "a6dc3fdb6a39687b29ace827db99887c0dbad879",
     "live_gate_acceptance": false
+  },
+  "release_hold": {
+    "source": "Explicit current coordinator critical release gate",
+    "active": true,
+    "failed_actor": "Coordinator",
+    "attempt": "First dormant retention deployment",
+    "exit_code": 1,
+    "method": "GET",
+    "path": "/accounts/4aea17af632a4607a8a0974c3729553e/workers/scripts/food-my-way-ad-retention/deployments",
+    "reported_error": "No access to specified resource",
+    "http_status": null,
+    "numeric_api_error_code": null,
+    "root_cause": "Unresolved; declared OAuth scope does not establish resource access",
+    "remote_state": "UNKNOWN pending coordinator-supported read-only reconciliation",
+    "successful_deployment_verified": false,
+    "scope_presence_verified_by_coordinator": true,
+    "hold_actions": [
+      "production migration",
+      "retention deployment/retry",
+      "source push/PR/merge",
+      "tracking activation"
+    ],
+    "prohibited_workarounds": [
+      "repeat failed deployment",
+      "browser alternate deployment bypass",
+      "independent scope/grant/credential expansion"
+    ],
+    "coordinator_owns_reconciliation": true,
+    "retry_queued": false,
+    "report": "release/RELEASE-HOLD-20261101.md"
+  },
+  "retention_automatic_production_invocation_scope": "No activation performed by Morgan; actual remote Worker/cadence remains UNKNOWN pending coordinator reconciliation",
+  "terminal_local_result": {
+    "local_package_complete": true,
+    "ci_tests_passed": 349,
+    "syntax_check_pass": true,
+    "independent_hold_tests_passed": 9,
+    "unchanged_raw_pins": 27,
+    "runtime_unchanged_from": "a6dc3fdb6a39687b29ace827db99887c0dbad879",
+    "production_status": "HOLD",
+    "automatic_next_action": null
   }
 }

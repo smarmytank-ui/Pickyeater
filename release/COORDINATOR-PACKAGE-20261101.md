@@ -45,3 +45,7 @@ All existing pins were checked before refresh: zero mismatches. They are recompu
 No source push/PR/merge, Cloudflare mutation, live SDK call, payment, fabricated Purchase, new credential or ad launch. No remaining local engineering blocker; coordinator must explicitly close the live migration and retention gates and private config review before source publication. Local tests are not live acceptance.
 
 Final local validation: CI-equivalent npmtest349passed, syntaxcheckpass. Independent review verified27rawpins,34LF/canonicalpins (17runtime+3canonical+14protected), ZIPouterhash and3embeddedchecksums;9relevant packaging/retentiontests passed. Runtime unchanged froma6dc3fd. No remaining local blocker. Private external configuration was not opened by independent reviewer. Live coordinator gates remain unconfirmed; no sourcepush/merge or CFmutation.
+
+## Superseding critical HOLD
+
+See RELEASE-HOLD-20261101.md. Coordinator first dormant deployment failedexit1 at the Worker deployments GET with No access to specified resource, despite the exact approved scope receipt. Rootcause and remote state remain unresolved. No retry, browser bypass or further grant. Productionmigration/sourcepushPRmerge/retentiondeploy/activation remain HOLD until coordinator reconciliation and explicit gate clearance. Runtime/package unchanged; local completion is not production acceptance.

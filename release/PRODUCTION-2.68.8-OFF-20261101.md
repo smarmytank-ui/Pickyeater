@@ -46,3 +46,7 @@ Final independent local signoff:344tests/53files;22raw artifact hashes,17runtime
 ## Current coordinator packaging checkpoint
 
 See COORDINATOR-PACKAGE-20261101.md and SERVER-CONFIGURATION-2.68.8.json. The separately approved Workers-write scope now exists per coordinator whoami receipt; no further grant is needed/authorized. Restored-SQL migration rehearsal passed04:16UTC (2tables/11triggers, businessschema/counts unchanged, integrity/FKpass). This is not live gate confirmation. The generated disabled4fileZIP and private external initial-OFF profile are ready; no push/merge until coordinator explicitly confirms migration and retention gates.
+
+## Superseding critical HOLD
+
+See RELEASE-HOLD-20261101.md. Coordinator first dormant deployment failedexit1 at the Worker deployments GET with No access to specified resource, despite the exact approved scope receipt. Rootcause and remote state remain unresolved. No retry, browser bypass or further grant. Productionmigration/sourcepushPRmerge/retentiondeploy/activation remain HOLD until coordinator reconciliation and explicit gate clearance. Runtime/package unchanged; local completion is not production acceptance.
