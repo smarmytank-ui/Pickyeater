@@ -1,0 +1,18 @@
+# PROPOSED ONLY. Applying this file locally or deploying/activating is NOT authorized.
+# Owner must approve exact Worker/D1 binding, revision, cadence and usage first.
+diff --git a/operations/ad-retention.wrangler.PROPOSED.json b/operations/ad-retention.wrangler.PROPOSED.json
+--- a/operations/ad-retention.wrangler.PROPOSED.json
++++ b/operations/ad-retention.wrangler.PROPOSED.json
+@@ -6,9 +6,9 @@
+   "preview_urls": false,
+   "routes": [],
+-  "triggers": {"crons": []},
++  "triggers": {"crons": ["*/15 * * * *"]},
+   "vars": {
+-    "FMW_AD_RETENTION_ENABLED": "false",
+-    "FMW_AD_RETENTION_APPROVED_REVISION": "",
++    "FMW_AD_RETENTION_ENABLED": "true",
++    "FMW_AD_RETENTION_APPROVED_REVISION": "retention-v2-consent-delete-20261101",
+     "FMW_AD_RETENTION_EXPECTED_DATABASE_ID": "fe02092f-41c3-4ac4-b4b5-2b5e8c22fc23"
+   },
+   "d1_databases": [{
