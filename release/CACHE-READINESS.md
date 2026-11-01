@@ -1,5 +1,11 @@
 # OFF cache/privacy/status release receipt
 
+## Corrected protected exclusion receipt
+
+Coordinator reports the SECOND owner/test exclusion was corrected by replacement, not addition. The three existing private preparation profiles were updated with prior copies preserved, and the production encrypted pair setting was replaced. No identities or pair digests are included here. Tracking remains OFF. Coordinator-supplied actual-profile local tests confirm both corrected members excluded, the replaced identity not matched, and disabled consent/claim with no database or network access. These are local results, not positive production acceptance.
+
+Coordinator owns the same-reviewed-source Pages rebuild required to apply the encrypted setting. Morgan must not duplicate deployment or change source/configuration. The current visible browser account matches neither corrected member and remains unclassified. Positive runtime acceptance for both corrected owner accounts is still PENDING after the coordinator rebuild. Earlier second-identity references are superseded by the corrected private profile; do not infer identities from historical notes.
+
 Original base: 0e79d54c85e22ef17bb425b55f898a3781f5aa75. Cache/privacy deployed via PR3 at 69e36364a36afbe8bb69493f47ecd9dd2376d5f3; status UI deployed via PR4 at 10a9509b16e5a7206665c44da64fba8aa0e262ac, Pages4da765b5-6863-46a8-ae06-c9042f98c6ae. Tracking remains OFF. ACQUISITION-RELEASE.json is the historical deployed package; this follow-up changes its source hashes.
 
 All four HTML config consumers and SW precache use a canonical-LF content-addressed assets/config/<SHA256>.js PATH. SW cache identity includes the same hash. Distinct paths avoid relying on query-string cache keys or the observed max-age14400. Immutable assets are never overwritten. The unapplied activation patch adds a distinct ON artifact and updates all consumers/cache identity together. Current config and assets remain OFF. Cached HTML/SW can delay adoption: acceptance requires a fresh/revalidated document, not a promise of instant activation for open tabs. Server current-state validation remains mandatory before SDK load, including rollback with stale public ON config.
