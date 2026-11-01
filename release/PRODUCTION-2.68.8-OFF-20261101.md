@@ -50,3 +50,7 @@ See COORDINATOR-PACKAGE-20261101.md and SERVER-CONFIGURATION-2.68.8.json. The se
 ## Superseding critical HOLD
 
 See RELEASE-HOLD-20261101.md. Coordinator first dormant deployment failedexit1 at the Worker deployments GET with No access to specified resource, despite the exact approved scope receipt. Rootcause and remote state remain unresolved. No retry, browser bypass or further grant. Productionmigration/sourcepushPRmerge/retentiondeploy/activation remain HOLD until coordinator reconciliation and explicit gate clearance. Runtime/package unchanged; local completion is not production acceptance.
+
+## Superseding verified coordinator update
+
+See COORDINATOR-GATES-20261101.md. Owner-approved fifthscope workers_scripts:write and coordinator readback/successful single retry resolved prior access/unknown-state gate. Migration applied ONCE and retention schedule configured; firstscheduledreceipt remains pending. Source PUSH/PR/CI is explicitly authorized now; MERGE remains HOLD until private Pages initialOFF configreceipt. No tracking activation or extra Cloudflare operation authorized to Morgan. Historical failed attempt remains preserved.
