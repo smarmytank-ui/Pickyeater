@@ -6,7 +6,7 @@ export const actorKey=id=>sha256Hex('fmw:ad-consent:actor:v1:'+id);
 export async function exclusionEmailKey(email){try{if(typeof email!=='string')return null;return await sha256Hex('fmw:ad-exclusion:email:v1:'+normalizeAccountEmail(email));}catch{return null;}}
 export const purchaseEventId=id=>sha256Hex('fmw:tiktok:purchase:v1:'+id).then(hash=>'fmw_'+hash);
 export const enabled=env=>env?.FMW_AD_ENABLED==='true'&&env.FMW_AD_PIXEL_ID===PIXEL_ID;
-function reviewedEmailKeys(env){try{const keys=JSON.parse(env.FMW_AD_EXCLUDED_EMAIL_HASHES_JSON);return env.FMW_AD_EMAIL_EXCLUSIONS_REVIEWED==='true'&&Array.isArray(keys)&&keys.length===2&&new Set(keys).size===2&&keys.every(x=>typeof x==='string'&&/^[a-f0-9]{64}$/.test(x))?keys:null;}catch{return null;}}
+function reviewedEmailKeys(env){try{const keys=JSON.parse(env.FMW_AD_EXCLUDED_EMAIL_HASHES_JSON);return env.FMW_AD_EMAIL_EXCLUSIONS_REVIEWED==='true'&&Array.isArray(keys)&&(keys.length===2||keys.length===3)&&new Set(keys).size===keys.length&&keys.every(x=>typeof x==='string'&&/^[a-f0-9]{64}$/.test(x))?keys:null;}catch{return null;}}
 // Functional owner-only diagnostic; never returns identity/configuration values,
 // grants consent, reads purchase/measurement storage, or authorizes tracking.
 export async function ownerExclusionStatus({env,account}){const keys=reviewedEmailKeys(env),key=await exclusionEmailKey(account?.email);if(!keys||!key)return {state:'unavailable'};return {state:keys.includes(key)?'owner-excluded':'not-authorized'};}

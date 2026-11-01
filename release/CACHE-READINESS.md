@@ -1,5 +1,11 @@
 # OFF cache/privacy/status release receipt
 
+## Approved third exclusion: pending narrow OFF release
+
+Supersedes prior two-entry operational instructions: owner approved a third original-test account. Coordinator owns the encrypted three-entry configuration. Parser accepts only two or three distinct lowercase 64-hex values with explicit review=true. Missing/malformed/duplicate/unreviewed lists and lists outside this bounded size fail closed. Two-entry compatibility supports safe staging; production acceptance must verify the approved triple.
+
+Local suite 370/370 passed. Independent focused review 15/15 passed. Actual private profiles match all three confirmed entries; replaced identity absent; all three blocked before any measurement database access; no provider requests. No private values appear here. HOLD MERGE until coordinator confirms the production encrypted three-hash setting is SAVED. No activation, migration, new credentials, schema, auth, payment or retention changes. After OFF deployment, use existing-account read-only UI checks, without purchases or new identities.
+
 ## Corrected protected exclusion receipt
 
 Coordinator reports the SECOND owner/test exclusion was corrected by replacement, not addition. The three existing private preparation profiles were updated with prior copies preserved, and the production encrypted pair setting was replaced. No identities or pair digests are included here. Tracking remains OFF. Coordinator-supplied actual-profile local tests confirm both corrected members excluded, the replaced identity not matched, and disabled consent/claim with no database or network access. These are local results, not positive production acceptance.
@@ -35,3 +41,9 @@ Privacy follow-up: November 1 material-change date; optional measurement disclos
 Status UI deployed at main10a9509b16e5a7206665c44da64fba8aa0e262ac. Open the clean /ad-measurement page and click Check signed-in account exclusion under Read-only account exclusion check. Read the status element only; no automation fetch or cookie extraction is needed. The page sends the exact same-origin owner-exclusion-status action through its ordinary authenticated fetch. No account identifier is accepted. No automatic check, consent, SDK, claim or purchase action occurs. Button stays disabled after one click; 8-second deadline yields uncertain with no automatic retry. A missing session directs normal Kit sign-in; nonmatch remains unclassified. Existing two protected hashes are unchanged. Test each approved existing owner account separately after deployment; do not use the currently unclassified account for provider acceptance.
 
 Owner steps: leave the current unknown account unclassified. Use ordinary account controls to sign out, then the Kit sign-in flow for one confirmed owner account. Confirm the intended account privately; do not output its identity. Return to clean /ad-measurement, click the read-only check once, and record only sanitized status. Expected: Owner/test exclusion verified. Repeat using the second confirmed owner account. If login fails, status is unavailable/uncertain/nonmatch, or the control is absent, stop acceptance and keep tracking OFF. Do not click Allow or Check paid receipt, create accounts, change exclusions, or fabricate purchases.
+
+## Approved third exclusion: pending narrow OFF source release
+
+Supersedes the two-entry operational list above: owner approved adding the current original-test account as a third exclusion. Coordinator owns the encrypted three-entry setting. Parser accepts only two or three distinct lowercase SHA256-format values with explicit review=true; no arbitrary list size, missing/malformed values, duplicates or unreviewed inputs. Two-entry compatibility permits safe staging; production acceptance must verify the configured approved triple. Actual private profiles independently matched three confirmed entries; replaced identity absent; all three blocked before any measurement DB access, no provider requests. No actual private values in source or receipts.
+
+Local suite370/370 passed. HOLD MERGE until coordinator confirms encrypted three-hash configuration SAVED. No source activation, migration, retention/auth/Stripe change. After deliberate OFF release, use supported existing-account read-only check for each approved exclusion; no new accounts or Purchase.

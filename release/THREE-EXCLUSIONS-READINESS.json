@@ -1,0 +1,12 @@
+{
+  "base": "10a9509b16e5a7206665c44da64fba8aa0e262ac",
+  "tracking_enabled": false,
+  "deployed": false,
+  "merge_gate": "coordinator saved encrypted triple receipt REQUIRED",
+  "tests_passed": 370,
+  "private_profile": "PASS three entries consistent; replaced identity absent; no DB/provider access",
+  "canonical_lf_sha256": {
+    "functions/_shared/ad-measurement.mjs": "6f624b59e3b6782f863274c82654eb0c3056b2ca959477472b804fa85651a085",
+    "test/ad-three-exclusions.test.mjs": "5d642f0894a5a32555b98fa6ca1901ded46300ad6e215189adf16f278a19ab6b"
+  }
+}
