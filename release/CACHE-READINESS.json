@@ -26,6 +26,7 @@
     "tracking/measurement-page.mjs": "82a87d4bb89de567799ad41235b5fca728f8a92758a2f6eeb6a81ad6f813115e",
     "test/ad-owner-ui.test.mjs": "f6ea954bbbd3131f5ded6b8d3b6bfff62c645d68f0f2a6a2f96fbb3a44669f7b",
     "test/helpers/measurement-dom.mjs": "094c35aa2e41d5a91ab249e1b1eab297ebe4240f211e0109bb0018a23db7a01c",
-    "test/ad-minimal-browser.test.mjs": "5c1756ead7ce8d1e39291caede6274a86e67c44beba394af4098b0b7a798e7f1"
+    "test/ad-minimal-browser.test.mjs": "5c1756ead7ce8d1e39291caede6274a86e67c44beba394af4098b0b7a798e7f1",
+    "test/ad-signedout-journey.test.mjs": "45acc8bca9bb498270093741c8f2367e3d12a4556595a274bc3f9d80ade7f97a"
   }
 }
