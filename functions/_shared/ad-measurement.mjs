@@ -6,9 +6,13 @@ export const actorKey=id=>sha256Hex('fmw:ad-consent:actor:v1:'+id);
 export async function exclusionEmailKey(email){try{if(typeof email!=='string')return null;return await sha256Hex('fmw:ad-exclusion:email:v1:'+normalizeAccountEmail(email));}catch{return null;}}
 export const purchaseEventId=id=>sha256Hex('fmw:tiktok:purchase:v1:'+id).then(hash=>'fmw_'+hash);
 export const enabled=env=>env?.FMW_AD_ENABLED==='true'&&env.FMW_AD_PIXEL_ID===PIXEL_ID;
-function eligibility(env,actor,emailKey,paymentId){try{const excluded=JSON.parse(env.FMW_AD_EXCLUDED_ACTORS_JSON),payments=JSON.parse(env.FMW_AD_EXCLUDED_PAYMENTS_JSON),emails=JSON.parse(env.FMW_AD_EXCLUDED_EMAIL_HASHES_JSON),start=Number(env.FMW_AD_START_MS),revision=env.FMW_AD_ELIGIBILITY_REVISION;
+function reviewedEmailKeys(env){try{const keys=JSON.parse(env.FMW_AD_EXCLUDED_EMAIL_HASHES_JSON);return env.FMW_AD_EMAIL_EXCLUSIONS_REVIEWED==='true'&&Array.isArray(keys)&&keys.length===2&&new Set(keys).size===2&&keys.every(x=>typeof x==='string'&&/^[a-f0-9]{64}$/.test(x))?keys:null;}catch{return null;}}
+// Functional owner-only diagnostic; never returns identity/configuration values,
+// grants consent, reads purchase/measurement storage, or authorizes tracking.
+export async function ownerExclusionStatus({env,account}){const keys=reviewedEmailKeys(env),key=await exclusionEmailKey(account?.email);if(!keys||!key)return {state:'unavailable'};return {state:keys.includes(key)?'owner-excluded':'not-authorized'};}
+function eligibility(env,actor,emailKey,paymentId){try{const excluded=JSON.parse(env.FMW_AD_EXCLUDED_ACTORS_JSON),payments=JSON.parse(env.FMW_AD_EXCLUDED_PAYMENTS_JSON),emails=reviewedEmailKeys(env),start=Number(env.FMW_AD_START_MS),revision=env.FMW_AD_ELIGIBILITY_REVISION;
  if(env.FMW_AD_EXCLUSIONS_REVIEWED!=='true'||!Number.isSafeInteger(start)||start<=0||!/^[A-Za-z0-9_-]{1,80}$/.test(revision||'')||!Array.isArray(excluded)||!Array.isArray(payments)||excluded.some(x=>typeof x!=='string'||!/^[a-f0-9]{64}$/.test(x))||payments.some(x=>typeof x!=='string'||!/^pi_[A-Za-z0-9_]+$/.test(x)))return null;
- if(env.FMW_AD_EMAIL_EXCLUSIONS_REVIEWED!=='true'||!emailKey||!Array.isArray(emails)||emails.length!==2||new Set(emails).size!==2||emails.some(x=>typeof x!=='string'||!/^[a-f0-9]{64}$/.test(x)))return null;
+ if(!emailKey||!emails)return null;
  if(emails.includes(emailKey)||excluded.includes(actor)||(paymentId&&payments.includes(paymentId)))return null;return {start,revision};
  }catch{return null;}}
 async function legacyFences(db){return !!await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('tiktok_purchase_outbox','tiktok_delivery_receipts') LIMIT 1").first();}

@@ -1,10 +1,80 @@
-# UNAPPLIED source activation only. Coordinate schema, retention, private exclusions and server OFF/ON gates first.
-# No Cloudflare grant, migration, payment, fabricated Purchase or ad launch is authorized by this file.
+# UNAPPLIED activation proposal. Requires explicit gate clearance; no provider execution.
+# New immutable public config PATH and all consumer/cache identities travel with the flag.
 diff --git a/config.js b/config.js
 --- a/config.js
 +++ b/config.js
-@@ -4,3 +4,3 @@
+@@ -3,5 +3,5 @@
+   founderCheckoutUrl: 'https://buy.stripe.com/dRmeVd9327iW7cK0GtaMU00',
    survivalKitCheckoutUrl: 'https://buy.stripe.com/3cI14n7YYeLogNk1KxaMU01',
 -  adPixel: Object.freeze({enabled:false,pixelId:'DBJA0E3C77U7TR2UDESG',advertiserId:'7702295908318494741',accountVerified:true,dataSharingApproved:true,sdkApproved:true,settingsVerified:true,safeScopeApproved:true}),
 +  adPixel: Object.freeze({enabled:true,pixelId:'DBJA0E3C77U7TR2UDESG',advertiserId:'7702295908318494741',accountVerified:true,dataSharingApproved:true,sdkApproved:true,settingsVerified:true,safeScopeApproved:true}),
    commerceEnabled: false,
+   telemetryEnabled: true,
+diff --git a/assets/config/a20f8eb21723fe2a146d7c441493d9382f4f9a5ba570c3ed9e31256b30fe33d8.js b/assets/config/a20f8eb21723fe2a146d7c441493d9382f4f9a5ba570c3ed9e31256b30fe33d8.js
+new file mode 100644
+--- /dev/null
++++ b/assets/config/a20f8eb21723fe2a146d7c441493d9382f4f9a5ba570c3ed9e31256b30fe33d8.js
+@@ -0,0 +1,10 @@
++window.FMW_CONFIG = Object.freeze({
++  releaseVersion: '2.68.8',
++  founderCheckoutUrl: 'https://buy.stripe.com/dRmeVd9327iW7cK0GtaMU00',
++  survivalKitCheckoutUrl: 'https://buy.stripe.com/3cI14n7YYeLogNk1KxaMU01',
++  adPixel: Object.freeze({enabled:true,pixelId:'DBJA0E3C77U7TR2UDESG',advertiserId:'7702295908318494741',accountVerified:true,dataSharingApproved:true,sdkApproved:true,settingsVerified:true,safeScopeApproved:true}),
++  commerceEnabled: false,
++  telemetryEnabled: true,
++  accountsEnabled: true,
++  premiumEnforced: true
++});
+diff --git a/index.html b/index.html
+--- a/index.html
++++ b/index.html
+@@ -505,5 +505,5 @@
+ </script>
+ 
+-<script src="./assets/config/0b06103e65d76b98a352150e0d746c1e9e7bb5b70317f6debe5a4ed34730c773.js"></script>
++<script src="./assets/config/a20f8eb21723fe2a146d7c441493d9382f4f9a5ba570c3ed9e31256b30fe33d8.js"></script>
+ <script src="./app.js?v=2.68.8"></script>
+ <script src="./speech-ingredients.js?v=2.68.8"></script>
+diff --git a/survival-kit.html b/survival-kit.html
+--- a/survival-kit.html
++++ b/survival-kit.html
+@@ -84,5 +84,5 @@
+   <aside id="measurementHandoff" hidden></aside></main>
+   <footer><span>┬⌐ 2026 Food My Way ┬╖ TP Biz Ops LLC</span><nav><a href="./privacy.html">Privacy</a><a href="./terms.html">Terms</a><a href="./support.html">Support</a></nav></footer>
+-  <script src="./assets/config/0b06103e65d76b98a352150e0d746c1e9e7bb5b70317f6debe5a4ed34730c773.js"></script><script type="module" src="./survival-kit.js?v=2.68.8"></script>
++  <script src="./assets/config/a20f8eb21723fe2a146d7c441493d9382f4f9a5ba570c3ed9e31256b30fe33d8.js"></script><script type="module" src="./survival-kit.js?v=2.68.8"></script>
+ <script type="module" src="./tracking/consent-entry.mjs?v=2.68.8"></script></body>
+ </html>
+diff --git a/digital-kit.html b/digital-kit.html
+--- a/digital-kit.html
++++ b/digital-kit.html
+@@ -53,5 +53,5 @@
+   <aside id="measurementHandoff" hidden></aside></main>
+   <footer><span>© 2026 Food My Way · TP Biz Ops LLC</span><span>Your progress and notes stay on this device.</span></footer>
+-  <script src="./assets/config/0b06103e65d76b98a352150e0d746c1e9e7bb5b70317f6debe5a4ed34730c773.js"></script><script type="module" src="./tracking/consent-entry.mjs?v=2.68.8"></script><script src="./digital-kit.js?v=2.68.8"></script>
++  <script src="./assets/config/a20f8eb21723fe2a146d7c441493d9382f4f9a5ba570c3ed9e31256b30fe33d8.js"></script><script type="module" src="./tracking/consent-entry.mjs?v=2.68.8"></script><script src="./digital-kit.js?v=2.68.8"></script>
+ </body>
+ </html>
+diff --git a/ad-measurement.html b/ad-measurement.html
+--- a/ad-measurement.html
++++ b/ad-measurement.html
+@@ -1,1 +1,1 @@
+-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>Food My Way | Ad choices</title><link rel="stylesheet" href="./tracking/measurement.css?v=2.68.8"></head><body><main><h1>Your ad choices</h1><p>Optional TikTok measurement helps us understand which ads lead to purchases. If you agree, TikTok can receive this page visit, a verified purchase amount and a pseudonymous conversion ID, plus browser and network information such as your IP address. With your permission, only the bounded TikTok click ID, offer and request ID are saved in a 15-minute first-party pending cookie on this separate page while you sign in. This is not active tracking. After you return and confirm, the identifier is bound to your signed-in consent; it is not added to Stripe checkout. Detailed local records are redacted after 30 days, retaining a minimal hashed conversion fence. TikTok controls its own cookie and data retention. No ingredients, recipes, health details or contact fields are included in our event payload. TikTok's SDK may collect browser context. You can continue without agreeing.</p><p>For optional purchase measurement: choose Allow here, then <a href="./survival-kit" rel="noreferrer">sign in using the Kit</a>. Its email link returns you to the Kit. Use the Kit's optional ad-choices link to return here and confirm before paying. Pending permission alone never loads TikTok or proves payment. You can buy without signing in for measurement. We do not load TikTok before your account consent is confirmed. Declining does not limit the Kit. You may withdraw below; this stops future events, but cannot recall information already sent. <a href="./privacy.html" rel="noreferrer">Privacy</a></p><fieldset><legend>Choose</legend><button id="agree">Allow optional ad measurement</button><button id="decline">No thanks / withdraw</button></fieldset><p><label>Offer <select id="offer"><option value="survival_kit">Survival Kit — $19</option><option value="founding">Founding — $29</option></select></label></p><button id="checkout">Continue to checkout</button><button id="receipt">Check paid receipt</button><p id="status" role="status">Optional ad measurement is currently off.</p><p><a href="./ad-measurement" rel="noreferrer">Open a clean confirmation page</a> · <a href="./survival-kit" rel="noreferrer">Back to the Kit</a></p></main><script src="./assets/config/0b06103e65d76b98a352150e0d746c1e9e7bb5b70317f6debe5a4ed34730c773.js"></script><script type="module" src="./tracking/measurement-page.mjs?v=2.68.8"></script></body></html>
++<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>Food My Way | Ad choices</title><link rel="stylesheet" href="./tracking/measurement.css?v=2.68.8"></head><body><main><h1>Your ad choices</h1><p>Optional TikTok measurement helps us understand which ads lead to purchases. If you agree, TikTok can receive this page visit, a verified purchase amount and a pseudonymous conversion ID, plus browser and network information such as your IP address. With your permission, only the bounded TikTok click ID, offer and request ID are saved in a 15-minute first-party pending cookie on this separate page while you sign in. This is not active tracking. After you return and confirm, the identifier is bound to your signed-in consent; it is not added to Stripe checkout. Detailed local records are redacted after 30 days, retaining a minimal hashed conversion fence. TikTok controls its own cookie and data retention. No ingredients, recipes, health details or contact fields are included in our event payload. TikTok's SDK may collect browser context. You can continue without agreeing.</p><p>For optional purchase measurement: choose Allow here, then <a href="./survival-kit" rel="noreferrer">sign in using the Kit</a>. Its email link returns you to the Kit. Use the Kit's optional ad-choices link to return here and confirm before paying. Pending permission alone never loads TikTok or proves payment. You can buy without signing in for measurement. We do not load TikTok before your account consent is confirmed. Declining does not limit the Kit. You may withdraw below; this stops future events, but cannot recall information already sent. <a href="./privacy.html" rel="noreferrer">Privacy</a></p><fieldset><legend>Choose</legend><button id="agree">Allow optional ad measurement</button><button id="decline">No thanks / withdraw</button></fieldset><p><label>Offer <select id="offer"><option value="survival_kit">Survival Kit — $19</option><option value="founding">Founding — $29</option></select></label></p><button id="checkout">Continue to checkout</button><button id="receipt">Check paid receipt</button><p id="status" role="status">Optional ad measurement is currently off.</p><p><a href="./ad-measurement" rel="noreferrer">Open a clean confirmation page</a> · <a href="./survival-kit" rel="noreferrer">Back to the Kit</a></p></main><script src="./assets/config/a20f8eb21723fe2a146d7c441493d9382f4f9a5ba570c3ed9e31256b30fe33d8.js"></script><script type="module" src="./tracking/measurement-page.mjs?v=2.68.8"></script></body></html>
+diff --git a/service-worker.js b/service-worker.js
+--- a/service-worker.js
++++ b/service-worker.js
+@@ -1,11 +1,11 @@
+-const CACHE_NAME = 'food-my-way-v2-68-8-config-0b06103e65d76b98a352150e0d746c1e9e7bb5b70317f6debe5a4ed34730c773';
++const CACHE_NAME = 'food-my-way-v2-68-8-config-a20f8eb21723fe2a146d7c441493d9382f4f9a5ba570c3ed9e31256b30fe33d8';
+ const APP_SHELL = [
+   './',
+   './index.html',
+   './styles.css?v=2.68.8',
+   './app.js?v=2.68.8',
+   './speech-ingredients.js?v=2.68.8',
+   './speech-ingredients.css?v=2.68.8',
+-  './assets/config/0b06103e65d76b98a352150e0d746c1e9e7bb5b70317f6debe5a4ed34730c773.js',
++  './assets/config/a20f8eb21723fe2a146d7c441493d9382f4f9a5ba570c3ed9e31256b30fe33d8.js',
+   './site.webmanifest',
+   './picky-mark.svg',

@@ -1,0 +1,3 @@
+# Generated content identities and unapplied patch must remain byte-stable on Windows.
+assets/config/*.js text eol=lf
+release/ACTIVATE-TIKTOK-2.68.8.PROPOSED.patch text eol=lf
