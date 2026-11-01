@@ -1,4 +1,4 @@
-const CACHE_NAME = 'food-my-way-v2-68-8';
+const CACHE_NAME = 'food-my-way-v2-68-8-config-0b06103e65d76b98a352150e0d746c1e9e7bb5b70317f6debe5a4ed34730c773';
 const APP_SHELL = [
   './',
   './index.html',
@@ -6,7 +6,7 @@ const APP_SHELL = [
   './app.js?v=2.68.8',
   './speech-ingredients.js?v=2.68.8',
   './speech-ingredients.css?v=2.68.8',
-  './config.js?v=2.68.8',
+  './assets/config/0b06103e65d76b98a352150e0d746c1e9e7bb5b70317f6debe5a4ed34730c773.js',
   './site.webmanifest',
   './picky-mark.svg',
   './favicon.ico',

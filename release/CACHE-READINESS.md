@@ -1,0 +1,19 @@
+# Local OFF cache follow-up
+
+Base: deployed main 0e79d54c85e22ef17bb425b55f898a3781f5aa75. NOT PUSHED OR DEPLOYED. Tracking remains OFF. ACQUISITION-RELEASE.json is the historical deployed package; this follow-up changes its source hashes.
+
+All four HTML config consumers and SW precache use a canonical-LF content-addressed assets/config/<SHA256>.js PATH. SW cache identity includes the same hash. Distinct paths avoid relying on query-string cache keys or the observed max-age14400. Immutable assets are never overwritten. The unapplied activation patch adds a distinct ON artifact and updates all consumers/cache identity together. Current config and assets remain OFF. Cached HTML/SW can delay adoption: acceptance requires a fresh/revalidated document, not a promise of instant activation for open tabs. Server current-state validation remains mandatory before SDK load, including rollback with stale public ON config.
+
+## Proposed live owner acceptance
+
+The read-only owner-status action is LOCAL ONLY until separately reviewed/deployed with the OFF follow-up. For EACH confirmed existing owner account, sign in normally on production. Coordinator makes one same-origin JSON POST /api/tracking/measurement with exact body {"action":"owner-exclusion-status"}. No email, actor, order or payment identifier is supplied. No advertising consent, grant, claim, SDK, purchase-store read or mutation occurs.
+
+PASS: HTTP200 and exactly {"state":"owner-excluded"}, private/no-store and Vary Cookie. HTTP401 requires normal sign-in; HTTP403 not-authorized means no exclusion match; HTTP503 unavailable means missing/malformed/unreviewed protected config or unavailable identity. All block activation. Never fabricate an eligible customer. Record revision/time/status/enum only, no cookies, identity or hashes. Repeat for the second existing owner account. This verifies the real exclusion rather than mistaking global OFF for an exclusion success.
+
+## Evidence and gates
+
+Local full suite 359/359 runner entries passed (includes helper modules); syntax checks, immutable-identity check and git apply --check of the UNAPPLIED activation patch passed. Fixtures prove path collision refusal, OFF zero calls, authenticated subject-free enum isolation, bad-config refusal and no purchase-store access. They do not prove live provider delivery/attribution or a customer purchase.
+
+Coordinator independently verified live OFF rendering, decline/unavailable states and zero TikTok script tags. Existing Cloudflare beacon remains: no all-network-quiet claim. First retention Cron receipt and runtime owner exclusions remain pending. No CSP/global-auth/Stripe/schema/retention changes in this follow-up.
+
+Next: independent review and separately authorized OFF follow-up deployment; verify new live source/config identity, both owner results and first Cron receipt; only then clear activation gates. No activation, fake Purchase, new payment or ad launch here.
