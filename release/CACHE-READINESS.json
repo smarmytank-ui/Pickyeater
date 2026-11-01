@@ -3,25 +3,29 @@
   "local_only": true,
   "tracking_enabled": false,
   "deployed": false,
-  "runner_tests_passed": 362,
+  "runner_tests_passed": 367,
   "private_source_scan": "PASS",
   "hashes": {
     "assets/config/0b06103e65d76b98a352150e0d746c1e9e7bb5b70317f6debe5a4ed34730c773.js": "0b06103e65d76b98a352150e0d746c1e9e7bb5b70317f6debe5a4ed34730c773",
     "scripts/measurement-config-identity.mjs": "d4e48c74782860f5b715fa7fa96a3232eb756bb95fba7b0c5ac8b2512c1eb7bb",
     "test/ad-config-identity.test.mjs": "e37bad7e02a100ed46808edaef787171f9852e3091190353c65caae83f8ae0bb",
     "test/ad-owner-status.test.mjs": "c62f340a298308ae71fd8517948a2841269ad287bdc641d99d869de4c62b6899",
-    "ad-measurement.html": "75f7260f0bb39464cd6a0262f926fffb6112e4155825329137c70a19ff2575ba",
+    "ad-measurement.html": "161ff5d1404bedda43d63f31f4612cb3373213cb53d7f4b887705e10ba4b83f7",
     "digital-kit.html": "e384b67d8e81ae8ceedac61369191971e793ac726ae8d161496112f3785e7e09",
     "functions/_shared/ad-measurement.mjs": "cb06594151a2a0779391f6f778c958acf14574562adb57104cd1caabe79007d0",
     "functions/api/tracking/measurement.js": "2b201a426a27b03fa8a9608cfb90190df513db8130c8d422253abf84bc5766ad",
     "index.html": "5bc43dcd3c807a292c44192984e18813fbda85fc9b2710699ad9aee62454fcca",
-    "release/ACTIVATE-TIKTOK-2.68.8.PROPOSED.patch": "a42b51fb56554f4d45bcfdccd93b3e3326b2a5bfddbb1a38b61840f63c4ffbae",
+    "release/ACTIVATE-TIKTOK-2.68.8.PROPOSED.patch": "6a0bb47f5ae9b522ee32966521548ad7568ce84bace95928f54ec912c5adf2fd",
     "service-worker.js": "7ec8ef3170a4a4fdca8c4edac2ab09f66e0d1de0aa2c6e7852911e1a875e44f7",
     "survival-kit.html": "c13e94f63231ac83631fe4a304a55936c6db26cd0dfaa359eea8c995dad09206",
     "test/ad-release-packaging.test.mjs": "98576ded3d46bf67efe1c2cb5bdde9683d1ecc25fb6e8c43e97417a6c57fb1aa",
     "test/launch-assets.test.mjs": "8fb5f933e444430c04fa84b86bf6438f931fd62db53399e0cd1697c73b7e64b9",
     ".gitattributes": "9a1053e879a983aa20552268ad9aa99695c8eb384fe2c0592e40be226a20306f",
     "privacy.html": "d9a34496d350aabf5c40800b3e0ed32a5edb44fdd61a4c16f7a19c3fd806f1d9",
-    "test/ad-privacy.test.mjs": "3088a293ed5281c1e5b20c6721584d5d9e1a50ba459877e38d0b49346d13f59d"
+    "test/ad-privacy.test.mjs": "3088a293ed5281c1e5b20c6721584d5d9e1a50ba459877e38d0b49346d13f59d",
+    "tracking/measurement-page.mjs": "82a87d4bb89de567799ad41235b5fca728f8a92758a2f6eeb6a81ad6f813115e",
+    "test/ad-owner-ui.test.mjs": "f6ea954bbbd3131f5ded6b8d3b6bfff62c645d68f0f2a6a2f96fbb3a44669f7b",
+    "test/helpers/measurement-dom.mjs": "094c35aa2e41d5a91ab249e1b1eab297ebe4240f211e0109bb0018a23db7a01c",
+    "test/ad-minimal-browser.test.mjs": "5c1756ead7ce8d1e39291caede6274a86e67c44beba394af4098b0b7a798e7f1"
   }
 }
