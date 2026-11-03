@@ -33,8 +33,8 @@ diff --git a/index.html b/index.html
  
 -<script src="./assets/config/0b06103e65d76b98a352150e0d746c1e9e7bb5b70317f6debe5a4ed34730c773.js"></script>
 +<script src="./assets/config/a20f8eb21723fe2a146d7c441493d9382f4f9a5ba570c3ed9e31256b30fe33d8.js"></script>
- <script src="./app.js?v=2.68.8"></script>
- <script src="./speech-ingredients.js?v=2.68.8"></script>
+ <script src="./app.js?v=2.68.9"></script>
+ <script src="./speech-ingredients.js?v=2.68.9"></script>
 diff --git a/survival-kit.html b/survival-kit.html
 --- a/survival-kit.html
 +++ b/survival-kit.html
@@ -65,15 +65,15 @@ diff --git a/service-worker.js b/service-worker.js
 --- a/service-worker.js
 +++ b/service-worker.js
 @@ -1,11 +1,11 @@
--const CACHE_NAME = 'food-my-way-v2-68-8-config-0b06103e65d76b98a352150e0d746c1e9e7bb5b70317f6debe5a4ed34730c773';
-+const CACHE_NAME = 'food-my-way-v2-68-8-config-a20f8eb21723fe2a146d7c441493d9382f4f9a5ba570c3ed9e31256b30fe33d8';
+-const CACHE_NAME = 'food-my-way-v2-68-9-config-0b06103e65d76b98a352150e0d746c1e9e7bb5b70317f6debe5a4ed34730c773';
++const CACHE_NAME = 'food-my-way-v2-68-9-config-a20f8eb21723fe2a146d7c441493d9382f4f9a5ba570c3ed9e31256b30fe33d8';
  const APP_SHELL = [
    './',
    './index.html',
-   './styles.css?v=2.68.8',
-   './app.js?v=2.68.8',
-   './speech-ingredients.js?v=2.68.8',
-   './speech-ingredients.css?v=2.68.8',
+   './styles.css?v=2.68.9',
+   './app.js?v=2.68.9',
+   './speech-ingredients.js?v=2.68.9',
+   './speech-ingredients.css?v=2.68.9',
 -  './assets/config/0b06103e65d76b98a352150e0d746c1e9e7bb5b70317f6debe5a4ed34730c773.js',
 +  './assets/config/a20f8eb21723fe2a146d7c441493d9382f4f9a5ba570c3ed9e31256b30fe33d8.js',
    './site.webmanifest',
