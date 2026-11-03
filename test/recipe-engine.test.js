@@ -183,7 +183,7 @@ test('unknown and prepared safe foods get neutral guidance instead of vegetable 
   const instructions=buildInstructions(ingredients).map(step=>step.text).join(' ');
   assert.match(instructions,/package directions or the method and texture you prefer/);
   assert.doesNotMatch(instructions,/tender-crisp/);
-  assert.equal(titleFrom(ingredients),'Simple Cereal Plate');
+  assert.equal(titleFrom(ingredients),'Cereal Takes the Spotlight');
 });
 
 test('normalization removes duplicate ingredients after cleanup', () => {
@@ -202,7 +202,7 @@ test('instructions name every major ingredient and omit absent vegetable steps',
 
 test('recipe details and title respond to the ingredient mix', () => {
   const ingredients = normalize(['salmon', 'potatoes', 'green beans']);
-  assert.equal(titleFrom(ingredients), 'Simple Salmon Dinner');
+  assert.equal(titleFrom(ingredients), 'Salmon & Potatoes Reunion');
   assert.deepEqual(recipeDetails(ingredients), {
     description: 'A straightforward Salmon, Potatoes, Green Beans recipe with familiar flavors and flexible swaps.',
     prepMinutes: 10,

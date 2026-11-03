@@ -705,7 +705,7 @@ function formatQty(value) {
 // -------------------------------
 const ROLE_RULES = [
   // Prepared safe foods need package/preferred-method guidance, not raw-ingredient cooking steps.
-  [/\b(chicken nuggets?|fish sticks?|hot dogs?|meatballs?|bagels?|pancakes?|waffles?|french fries|fries|pizza|mac(?:aroni)? and cheese|cereal|sandwich(?:es)?|crackers?)\b/i,'other'],
+  [/\b(casserole|chicken nuggets?|fish sticks?|hot dogs?|meatballs?|bagels?|pancakes?|waffles?|french fries|fries|pizza|mac(?:aroni)? and cheese|cereal|sandwich(?:es)?|crackers?)\b/i,'other'],
   // Pantry liquids must precede meat/vegetable words in their names.
   [/\b(broth|stock|bouillon)\b/i,'other'],
   // Specific phrases FIRST (prevents "green beans" matching "beans")
@@ -727,7 +727,7 @@ const ROLE_RULES = [
   [/\b(lemon|lemon juice|vinegar)\b/i,'acid'],
   [/\b(salmon|chicken|chicken breast|beef|ground beef|lean beef|steak|turkey|pork|tofu|lentils|egg|eggs)\b/i,'protein'],
   [/\bbeans\b/i,'protein'],
-  [/\b(rice|orzo|pasta|potato|potatoes|quinoa|sweet potato|sweet potatoes)\b/i,'starch'],
+  [/\b(rice|orzo|pasta|spaghetti|potato|potatoes|quinoa|sweet potato|sweet potatoes)\b/i,'starch'],
   [/\b(onion|onions|green onion|scallion|scallions|shallot|garlic)\b/i,'aromatic']
 ];
 
@@ -1155,7 +1155,7 @@ function buildInstructions(ingredients,preferences={}){
     const name = pretty(starch.name);
     let text;
     if(starch.name.includes('rice')) text = `Cook ${name} according to the package directions, then fluff.`;
-    else if(/\b(?:pasta|orzo)\b/.test(starch.name)) text = `Boil ${name} according to the package directions, then drain.`;
+    else if(/\b(?:pasta|orzo|spaghetti)\b/.test(starch.name)) text = `Boil ${name} according to the package directions, then drain.`;
     else if(starch.name.includes('quinoa')) text = `Rinse ${name}, simmer until the liquid is absorbed, then rest 5 minutes and fluff.`;
     else if(profile.texture==='crisp') text = `Cook ${name} until crisp outside and tender inside; roasting or air-frying works well.`;
     else if(profile.texture==='soft') text = `Cook ${name} until very soft and easy to bite; boiling or microwaving works well.`;
@@ -1237,21 +1237,32 @@ function titleFrom(ings){
   const starch = sorted('starch')[0];
   const vegetables = sorted('veg');
   const primary = protein || starch || vegetables[0] || candidates.find(i=>!['fat','acid','seasoning','aromatic','dairy'].includes(i.role));
-  const main = primary ? pretty(primary.name) : 'Familiar Food';
+  const main = primary ? pretty(primary.name) : '';
   const all = candidates.map(i=>i.name).join(' ').toLowerCase();
 
+  // Dish formats must come from the food itself, never a guessed cooking method.
+  const casserole=candidates.find(i=>/\bcasserole\b/i.test(i.name));
+  if(casserole) return `Super ${pretty(casserole.name)}`;
+  if(starch && /\bspaghetti\b/i.test(starch.name)){
+    return `Mom's ${pretty(starch.name)}${protein ? ` with ${pretty(protein.name)}` : ''}`;
+  }
+
   if(/\btortillas?\b/.test(all)) return protein ? `${main} Tacos` : 'Flexible Tacos';
-  if(/\bpizza\b/.test(all)) return protein ? `${main} Pizza` : 'Simple Pizza';
-  if(/\b(?:bbq|barbecue)\b/.test(all)) return `BBQ ${main}`;
+  if(/\bpizza\b/.test(all)) return protein ? `${main} Pizza Party` : 'Pizza Party';
+  if(main && /\b(?:bbq|barbecue)\b/.test(all)) return `Backyard BBQ ${main}`;
 
   // Pasta is an actual ingredient/format, not an invented cooking method or cuisine.
   if(starch && /\b(?:orzo|pasta)\b/.test(starch.name)){
     const name=pretty(starch.name);
     const partners=[protein && pretty(protein.name),vegetables[0] && pretty(vegetables[0].name)].filter(Boolean);
-    return partners.length ? `${name} with ${partners.join(' & ')}` : `${name}, Your Way`;
+    return partners.length ? `${name} Party with ${partners.join(' & ')}` : `${name} Takes the Spotlight`;
   }
-  if(!protein && starch && vegetables.length) return `${pretty(starch.name)} with ${pretty(vegetables[0].name)}`;
-  return `Simple ${main} ${starch ? 'Dinner' : 'Plate'}`;
+  if(protein && starch) return `${main} & ${pretty(starch.name)} Reunion`;
+  if(starch && vegetables.length) return `${pretty(starch.name)} Meets ${pretty(vegetables[0].name)}`;
+  if(!main) return 'Your Kitchen Remix';
+  if(/\brice\b/.test(primary.name)) return `${main} to the Occasion`;
+  if(/\bpotatoes?\b/.test(primary.name)) return `${main} Party`;
+  return `${main} Takes the Spotlight`;
 }
 
 // -------------------------------

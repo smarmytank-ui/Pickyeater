@@ -1,4 +1,4 @@
-﻿const test=require('node:test');
+const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
@@ -26,7 +26,7 @@ test('exact observed fixture excludes broth as protein, packaging and divided as
  assert.equal(recipe.ingredients.find(i=>i.name==='heavy cream').role,'dairy');
  assert.equal(recipe.ingredients.find(i=>i.name==='artichoke hearts').role,'veg');
  assert.equal(recipe.ingredients.find(i=>i.name==='italian herb seasoning').role,'seasoning');
- assert.equal(recipe.title,'Orzo with Chicken Breast & Artichoke Hearts');
+ assert.equal(recipe.title,'Orzo Party with Chicken Breast & Artichoke Hearts');
  assert.doesNotMatch(recipe.title,/broth|stock|package|divided|baked|tuscan|healthy/i);
  const proteins=recipe.steps.filter(s=>s.key.startsWith('protein-'));
  assert.equal(proteins.length,1);
@@ -38,9 +38,9 @@ test('titles are order stable and truthful after protein or vegetable removal',(
  const recipe=restored();
  assert.equal(app.titleFrom([...recipe.ingredients].reverse()),recipe.title);
  const noChicken=recipe.ingredients.filter(i=>i.role!=='protein');
- assert.equal(app.titleFrom(noChicken),'Orzo with Artichoke Hearts');
+ assert.equal(app.titleFrom(noChicken),'Orzo Party with Artichoke Hearts');
  const noVeg=noChicken.filter(i=>i.role!=='veg');
- assert.equal(app.titleFrom(noVeg),'Orzo, Your Way');
+ assert.equal(app.titleFrom(noVeg),'Orzo Takes the Spotlight');
  const removedProtein=recipe.ingredients.map(i=>i.role==='protein'?{...i,base:{v:0,u:'lb'}}:i);
  assert.doesNotMatch(app.titleFrom(removedProtein),/Chicken/);
  assert.doesNotMatch(app.titleFrom([{name:'taco seasoning',role:'seasoning',base:{v:1,u:'tsp'}}]),/Tacos/);
@@ -91,6 +91,6 @@ test('actual custom swap updates ingredient-grounded title while servings and gr
  applySwap(state.ingredients[0].id,{name:'tofu'},{keepRole:true,keepQty:true});
  globalThis.result={title:state.title,items:recipeCommerceItems({...state,servings})};
  `,context);
- assert.equal(context.result.title,'Orzo with Tofu & Spinach');
+ assert.equal(context.result.title,'Orzo Party with Tofu & Spinach');
  assert.equal(context.result.items.find(i=>i.name==='orzo').quantity,500);
 });
