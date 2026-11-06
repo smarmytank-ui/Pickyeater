@@ -31,7 +31,7 @@ test('safety instructions distinguish all three affected ground-meat recipes and
  for(const id of ['cheesy-taco-rice','mini-cheeseburger-sliders','separate-component-taco-night']){const r=content.recipes.find(r=>r.id===id);assert.match(r.steps.join(' '),/165°F/);assert.match(r.steps.join(' '),/160°F/);assert.match(r.steps.join(' '),/food thermometer/);}
  assert.match(content.safety.foodSafety,/including ground turkey and chicken/);
 });
-test('only digital Kit cache references change; production app and checkout identities stay exact',()=>{
+test('Kit cache references coexist with explicitly versioned safety and checkout modules',()=>{
  const here=new URL('../',import.meta.url);const original=null;
- for(const file of ['digital-kit.html','service-worker.js']){const before=execFileSync('C:/Program Files/Git/cmd/git.exe',['show','74c98925a3b50ceafcc03fe811153922b8474a89:'+file],{encoding:'utf8'});const after=readFileSync(new URL(file,here),'utf8');assert.equal(after.replaceAll('digital-kit.js?v=2.68.8-kit-correction-20261104','digital-kit.js?v=2.68.8').replaceAll('\r\n','\n'),before.replaceAll('\r\n','\n'));}
+ for(const file of ['digital-kit.html','service-worker.js']){const before=execFileSync('C:/Program Files/Git/cmd/git.exe',['show','74c98925a3b50ceafcc03fe811153922b8474a89:'+file],{encoding:'utf8'});const after=readFileSync(new URL(file,here),'utf8');assert.equal(after.replaceAll('digital-kit.js?v=2.68.8-kit-correction-20261104','digital-kit.js?v=2.68.8').replaceAll('app.js?v=2.68.8-legume-safety-20261104','app.js?v=2.68.8').replaceAll('survival-kit.js?v=2.68.8-guest-20261106','survival-kit.js?v=2.68.8').replaceAll('\r\n','\n'),before.replaceAll('\r\n','\n'));}
 });

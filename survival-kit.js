@@ -23,17 +23,26 @@ import { checkoutWithAttribution, attributedInternalUrl } from './checkout-attri
   const valid=(()=>{try{const url=new URL(checkoutUrl);return url.protocol==='https:' && ['buy.stripe.com','checkout.stripe.com'].includes(url.hostname) && !url.username && !url.password && !url.port;}catch{return false;}})();
   let kitOfferState='checking';
   let kitOwnedPlan=null;
+  let guestPurchaseFallback=false;
   const originalOfferCopy=new Map(['kitAppReturn','kitAppHeading','kitAppCopy','kitAppLink','kitQuestionsHeading'].map(id=>[id,document.getElementById(id)?.textContent]));
   const renderKitOffer=()=>{
     const owned=kitOfferState==='owned';
     const available=kitOfferState==='free' && valid;
+    const offerGuest=kitOfferState==='unavailable' && guestPurchaseFallback && valid;
+    for(const id of ['kitGuestNotice','kitGuestNoticeBottom']) document.getElementById(id)?.classList.toggle('hidden',!offerGuest);
+    for(const id of ['kitGuestCheckout','kitGuestCheckoutBottom']){
+      const link=document.getElementById(id);
+      if(!link) continue;
+      link.href=offerGuest?checkoutUrl:'#access';
+      if(offerGuest) link.removeAttribute('aria-disabled'); else link.setAttribute('aria-disabled','true');
+    }
     for(const id of ['kitCheckout','kitCheckoutBottom']){
       const link=document.getElementById(id);
       if(!link) continue;
       link.href=owned?attributedInternalUrl('./digital-kit.html',location.search):available?checkoutUrl:'#access';
       link.classList.toggle('is-unavailable',!owned && !available);
       if(owned || available) link.removeAttribute('aria-disabled'); else link.setAttribute('aria-disabled','true');
-      link.textContent=owned?'Open my Kit':available?'Get the Kit ΓÇö $19':'Check my Kit access';
+      link.textContent=owned?'Open my Kit':available?'Get the Kit \u2014 $19':'Check my Kit access';
     }
     for(const id of ['kitPurchaseSummary','kitPurchaseFineprint']) document.getElementById(id)?.classList.toggle('hidden',owned || kitOfferState!=='free');
     const memberCopy={
@@ -48,6 +57,13 @@ import { checkoutWithAttribution, attributedInternalUrl } from './checkout-attri
       if(element && original!==undefined) element.textContent=owned?memberCopy[id]:original;
     }
   };
+  for(const id of ['kitGuestCheckout','kitGuestCheckoutBottom']){
+    document.getElementById(id)?.addEventListener('click',event=>{
+      if(!valid || kitOfferState!=='unavailable' || !guestPurchaseFallback){event.preventDefault();return;}
+      // Explicit purchase navigation only; no payment or ownership proof.
+      emit('kit_checkout_started');
+    });
+  }
   for(const id of ['kitCheckout','kitCheckoutBottom']){
     const link=document.getElementById(id);
     if(!link) continue;
@@ -74,11 +90,24 @@ import { checkoutWithAttribution, attributedInternalUrl } from './checkout-attri
   const status=document.getElementById('kitStatus');
   const download=document.getElementById('kitDownload');
   const refreshAccess=async()=>{
+    let knownSignedIn=false;
+    let timer;
     try{
-      const response=await fetch('/api/auth/session',{headers:{accept:'application/json'}});
-      const state=await response.json();
-      if(!response.ok || state.entitlementUnavailable) throw new Error('Purchase verification is temporarily unavailable. Please refresh this page to try again.');
+      const session=fetch('/api/auth/session',{headers:{accept:'application/json'}}).then(async response=>{
+        if(!response.ok) throw new Error('Purchase verification is temporarily unavailable.');
+        const state=await response.json();
+        if(!state || typeof state!=='object' || typeof state.authenticated!=='boolean') throw new Error('Purchase verification is temporarily unavailable.');
+        return state;
+      });
+      const deadline=new Promise((_,reject)=>{
+        if(typeof setTimeout==='function') timer=setTimeout(()=>reject(new Error('Purchase verification timed out.')),5000);
+      });
+      // Late responses have no rendering side effects and never trigger retries.
+      const state=await Promise.race([session,deadline]);
+      knownSignedIn=state.authenticated===true;
+      if(knownSignedIn && state.entitlementUnavailable) throw new Error('Purchase verification is temporarily unavailable.');
       const ownsKit=hasDigitalKitAccess(state);
+      guestPurchaseFallback=false;
       kitOwnedPlan=ownsKit?((state.entitlements || [state.entitlement]).some(item=>item?.plan==='founding' && item?.status==='active')?'founding':'survival_kit'):null;
       kitOfferState=ownsKit?'owned':'free';
       renderKitOffer();
@@ -90,7 +119,10 @@ import { checkoutWithAttribution, attributedInternalUrl } from './checkout-attri
       }else if(state.authenticated && status){
         status.textContent='No active Kit or Founding purchase was found for this email. Use the email on your Stripe receipt. If you just paid, wait a moment and refresh. Need help? Email support@foodmyway.app.';
       }
-    }catch(error){kitOfferState='unavailable';kitOwnedPlan=null;renderKitOffer();if(status) status.textContent=error.message || 'Purchase verification is temporarily unavailable. Please refresh to try again.';}
+    }catch{
+      kitOfferState='unavailable';kitOwnedPlan=null;guestPurchaseFallback=!knownSignedIn;renderKitOffer();
+      if(status) status.textContent='Purchase verification is temporarily unavailable. If you already paid, use your purchase email below or refresh to try again.';
+    }finally{if(timer!==undefined && typeof clearTimeout==='function') clearTimeout(timer);}
   };
   form?.addEventListener('submit',async event=>{
     event.preventDefault();
