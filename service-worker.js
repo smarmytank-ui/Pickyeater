@@ -35,7 +35,7 @@ const APP_SHELL = [
   './checkout-attribution.mjs',
   './digital-kit.html',
   './digital-kit.css?v=1',
-  './digital-kit.js?v=2.68.8'
+  './digital-kit.js?v=2.68.8-kit-correction-20261104'
 ];
 
 // Privacy-sensitive measurement code must NEVER use SW cache or app fallback.

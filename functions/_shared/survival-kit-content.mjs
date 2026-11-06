@@ -4,7 +4,7 @@ const survivalKitSource = {
     source: 'products/survival-kit/build_kit.py',
     notes: [
       'Breakfasts, lunches, and snacks in the 14-day plan are templates; the source asks households to substitute from their familiar food list.',
-      'The weekly grocery lists are category-level planning lists, not exact recipe-aggregated quantities.',
+      'The grocery lists aggregate one four-serving batch of each scheduled dinner under explicit protein, side and emergency-meal choices; other meal templates need household quantities.',
       'The source includes 16 recipes, including snack and emergency meals; the schedule does not map every recipe to a day.',
       'No account persistence schema or worksheet response format is prescribed by the PDF; interactive fields should be saved separately by the app.',
     ],
@@ -12,7 +12,7 @@ const survivalKitSource = {
     disclaimer: 'This kit is designed to reduce meal-planning friction. It cannot guarantee that a child or adult will eat a particular food, and it is not medical, nutrition, occupational-therapy, or feeding-therapy advice.',
     qualifiedSupport: 'Talk with a pediatrician, registered dietitian, feeding therapist, or other qualified professional about significant restriction, growth concerns, pain, choking, swallowing difficulty, dehydration, suspected allergy, nutritional deficiency, or distress around eating.',
     allergy: 'No substitution is universally allergy-safe. Ingredients and manufacturing practices change. Read current labels every time and evaluate cross-contact based on your household’s needs. Restaurant guidance in this kit does not confirm ingredient or cross-contact safety.',
-    foodSafety: 'Use a food thermometer for raw animal proteins. Cook poultry to 165°F (74°C), ground meats to 160°F (71°C), and whole cuts of beef or pork to 145°F (63°C) followed by a 3-minute rest. Refrigerate perishable leftovers promptly.',
+    foodSafety: 'Use a food thermometer for raw animal proteins. Cook all poultry, including ground turkey and chicken, to 165°F (74°C), ground beef, pork, lamb, and veal to 160°F (71°C), and whole cuts of beef or pork to 145°F (63°C) followed by a 3-minute rest. Refrigerate perishable leftovers promptly.',
     lowPressure: 'Offering a new option is optional. Keep a familiar component available when practical, allow foods to remain separate, and treat “not today” as useful information rather than failure.',
     chokingNote: 'Popcorn and other hard or round foods can be choking hazards for young children. Choose developmentally appropriate textures and preparation.',
   },
@@ -95,42 +95,167 @@ const survivalKitSource = {
     ]},
   ],
   groceryLists: [
-    {
-      week: 1, sections: [
-        { name: 'Protein', items: ['2 lb chicken breast or tenders', '1 lb ground beef or turkey', '8 eggs', 'deli turkey'] },
-        { name: 'Dairy / alternatives', items: ['3 cups shredded cheese', 'parmesan', 'yogurt', 'milk or household alternative'] },
-        { name: 'Bread / grains', items: ['10 tortillas', '6 bagels', 'pasta', 'rice', 'slider buns', 'cereal', 'waffles', 'crackers'] },
-        { name: 'Produce', items: ['4 baking potatoes', '1 lb small potatoes', '2 fruits', 'optional lettuce or mild vegetables'] },
-        { name: 'Pantry / freezer', items: ['pizza sauce', 'taco seasoning', 'breadcrumbs', 'butter or alternative', 'preferred dips'] },
-        { name: 'Household substitutions', items: [], editable: true },
-        { name: 'Reliable backups', items: [], editable: true },
-      ], note: 'Cross off anything already in the pantry. Replace ingredients with exact familiar brands or shapes when that difference matters.',
-    },
-    {
-      week: 2, sections: [
-        { name: 'Protein', items: ['2 lb chicken breast or tenders', '1 lb ground beef, turkey, beans, or household taco filling', '10 eggs'] },
-        { name: 'Dairy / alternatives', items: ['3 cups shredded cheese', 'parmesan', 'Alfredo sauce or ingredients', 'yogurt', 'milk or alternative'] },
-        { name: 'Bread / grains', items: ['tortillas', 'pasta', 'rice', 'sandwich bread', 'breadcrumbs', 'cereal', 'pancakes or waffles', 'crackers'] },
-        { name: 'Produce', items: ['2 fruits', 'optional taco vegetables', 'preferred pizza toppings', 'familiar sides'] },
-        { name: 'Pantry / freezer', items: ['pizza sauce', 'preferred pasta sauce', 'taco seasoning', 'butter or alternative', 'dips'] },
-        { name: 'Household substitutions', items: [], editable: true },
-        { name: 'Reliable backups', items: [], editable: true },
-      ], note: 'Keep one emergency meal untouched. A backup is useful only if its ingredients are still available on the night you need it.',
-    },
-  ],
+  {
+    "week": 1,
+    "sections": [
+      {
+        "name": "Dinner protein and eggs",
+        "items": [
+          "1 1/2 lb raw chicken breast (chicken bites)",
+          "5 cups cooked chicken: 2 for quesadillas, 2 for pasta, 1 for potato topping",
+          "2 lb ground beef or turkey: 1 for taco rice, 1 for sliders",
+          "1 egg (chicken-bite coating)"
+        ]
+      },
+      {
+        "name": "Dinner cheese",
+        "items": [
+          "4 cups shredded cheese plus 2 cups shredded mozzarella (6 cups total)",
+          "8 small cheese slices (sliders)",
+          "5/6 cup parmesan: 1/3 cup for chicken bites plus 1/2 cup for pasta"
+        ]
+      },
+      {
+        "name": "Dinner bread and grains",
+        "items": [
+          "8 small tortillas",
+          "4 bagels",
+          "12 oz dry pasta",
+          "2 cups cooked rice",
+          "8 slider buns",
+          "1 cup breadcrumbs"
+        ]
+      },
+      {
+        "name": "Dinner produce",
+        "items": [
+          "4 medium baking potatoes",
+          "Potatoes for day 3 side: choose quantity; no amount is specified in the chicken-bite recipe"
+        ]
+      },
+      {
+        "name": "Dinner sauces and pantry",
+        "items": [
+          "3/4 cup pizza sauce",
+          "1/2 cup mild tomato sauce",
+          "1 tbsp mild taco seasoning; 1/4 cup water for taco rice",
+          "3 tbsp butter or alternative for pasta; extra for potato topping as preferred",
+          "Reserve pasta cooking water as directed; keep sauces and toppings separate if preferred"
+        ]
+      },
+      {
+        "name": "Optional dinner additions",
+        "items": [
+          "Mild salsa or dip, preferred pizza/potato/taco toppings, slider condiments: choose quantities"
+        ]
+      },
+      {
+        "name": "Other meals and backups - add your quantities",
+        "items": [
+          "Breakfasts: toast, fruit, yogurt, cereal, waffles, eggs, milk and breakfast-quesadilla ingredients",
+          "Lunches/snacks: deli turkey, crackers, cheese, fruit, pretzels, yogurt, plain pasta, preferred snack-plate foods and age-appropriate popcorn or alternative",
+          "Count available leftovers first; add food for any lunch shortfall and one separate backup meal"
+        ]
+      },
+      {
+        "name": "Substitution planning",
+        "items": [
+          "Beans instead of taco-rice meat: replace that 1 lb meat allowance with the recipe's 1 lb drained canned or fully cooked beans",
+          "Beans instead of potato chicken: replace 1 cup cooked chicken with 1 cup drained canned or fully cooked beans",
+          "For low-energy substitutions or another dinner, remove the replaced ingredients and add the chosen product quantities; check labels"
+        ]
+      }
+    ],
+    "note": "Dinner quantities cover one four-serving batch per scheduled dinner, using meat in taco rice and sliders and chicken in the potato topping. Raw chicken and cooked chicken are separate quantities, not equivalent weights. Day 3 potatoes are an extra side: choose a quantity. Breakfasts, lunches and snacks are not included. Four dinner servings do not guarantee leftovers: add portions or plan another lunch. Subtract pantry stock; adjust for your diners and substitutions. New dinner checklist items start unchecked; saved notes and day progress remain."
+  },
+  {
+    "week": 2,
+    "sections": [
+      {
+        "name": "Dinner protein and eggs",
+        "items": [
+          "1 1/2 lb raw chicken breast (nugget bowls)",
+          "4 cups cooked chicken: 2 for Alfredo roll-ups, 2 for pasta night",
+          "1 lb ground beef or turkey (taco night)",
+          "9 eggs: 8 for breakfast quesadillas, 1 for nugget coating"
+        ]
+      },
+      {
+        "name": "Dinner cheese",
+        "items": [
+          "4 cups shredded cheese plus 1 cup shredded mozzarella (5 cups total)",
+          "8 cheese slices (day 14 grilled cheese)",
+          "1/2 cup parmesan (pasta night)"
+        ]
+      },
+      {
+        "name": "Dinner bread and grains",
+        "items": [
+          "8 lasagna noodles, cooked for roll-ups",
+          "12 oz dry pasta (pasta night)",
+          "4 large tortillas (breakfast quesadillas) plus 8 tortillas (taco night)",
+          "16 bread slices: 8 for pizza toast, 8 for grilled cheese",
+          "2 cups cooked rice (nugget bowls)",
+          "1 cup breadcrumbs"
+        ]
+      },
+      {
+        "name": "Dinner produce",
+        "items": [
+          "2 cups familiar produce or fruit (nugget bowls)",
+          "Fruit, crackers or another preferred side for day 14: choose quantity"
+        ]
+      },
+      {
+        "name": "Dinner sauces and pantry",
+        "items": [
+          "1 1/2 cups Alfredo sauce",
+          "1 1/2 cups preferred pasta sauce",
+          "3/4 cup pizza sauce",
+          "2 tbsp butter or alternative (grilled cheese)",
+          "Mild taco seasoning: choose quantity; the recipe gives no amount"
+        ]
+      },
+      {
+        "name": "Optional dinner additions",
+        "items": [
+          "Cooked breakfast meat, taco/pizza toppings and pasta vegetables: choose quantities"
+        ]
+      },
+      {
+        "name": "Other meals and backups - add your quantities",
+        "items": [
+          "Breakfasts: cereal, fruit, pancakes, eggs, toast, waffles, yogurt and a chosen favorite breakfast",
+          "Lunches/snacks: snack-plate foods, plain noodles, quesadilla ingredients, cheese, crackers, pretzels, dip, yogurt and fruit",
+          "Count available leftovers, including day 8 potato leftovers, before planning lunches; add food for any shortfall and a separate backup"
+        ]
+      },
+      {
+        "name": "Substitution planning",
+        "items": [
+          "Beans instead of taco meat: replace 1 lb ground meat with the recipe's 1 lb drained canned or fully cooked beans",
+          "Beans for pasta night: replace 2 cups cooked chicken with 2 cups drained canned or fully cooked beans",
+          "Potatoes for nugget bowls: replace 2 cups cooked rice with 2 cups cooked potatoes",
+          "If day 14 is not grilled cheese, remove 8 bread slices, 8 cheese slices and 2 tbsp butter, then add your chosen meal; adjust other swaps to their recipes"
+        ]
+      }
+    ],
+    "note": "Dinner quantities cover one four-serving batch per scheduled dinner, choosing chicken for pasta, rice for nugget bowls, meat for tacos and Emergency Grilled Cheese Plate for day 14. Raw and cooked chicken are separate quantities. If you choose another emergency meal, replace its bread, cheese and butter allowance. Breakfasts, lunches and snacks are extra. Four dinner servings do not guarantee leftovers: add portions or plan another lunch. Subtract pantry stock; adjust for your diners and substitutions. New dinner checklist items start unchecked; saved notes and day progress remain."
+  }
+],
   recipes: [
     { id: 'cheesy-chicken-quesadillas', title: 'Cheesy Chicken Quesadillas', servings: 4, time: '20 minutes', ingredients: ['8 small tortillas', '2 cups cooked chicken, chopped', '2 cups shredded cheese', 'Optional mild salsa or dip on the side'], steps: ['Warm a skillet over medium heat.', 'Place cheese and chicken on half of each tortilla; keep one plain if needed.', 'Fold and cook 2-3 minutes per side until crisp and the filling is hot.'], plainOption: 'Serve chicken, cheese, and tortilla separately; or make a cheese-only version.', allergyNote: 'Use a household-approved gluten-free tortilla or dairy-free cheese; verify labels and cross-contact.', lowEnergyOption: 'Microwave a cheese tortilla, then add warmed pre-cooked chicken beside it.' },
     { id: 'pizza-bagels', title: 'Pizza Bagels', servings: 4, time: '18 minutes', ingredients: ['4 bagels, split', '3/4 cup pizza sauce', '2 cups shredded mozzarella', 'Optional preferred toppings'], steps: ['Heat oven to 400°F.', 'Place bagels cut-side up. Leave sauce off selected halves if preferred.', 'Add cheese and toppings; bake 8-10 minutes until hot.'], plainOption: 'Serve a toasted bagel with sauce and cheese in separate cups.', allergyNote: 'Use an approved bread or cheese alternative and recheck sauce labels.', lowEnergyOption: 'Toast the bagel and serve with cheese slices and warmed sauce for dipping.' },
     { id: 'crispy-chicken-parmesan-bites', title: 'Crispy Chicken Parmesan Bites', servings: 4, time: '30 minutes', ingredients: ['1 1/2 lb chicken breast, 1-inch pieces', '1 cup breadcrumbs', '1/3 cup parmesan', '1 egg, beaten', '1/2 cup mild tomato sauce on the side'], steps: ['Heat oven to 425°F and line a sheet pan.', 'Dip chicken in egg, then coat with breadcrumbs and parmesan.', 'Bake 16-20 minutes, turning once, until chicken reaches 165°F.'], plainOption: 'Reserve un-sauced bites and keep parmesan separate.', allergyNote: 'Use approved crumbs, egg replacer, or dairy-free topping; verify labels.', lowEnergyOption: 'Bake familiar frozen chicken according to its label and offer sauce separately.' },
-    { id: 'cheesy-taco-rice', title: 'Cheesy Taco Rice', servings: 4, time: '25 minutes', ingredients: ['1 lb ground beef, turkey, or beans', '2 cups cooked rice', '1 cup shredded cheese', '1 tbsp mild taco seasoning', 'Optional toppings in separate bowls'], steps: ['Cook meat to 160°F, or warm beans; drain if needed.', 'Stir seasoning into the protein with 1/4 cup water and simmer 3 minutes.', 'Serve rice, protein, cheese, and toppings in separate sections or combine as preferred.'], plainOption: 'Offer plain rice, plain protein, and cheese without mixing.', allergyNote: 'Choose approved seasoning and cheese alternatives; verify labels.', lowEnergyOption: 'Use microwave rice and pre-cooked protein or drained beans.' },
+    { id: 'cheesy-taco-rice', title: 'Cheesy Taco Rice', servings: 4, time: '25 minutes', ingredients: ['1 lb ground beef or turkey, or 1 lb drained canned or fully cooked beans', '2 cups cooked rice', '1 cup shredded cheese', '1 tbsp mild taco seasoning', 'Optional toppings in separate bowls'], steps: ['Use a food thermometer: cook ground beef to 160°F (71°C), or ground turkey to 165°F (74°C). For beans, use only commercially canned or fully cooked beans; drain and heat according to package directions. Do not use dried or raw beans in this quick recipe.', 'Stir seasoning into the protein with 1/4 cup water and simmer 3 minutes.', 'Serve rice, protein, cheese, and toppings in separate sections or combine as preferred.'], plainOption: 'Offer plain rice, plain protein, and cheese without mixing.', allergyNote: 'Choose approved seasoning and cheese alternatives; verify labels.', lowEnergyOption: 'Use microwave rice and pre-cooked protein or drained canned or fully cooked beans.' },
     { id: 'butter-parmesan-chicken-pasta', title: 'Butter-Parmesan Chicken Pasta', servings: 4, time: '25 minutes', ingredients: ['12 oz pasta', '2 cups cooked chicken', '3 tbsp butter or alternative', '1/2 cup parmesan', 'Pasta water as needed'], steps: ['Cook pasta according to the package and reserve 1/2 cup cooking water.', 'Toss pasta with butter; add water a spoonful at a time if dry.', 'Warm chicken separately. Offer parmesan on the side or toss in.'], plainOption: 'Keep noodles plain and place chicken, butter, and cheese beside them.', allergyNote: 'Use approved pasta and dairy alternatives; verify chicken seasoning labels.', lowEnergyOption: 'Use microwave pasta or leftover noodles with pre-cooked chicken.' },
-    { id: 'mini-cheeseburger-sliders', title: 'Mini Cheeseburger Sliders', servings: 4, time: '25 minutes', ingredients: ['1 lb ground beef or turkey', '8 slider buns', '8 small cheese slices', 'Preferred condiments on the side'], steps: ['Shape 8 thin patties.', 'Cook in a skillet until ground meat reaches 160°F.', 'Add cheese if wanted and serve on buns with toppings separate.'], plainOption: 'Serve patty, bun, and cheese as separate components.', allergyNote: 'Use approved buns and cheese alternatives; check condiment labels.', lowEnergyOption: 'Use fully cooked frozen patties prepared according to the label.' },
+    { id: 'mini-cheeseburger-sliders', title: 'Mini Cheeseburger Sliders', servings: 4, time: '25 minutes', ingredients: ['1 lb ground beef or turkey', '8 slider buns', '8 small cheese slices', 'Preferred condiments on the side'], steps: ['Shape 8 thin patties.', 'Cook in a skillet and check with a food thermometer: ground beef must reach 160°F (71°C), or ground turkey 165°F (74°C).', 'Add cheese if wanted and serve on buns with toppings separate.'], plainOption: 'Serve patty, bun, and cheese as separate components.', allergyNote: 'Use approved buns and cheese alternatives; check condiment labels.', lowEnergyOption: 'Use fully cooked frozen patties prepared according to the label.' },
     { id: 'breakfast-quesadillas', title: 'Breakfast Quesadillas', servings: 4, time: '20 minutes', ingredients: ['8 eggs', '4 large tortillas', '1 cup shredded cheese', 'Optional cooked breakfast meat'], steps: ['Scramble eggs in a skillet until set.', 'Place eggs and cheese on half of each tortilla and fold.', 'Cook 2-3 minutes per side until crisp and hot.'], plainOption: 'Serve scrambled egg, tortilla wedges, and cheese separately.', allergyNote: 'Use approved tortilla and cheese alternatives; omit egg only if replaced with a familiar filling.', lowEnergyOption: 'Make a cheese-only tortilla and serve a familiar breakfast protein beside it.' },
     { id: 'chicken-alfredo-roll-ups', title: 'Chicken Alfredo Roll-Ups', servings: 4, time: '35 minutes', ingredients: ['8 cooked lasagna noodles', '2 cups cooked chicken', '1 1/2 cups Alfredo sauce', '1 cup shredded mozzarella'], steps: ['Heat oven to 375°F.', 'Spread a thin layer of sauce on noodles; add chicken and roll.', 'Place in a baking dish, top as preferred, and bake 18-20 minutes until hot.'], plainOption: 'Keep one noodle plain and serve chicken and sauce separately.', allergyNote: 'Use approved pasta, sauce, and cheese alternatives; verify labels.', lowEnergyOption: 'Serve warmed pasta, pre-cooked chicken, and jarred sauce in separate bowls.' },
-    { id: 'build-your-own-baked-potatoes', title: 'Build-Your-Own Baked Potatoes', servings: 4, time: '55 minutes', ingredients: ['4 medium baking potatoes', '1 cup shredded cheese', '1 cup cooked chicken or beans', 'Butter or alternative', 'Preferred toppings'], steps: ['Heat oven to 425°F. Pierce potatoes and bake 45-55 minutes until tender.', 'Warm protein and arrange every topping separately.', 'Split potatoes and let each person build or leave plain.'], plainOption: 'Offer the familiar filling separately or use crispy potato wedges instead.', allergyNote: 'Verify toppings and cross-contact; use approved dairy alternatives.', lowEnergyOption: 'Microwave potatoes according to appliance guidance and use pre-cooked toppings.' },
+    { id: 'build-your-own-baked-potatoes', title: 'Build-Your-Own Baked Potatoes', servings: 4, time: '55 minutes', ingredients: ['4 medium baking potatoes', '1 cup shredded cheese', '1 cup cooked chicken, or 1 cup drained canned or fully cooked beans', 'Butter or alternative', 'Preferred toppings'], steps: ['Heat oven to 425°F. Pierce potatoes and bake 45-55 minutes until tender.', 'Use cooked chicken or drained canned or fully cooked beans; heat according to package directions and arrange toppings separately. Never use raw or dried beans here.', 'Split potatoes and let each person build or leave plain.'], plainOption: 'Offer the familiar filling separately or use crispy potato wedges instead.', allergyNote: 'Verify toppings and cross-contact; use approved dairy alternatives.', lowEnergyOption: 'Microwave potatoes according to appliance guidance and use pre-cooked toppings.' },
     { id: 'homemade-chicken-nugget-bowls', title: 'Homemade Chicken Nugget Bowls', servings: 4, time: '30 minutes', ingredients: ['1 1/2 lb chicken breast, bite-size pieces', '1 cup breadcrumbs', '1 egg, beaten', '2 cups cooked rice or potatoes', '2 cups familiar produce or fruit'], steps: ['Heat oven to 425°F.', 'Coat chicken with egg and crumbs; arrange on a lined pan.', 'Bake 16-20 minutes to 165°F. Serve each component separately.'], plainOption: 'Use a familiar frozen nugget and keep every bowl component separate.', allergyNote: 'Use approved crumbs and egg substitute; verify frozen-product labels.', lowEnergyOption: 'Prepare frozen nuggets and microwave rice; add a familiar side.' },
-    { id: 'separate-component-taco-night', title: 'Separate-Component Taco Night', servings: 4, time: '25 minutes', ingredients: ['1 lb ground meat or beans', '8 tortillas', '1 cup cheese', 'Mild seasoning', 'Preferred toppings'], steps: ['Cook ground meat to 160°F or warm beans.', 'Season only the portion that wants seasoning.', 'Place tortillas, filling, cheese, and toppings in separate bowls.'], plainOption: 'Offer a plain tortilla, plain protein, and cheese without assembly.', allergyNote: 'Use approved tortillas, seasoning, and cheese alternatives.', lowEnergyOption: 'Use pre-cooked protein or beans and microwave tortillas.' },
-    { id: 'build-your-own-pasta-night', title: 'Build-Your-Own Pasta Night', servings: 4, time: '25 minutes', ingredients: ['12 oz pasta', '2 cups cooked chicken or beans', '1 1/2 cups preferred sauce', '1/2 cup parmesan', 'Optional familiar vegetables'], steps: ['Cook pasta according to the package.', 'Warm protein and sauce in separate pans or microwave-safe bowls.', 'Place noodles, sauce, protein, cheese, and vegetables separately.'], plainOption: 'Keep a serving of plain noodles and familiar protein untouched.', allergyNote: 'Use approved pasta, sauce, and cheese alternatives; verify labels.', lowEnergyOption: 'Use microwave pasta, jarred sauce, and pre-cooked protein.' },
+    { id: 'separate-component-taco-night', title: 'Separate-Component Taco Night', servings: 4, time: '25 minutes', ingredients: ['1 lb ground meat, or 1 lb drained canned or fully cooked beans', '8 tortillas', '1 cup cheese', 'Mild seasoning', 'Preferred toppings'], steps: ['Use a food thermometer: cook ground turkey or chicken to 165°F (74°C), or ground beef, pork, lamb, or veal to 160°F (71°C). For beans, use only commercially canned or fully cooked beans; drain and heat according to package directions. Do not use dried or raw beans in this quick recipe.', 'Season only the portion that wants seasoning.', 'Place tortillas, filling, cheese, and toppings in separate bowls.'], plainOption: 'Offer a plain tortilla, plain protein, and cheese without assembly.', allergyNote: 'Use approved tortillas, seasoning, and cheese alternatives.', lowEnergyOption: 'Use pre-cooked protein or drained canned or fully cooked beans and microwave tortillas.' },
+    { id: 'build-your-own-pasta-night', title: 'Build-Your-Own Pasta Night', servings: 4, time: '25 minutes', ingredients: ['12 oz pasta', '2 cups cooked chicken, or 2 cups drained canned or fully cooked beans', '1 1/2 cups preferred sauce', '1/2 cup parmesan', 'Optional familiar vegetables'], steps: ['Cook pasta according to the package.', 'Use cooked chicken or drained canned or fully cooked beans; heat protein and sauce separately according to package directions. Never use raw or dried beans here.', 'Place noodles, sauce, protein, cheese, and vegetables separately.'], plainOption: 'Keep a serving of plain noodles and familiar protein untouched.', allergyNote: 'Use approved pasta, sauce, and cheese alternatives; verify labels.', lowEnergyOption: 'Use microwave pasta, jarred sauce, and pre-cooked protein.' },
     { id: 'pizza-toast-bar', title: 'Pizza Toast Bar', servings: 4, time: '18 minutes', ingredients: ['8 bread slices', '3/4 cup pizza sauce', '2 cups shredded cheese', 'Preferred toppings'], steps: ['Heat oven to 400°F.', 'Toast bread lightly, then let each person choose sauce, cheese, or plain.', 'Bake 6-8 minutes until cheese melts and toast stays crisp.'], plainOption: 'Serve plain toast with sauce and cheese in cups.', allergyNote: 'Use approved bread and cheese alternatives; verify sauce labels.', lowEnergyOption: 'Toast bread and serve cheese slices with warmed sauce.' },
     { id: 'loaded-snack-plates', title: 'Loaded Snack Plates', servings: 4, time: '10 minutes', ingredients: ['A familiar cracker or bread', 'A familiar protein', 'Cheese or approved alternative', 'One fruit or vegetable', 'A preferred dip, optional'], steps: ['Choose 3-5 accepted components.', 'Place foods in separate sections with small portions.', 'Add one optional item only if that feels low pressure.'], plainOption: 'Use only familiar items; the plate does not require a new food.', allergyNote: 'Check every packaged item and shared dip for allergens and cross-contact.', lowEnergyOption: 'Open packages, wash produce as needed, and assemble.' },
     { id: 'crispy-potato-chicken-tray', title: 'Crispy Potato Chicken Tray', servings: 4, time: '40 minutes', ingredients: ['1 1/2 lb chicken tenders', '1 lb potato wedges', '2 tbsp oil', 'Salt or preferred seasoning', 'Familiar side'], steps: ['Heat oven to 425°F.', 'Toss potatoes with half the oil and bake 15 minutes.', 'Add chicken brushed with remaining oil; bake 18-22 minutes until chicken reaches 165°F.'], plainOption: 'Keep seasoning off selected pieces and prevent foods from touching.', allergyNote: 'Use clean utensils and approved seasonings; evaluate shared-pan cross-contact.', lowEnergyOption: 'Use frozen wedges and familiar pre-cooked chicken prepared to labels.' },
@@ -150,7 +275,7 @@ const survivalKitSource = {
     'Familiar frozen nuggets + microwave rice + fruit', 'Cheese quesadilla + familiar dip', 'Toast + egg + fruit',
     'Plain noodles + butter or parmesan on the side', 'Crackers + cheese + deli turkey snack plate',
     'Microwave baked potato + toppings separate', 'Frozen waffles + yogurt', 'Grilled cheese or toast-and-cheese plate',
-    'Rice + warmed beans or pre-cooked protein, separate', 'A reliable restaurant or takeout order',
+    'Rice + heated canned or fully cooked beans or pre-cooked protein, separate', 'A reliable restaurant or takeout order',
   ],
   exploration: {
     title: 'Try something new without making dinner a test',
