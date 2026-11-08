@@ -34,3 +34,21 @@ test('count display follows the food name and does not round away adjusted quant
  assert.equal(format({name:'tortillas',base:{v:4,u:'count'}}),'4');
  assert.equal(format({name:'bagels',base:{v:1.5,u:'count'}}),'1 1/2');
 });
+
+test('nonfraction decimal counts stay numeric rather than whole plus decimal remainder',()=>{
+ for(const [value,label] of [[1.2,'1.2'],[2.1,'2.1'],[0.2,'0.2'],[1.99,'1.99'],[1.999,'2']]){
+  assert.equal(format({name:'bagels',base:{v:value,u:'count'}}),label);
+  assert.equal(a.groceryItemText({name:'bagels',quantity:value,unit:'count'}),`${label} bagels`);
+ }
+ const ingredients=a.normalize(['1.2 bagels']);
+ assert.equal(format(ingredients[0],4),'2.4');
+ assert.equal(a.recipeCommerceItems({servings:4,ingredients})[0].displayText,'2.4 Bagels');
+ assert.equal(ingredients[0].base.v,1.2);
+});
+test('decimal formatting preserves familiar fractional quantities and original data',()=>{
+ for(const [value,label] of [[0.25,'1/4'],[1.25,'1 1/4'],[1.5,'1 1/2'],[2.75,'2 3/4']]){
+  const ingredient={name:'bagels',base:{v:value,u:'count'}};
+  assert.equal(format(ingredient),label);assert.equal(ingredient.base.v,value);
+ }
+ assert.equal(a.groceryItemText({name:'rice',quantity:1.2,unit:'cups'}),'1.2 cups rice');
+});

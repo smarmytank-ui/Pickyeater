@@ -725,7 +725,7 @@ function formatQty(value) {
 
   let result = whole > 0 ? whole.toString() : "";
   if (closest) result += (result ? " " : "") + fractions[closest];
-  else if (remainder > 0) result += (result ? " " : "") + remainder.toFixed(2);
+  else if (remainder > 0) return String(Number(value.toFixed(2)));
 
   return result;
 }
