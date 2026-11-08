@@ -540,6 +540,7 @@ function canonName(s){
     .replace(/[,;]\s*(?:divided|optional|for serving|to serve)\b.*$/g,' ')
     .replace(/\bdivided\b/g,' ')
     .replace(/^\s*(?:\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)\s*(?:kg|kilograms?|g|grams?|lb|lbs|pound|pounds|oz|ounce|ounces|cup|cups|tbsp|tablespoons?|tsp|teaspoons?|cloves?|pieces?|slices?|cans?|packages?|medium|large|small)?\s+/i,'')
+    .replace(/\b(?:not (?:fully |pre[ -]?)?cooked|partially cooked|under[ -]?cooked|un[ -]?cooked)\b/g,' ')
     .replace(/\b(boneless|skinless|fresh|frozen|cooked|uncooked|raw|chopped|diced|minced|sliced|shredded|grated|lean|extra lean)\b/g,' ')
     .replace(/^(?:packages?|packets?|cans?)\s+(?:of\s+)?/,'')
     .replace(/\bfillet\b/g,'')
@@ -1346,15 +1347,16 @@ function normalize(names){
     };
   }).filter(ingredient=>{
     if(!ingredient.name) return false;
-    if(seen.has(ingredient.name)){
-      const prior=seen.get(ingredient.name);
+    const key=isLegume(ingredient.name) ? ingredient.name : `${ingredient.name}\u0000${ingredient.preparation || 'raw'}`;
+    if(seen.has(key)){
+      const prior=seen.get(key);
       if(isLegume(ingredient.name)){
         if(prior.preparation==='raw' || ingredient.preparation==='raw') prior.preparation='raw';
         else if(!prior.preparation || !ingredient.preparation) prior.preparation=null;
       }
       return false;
     }
-    seen.set(ingredient.name,ingredient);return true;
+    seen.set(key,ingredient);return true;
   });
 }
 
