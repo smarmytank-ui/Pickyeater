@@ -5,7 +5,7 @@ from pypdf import PdfReader
 root=Path(__file__).resolve().parents[2]
 node=sys.argv[1] if len(sys.argv)>1 else 'node'
 content=json.loads(subprocess.check_output([node,'--input-type=module','-e',"import {SURVIVAL_KIT_CONTENT as c} from './functions/_shared/survival-kit-content.mjs';console.log(JSON.stringify(c))"],cwd=root))
-tree=ast.parse((root/'products/survival-kit/build_kit.py').read_text(encoding='utf-8'))
+tree=ast.parse((root/'functions/_shared/build_survival_kit.py').read_text(encoding='utf-8'))
 rows=next(ast.literal_eval(n.value) for n in ast.walk(tree) if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='recipes' for t in n.targets))
 assert len(rows)==len(content['recipes'])==16
 for row,recipe in zip(rows,content['recipes']):

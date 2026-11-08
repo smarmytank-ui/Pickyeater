@@ -10,7 +10,7 @@ Existing corrections integrated from 5cf3125 and d62f3ff without changing the or
 - Finite guest-checkout recovery with explicit prior-buyer warning; existing owners still open their Kit.
 - Repaired Kit landing symbols and refreshed module references.
 - Portable release tests that do not depend on Windows Git paths or old commits in shallow CI.
-- Public /products/* requests denied with no-store 404; paid authoring source is not a downloadable public asset.
+- Public /products/* requests denied with no-store 404. Paid Python authoring content resides under private functions/_shared; the former public builder path is a harmless local launcher even if Functions fail open.
 - Printable PDF fail-closed SHA256 check. Only the reviewed corrected PDF is served; mismatched or old files get a temporary-unavailable response with digital-Kit recovery. Entitlements are unchanged.
 
 ## Corrected PDF
@@ -21,7 +21,7 @@ Strict local parity: all 16 recipe records match the builder and PDF, including 
 No paid PDF bytes are added to Git or public static assets.
 
 ## Verification
-Local syntax and full behavioral suite: 424 tests passed, zero failures/skips.
+Local syntax and full behavioral suite: 431 tests passed, zero failures/skips.
 Synthetic sign-in/webhook/entitlement/download tests remain synthetic, not real payments.
 Verify remote CI and deployment independently for the published commit.
 The PDF remains unavailable until the approved object is replaced and the buyer download is verified. A source release alone does not replace the R2 object.

@@ -1,7 +1,7 @@
-// Source: products/survival-kit/build_kit.py (the published Survival Kit PDF).
+// Source: functions/_shared/build_survival_kit.py (the published Survival Kit PDF).
 // Keep this module server-side. It contains the paid digital-kit content.
 const survivalKitSource = {
-    source: 'products/survival-kit/build_kit.py',
+    source: 'functions/_shared/build_survival_kit.py',
     notes: [
       'Breakfasts, lunches, and snacks in the 14-day plan are templates; the source asks households to substitute from their familiar food list.',
       'The grocery lists aggregate one four-serving batch of each scheduled dinner under explicit protein, side and emergency-meal choices; other meal templates need household quantities.',
