@@ -643,17 +643,21 @@ function legumePreparation(name, stated=null){
   const text=String(name||'');
   // Explicit raw/dry evidence always defeats a cooked/canned metadata claim.
   if(/\b(?:dry|dried|raw|uncooked|un[ -]?cooked|not (?:fully |pre[ -]?)?(?:cooked|canned|tinned)|under[ -]?cooked|partially cooked)\b/i.test(text) || stated==='raw' || stated==='dried') return 'raw';
-  if(/\b(?:and|or)\b/i.test(text)) return null;
+  if(/\b(?:and|or|with|plus)\b|[,&+;/]/i.test(text)) return null;
   if(/\b(?:canned|tinned|cans?)\b/i.test(text) || stated==='canned') return 'canned';
   if(/\b(?:pre[ -]?cooked|fully cooked|cooked|rotisserie|leftovers?)\b/i.test(text) || stated==='cooked') return 'cooked';
   return null;
 }
 function legumeInstructions(item){
   const name=pretty(item.name), prep=legumePreparation(item.name,item.preparation);
-  if(prep==='canned') return `Use commercially canned, ready-to-eat ${name}; drain or rinse if desired and heat according to the package directions. This is not a method for cooking dried legumes.`;
-  if(prep==='cooked') return `Use only fully cooked ${name}; reheat leftovers to 165°F (74°C), measured with a food thermometer. This does not make raw or dried legumes safe.`;
+  // A canned/cooked pulse must never imply that another component is cooked.
+  // Preserve animal-protein safety even when a mixed line is classified as a legume.
+  const animalProtein=/\b(?:chicken|turkey|duck|goose|beef|pork|lamb|veal|steak|salmon|fish|cod|tilapia|tuna|trout|eggs?)\b/i.test(item.name);
+  const animalSafety=animalProtein ? ` This line also includes animal protein. Prepare each component separately before combining: ${/\b(?:duck|goose)\b/i.test(item.name) ? 'cook poultry to 165°F (74°C), measured with a food thermometer' : /\beggs?\b/i.test(item.name) && !/\b(?:chicken|turkey)\b/i.test(item.name) ? 'cook egg dishes to 160°F (71°C), measured with a food thermometer' : proteinSafetyGuidance(item.name)}. If reheating cooked leftovers, heat them to 165°F (74°C). A canned or cooked legume does not establish that the animal protein is cooked.` : '';
+  if(prep==='canned') return `Use commercially canned, ready-to-eat ${name}; drain or rinse if desired and heat according to the package directions. This is not a method for cooking dried legumes.${animalSafety}`;
+  if(prep==='cooked') return `Use only fully cooked ${name}; reheat leftovers to 165°F (74°C), measured with a food thermometer. This does not make raw or dried legumes safe.${animalSafety}`;
   const kidney=/\b(?:kidney|cannellini)\b/i.test(item.name);
-  return `Before adding ${name}, confirm its preparation. If it is not clearly canned or fully cooked, cook it separately from raw/dry using its package instructions until fully cooked; brief warming is not sufficient. ${kidney ? 'For dried kidney beans: soak at least 5 hours, discard the soaking water, then boil in fresh water for at least 30 minutes and continue cooking until fully cooked. Do not use a slow cooker to cook raw kidney beans.' : 'Preparation and cooking time depend on the legume; do not substitute a short warming step for cooking.'} Only then add it to this recipe.`;
+  return `Before adding ${name}, confirm its preparation. If it is not clearly canned or fully cooked, cook it separately from raw/dry using its package instructions until fully cooked; brief warming is not sufficient. ${kidney ? 'For dried kidney beans: soak at least 5 hours, discard the soaking water, then boil in fresh water for at least 30 minutes and continue cooking until fully cooked. Do not use a slow cooker to cook raw kidney beans.' : 'Preparation and cooking time depend on the legume; do not substitute a short warming step for cooking.'} Only then add it to this recipe.${animalSafety}`;
 }
 
 function recipeSafetyNotices(ingredients){

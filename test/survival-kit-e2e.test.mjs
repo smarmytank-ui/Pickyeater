@@ -8,7 +8,9 @@ import path from 'node:path';
 import { onRequestPost as receiveStripeWebhook } from '../functions/api/stripe-webhook.js';
 import { onRequestPost as requestSignIn } from '../functions/api/auth/request.js';
 import { onRequestPost as consumeSignIn } from '../functions/api/auth/consume.js';
-import { onRequestGet as downloadKit } from '../functions/api/survival-kit-download.js';
+import { createKitDownloadHandler } from '../functions/_shared/survival-kit-download.mjs';
+import { sha256Hex } from '../functions/_shared/account.mjs';
+const downloadKit=createKitDownloadHandler(await sha256Hex('%PDF-1.7 Food My Way rehearsal'));
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 
@@ -41,7 +43,7 @@ async function stripeSignature(payload,secret,timestamp){
   return Array.from(new Uint8Array(bytes),byte=>byte.toString(16).padStart(2,'0')).join('');
 }
 
-test('a paid $19 checkout fulfills email sign-in, entitlement, and private PDF download',async()=>{
+test('a synthetic paid $19 checkout fulfills sign-in, entitlement, and hash-approved private PDF download',async()=>{
   const accounts=new DatabaseSync(':memory:');
   accounts.exec('PRAGMA foreign_keys=ON');
   accounts.exec(await readFile(path.join(root,'migrations/0004_cloud_accounts.sql'),'utf8'));

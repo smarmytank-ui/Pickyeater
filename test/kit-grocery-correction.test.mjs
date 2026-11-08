@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
-import {execFileSync} from 'node:child_process';
 import {SURVIVAL_KIT_CONTENT as content} from '../functions/_shared/survival-kit-content.mjs';
 const script=readFileSync(new URL('../digital-kit.js',import.meta.url),'utf8');
 const previous=JSON.stringify({days:{'day-1':true},notes:{accepted:'Keep my note'},groceries:{'w1-Protein-0':true,'w1-Dairy / alternatives-0':true}});
@@ -31,7 +30,19 @@ test('safety instructions distinguish all three affected ground-meat recipes and
  for(const id of ['cheesy-taco-rice','mini-cheeseburger-sliders','separate-component-taco-night']){const r=content.recipes.find(r=>r.id===id);assert.match(r.steps.join(' '),/165°F/);assert.match(r.steps.join(' '),/160°F/);assert.match(r.steps.join(' '),/food thermometer/);}
  assert.match(content.safety.foodSafety,/including ground turkey and chicken/);
 });
-test('Kit cache references coexist with explicitly versioned safety and checkout modules',()=>{
- const here=new URL('../',import.meta.url);const original=null;
- for(const file of ['digital-kit.html','service-worker.js']){const before=execFileSync('C:/Program Files/Git/cmd/git.exe',['show','74c98925a3b50ceafcc03fe811153922b8474a89:'+file],{encoding:'utf8'});const after=readFileSync(new URL(file,here),'utf8');assert.equal(after.replaceAll('digital-kit.js?v=2.68.8-kit-correction-20261104','digital-kit.js?v=2.68.8').replaceAll('app.js?v=2.68.8-legume-safety-20261104','app.js?v=2.68.8').replaceAll('survival-kit.js?v=2.68.8-guest-20261106','survival-kit.js?v=2.68.8').replaceAll('\r\n','\n'),before.replaceAll('\r\n','\n'));}
+test('Kit cache references match the versioned modules without requiring Git history',()=>{
+ const here=new URL('../',import.meta.url);
+ const worker=readFileSync(new URL('service-worker.js',here),'utf8');
+ const references=[
+  ['digital-kit.html','digital-kit.js?v=2.68.8-kit-correction-20261104'],
+  ['index.html','app.js?v=2.68.8-legume-safety-20261104'],
+  ['survival-kit.html','survival-kit.js?v=2.68.8-guest-20261106']
+ ];
+ for(const [file,reference] of references){
+  const html=readFileSync(new URL(file,here),'utf8');
+  assert.ok(html.includes(`src="./${reference}"`),`${file} loads the corrected module`);
+  assert.ok(worker.includes(`'./${reference}'`),`${reference} is precached`);
+ }
+ const oldReferences=['digital-kit.js?v=2.68.8','app.js?v=2.68.8','survival-kit.js?v=2.68.8'];
+ for(const reference of oldReferences) assert.ok(!worker.includes(`'./${reference}'`),`${reference} is not precached`);
 });

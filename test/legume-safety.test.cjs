@@ -60,3 +60,23 @@ test('exact editor refreshes separate safety notice when typed ingredients chang
  field.value='rice';field.listeners.input();assert.equal(warnings.children.length,0);
  for(const input of ['dried peas','black-eyed peas'])assert.match(text(a.normalize([input])),/brief warming is not sufficient/);
 });
+
+for(const input of ['canned chickpeas and raw chicken','chicken with chickpeas','canned beans + raw turkey','fully cooked lentils / chicken']){
+ test('mixed poultry and legumes retain independent 165F thermometer guidance: '+input,()=>{
+  const ingredients=a.normalize([input]);
+  for(const output of [text(ingredients),a.recipeSafetyNotices(ingredients).map(s=>s.text).join(' ')]){
+   assert.match(output,/165°F \(74°C\).*food thermometer/);
+   assert.match(output,/Prepare each component separately/);
+   assert.match(output,/does not establish that the animal protein is cooked/);
+  }
+ });
+}
+test('mixed ground beef and legumes retain 160F guidance regardless of role',()=>{
+ for(const role of ['protein','veg','other'])assert.match(text([{name:'canned chickpeas and raw ground beef',role,base:{v:1,u:'lb'}}]),/160°F \(71°C\).*food thermometer/);
+});
+test('mixed-pulse delimiters do not spread canned preparation to unknown beans',()=>{
+ for(const input of ['canned green beans with kidney beans','canned green beans, kidney beans','canned green beans / kidney beans','canned chickpeas + lentils']){
+  assert.equal(a.parseInputIngredient(input).preparation,null);
+  assert.match(text(a.normalize([input])),/brief warming is not sufficient/);
+ }
+});
