@@ -6,6 +6,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { onRequestGet } from '../functions/api/survival-kit-download.js';
+import { createKitDownloadHandler, verifyKitPdf, APPROVED_KIT_PDF_SHA256 } from '../functions/_shared/survival-kit-download.mjs';
 import { sessionCookie, sha256Hex } from '../functions/_shared/account.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -50,7 +51,7 @@ test('Survival Kit download requires an authenticated matching purchase',async()
 test('active Founding members receive the Survival Kit PDF bonus',async()=>{
   const state=await setup('founding','active');
   const env={ACCOUNTS:new D1(state.accounts),PURCHASES:new D1(state.purchases),KIT_FILES:{async get(){return {body:new TextEncoder().encode('%PDF-founder')}}}};
-  const response=await onRequestGet({request:new Request('https://foodmyway.app/api/survival-kit-download',{headers:{cookie:sessionCookie(state.token)}}),env});
+  const response=await createKitDownloadHandler(await sha256Hex('%PDF-founder'))({request:new Request('https://foodmyway.app/api/survival-kit-download',{headers:{cookie:sessionCookie(state.token)}}),env});
   assert.equal(response.status,200);
   assert.equal(await response.text(),'%PDF-founder');
   state.accounts.close();state.purchases.close();
@@ -59,10 +60,37 @@ test('active Founding members receive the Survival Kit PDF bonus',async()=>{
 test('active Survival Kit buyers receive a private PDF download',async()=>{
   const state=await setup();
   const env={ACCOUNTS:new D1(state.accounts),PURCHASES:new D1(state.purchases),KIT_FILES:{async get(key){assert.equal(key,'FoodMyWay-Picky-Eater-Survival-Kit.pdf');return {body:new TextEncoder().encode('%PDF-test')};}}};
-  const response=await onRequestGet({request:new Request('https://foodmyway.app/api/survival-kit-download',{headers:{cookie:sessionCookie(state.token)}}),env});
+  const response=await createKitDownloadHandler(await sha256Hex('%PDF-test'))({request:new Request('https://foodmyway.app/api/survival-kit-download',{headers:{cookie:sessionCookie(state.token)}}),env});
   assert.equal(response.status,200);
   assert.equal(response.headers.get('content-type'),'application/pdf');
   assert.match(response.headers.get('content-disposition'),/FoodMyWay-Picky-Eater-Survival-Kit\.pdf/);
   assert.equal(await response.text(),'%PDF-test');
   state.accounts.close();state.purchases.close();
+});
+
+test('deployed download rejects unapproved PDF even for entitled owner and ignores hash env overrides',async()=>{
+ const state=await setup();
+ const env={ACCOUNTS:new D1(state.accounts),PURCHASES:new D1(state.purchases),APPROVED_KIT_PDF_SHA256:await sha256Hex('%PDF-old'),KIT_FILES:{async get(){return {body:new TextEncoder().encode('%PDF-old')}}}};
+ const response=await onRequestGet({request:new Request('https://foodmyway.app/api/survival-kit-download',{headers:{cookie:sessionCookie(state.token)}}),env});
+ assert.equal(response.status,503);assert.equal(response.headers.get('cache-control'),'no-store');
+ const result=await response.json();assert.match(result.error,/corrected printable PDF is temporarily unavailable/);assert.equal(result.digitalKitUrl,'/digital-kit.html');
+ assert.equal(state.purchases.prepare('SELECT status FROM entitlements').get().status,'active');
+ state.accounts.close();state.purchases.close();
+});
+test('PDF hash guard accepts only exact bytes and rejects corruption or non-PDF bodies',async()=>{
+ assert.equal(APPROVED_KIT_PDF_SHA256,'0520c57dfe01588f27cc0d0913f292fefbccff9fa324cbf80b15c6acdfe3be68');
+ const body='%PDF-synthetic-approved';const expected=await sha256Hex(body);
+ assert.equal(new TextDecoder().decode(await verifyKitPdf(body,expected)),body);
+ assert.equal(await verifyKitPdf(body+'-corrupt',expected),null);
+ assert.equal(await verifyKitPdf('not-a-pdf',await sha256Hex('not-a-pdf')),null);
+ assert.equal(await verifyKitPdf(body),null);
+ assert.equal(await verifyKitPdf(''),null);
+});
+
+test('direct browser PDF navigation gets a readable recovery page without losing digital access',async()=>{
+ const state=await setup();const env={ACCOUNTS:new D1(state.accounts),PURCHASES:new D1(state.purchases),KIT_FILES:{async get(){return {body:'%PDF-old'}}}};
+ const response=await onRequestGet({request:new Request('https://foodmyway.app/api/survival-kit-download',{headers:{cookie:sessionCookie(state.token),accept:'text/html'}}),env});
+ assert.equal(response.status,503);assert.match(response.headers.get('content-type'),/text\/html/);assert.match(response.headers.get('cache-control'),/no-store/);
+ assert.match(await response.text(),/href="\/digital-kit.html"/);assert.equal(response.headers.get('retry-after'),'300');
+ state.accounts.close();state.purchases.close();
 });

@@ -53,5 +53,6 @@ test('signed-out visitors keep checkout and sign-in; network errors surface',asy
   ids.kitCheckout.listeners.click();
   assert.equal(events.includes('kit_checkout_started'),true);
   const failed=await landing({}, {reject:true});
-  assert.match(failed.ids.kitStatus.textContent,/Network unavailable/);
+  assert.match(failed.ids.kitStatus.textContent,/Purchase verification is temporarily unavailable/);
+  assert.match(failed.ids.kitStatus.textContent,/If you already paid/);
 });

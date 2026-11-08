@@ -635,13 +635,43 @@ function validateRecipeInput(value){
   return {ok:true,error:'',lines};
 }
 
+function isLegume(name){
+  const pulses=String(name||'').replace(/\b(?:green|wax|string) beans?\b|\bbean sprouts?\b/gi,' ');
+  return /\b(?:beans?|lentils?|chickpeas?|garbanzo(?:s| beans?)?|split peas?|black[ -]eyed peas?|dried peas?|dry peas?)\b/i.test(pulses);
+}
+function legumePreparation(name, stated=null){
+  const text=String(name||'');
+  // Explicit raw/dry evidence always defeats a cooked/canned metadata claim.
+  if(/\b(?:dry|dried|raw|uncooked|un[ -]?cooked|not (?:fully |pre[ -]?)?(?:cooked|canned|tinned)|under[ -]?cooked|partially cooked)\b/i.test(text) || stated==='raw' || stated==='dried') return 'raw';
+  if(/\b(?:and|or|with|plus)\b|[,&+;/]/i.test(text)) return null;
+  if(/\b(?:canned|tinned|cans?)\b/i.test(text) || stated==='canned') return 'canned';
+  if(/\b(?:pre[ -]?cooked|fully cooked|cooked|rotisserie|leftovers?)\b/i.test(text) || stated==='cooked') return 'cooked';
+  return null;
+}
+function legumeInstructions(item){
+  const name=pretty(item.name), prep=legumePreparation(item.name,item.preparation);
+  // A canned/cooked pulse must never imply that another component is cooked.
+  // Preserve animal-protein safety even when a mixed line is classified as a legume.
+  const animalProtein=/\b(?:chicken|turkey|duck|goose|beef|pork|lamb|veal|steak|salmon|fish|cod|tilapia|tuna|trout|eggs?)\b/i.test(item.name);
+  const animalSafety=animalProtein ? ` This line also includes animal protein. Prepare each component separately before combining: ${/\b(?:duck|goose)\b/i.test(item.name) ? 'cook poultry to 165°F (74°C), measured with a food thermometer' : /\beggs?\b/i.test(item.name) && !/\b(?:chicken|turkey)\b/i.test(item.name) ? 'cook egg dishes to 160°F (71°C), measured with a food thermometer' : proteinSafetyGuidance(item.name)}. If reheating cooked leftovers, heat them to 165°F (74°C). A canned or cooked legume does not establish that the animal protein is cooked.` : '';
+  if(prep==='canned') return `Use commercially canned, ready-to-eat ${name}; drain or rinse if desired and heat according to the package directions. This is not a method for cooking dried legumes.${animalSafety}`;
+  if(prep==='cooked') return `Use only fully cooked ${name}; reheat leftovers to 165°F (74°C), measured with a food thermometer. This does not make raw or dried legumes safe.${animalSafety}`;
+  const kidney=/\b(?:kidney|cannellini)\b/i.test(item.name);
+  return `Before adding ${name}, confirm its preparation. If it is not clearly canned or fully cooked, cook it separately from raw/dry using its package instructions until fully cooked; brief warming is not sufficient. ${kidney ? 'For dried kidney beans: soak at least 5 hours, discard the soaking water, then boil in fresh water for at least 30 minutes and continue cooking until fully cooked. Do not use a slow cooker to cook raw kidney beans.' : 'Preparation and cooking time depend on the legume; do not substitute a short warming step for cooking.'} Only then add it to this recipe.${animalSafety}`;
+}
+
+function recipeSafetyNotices(ingredients){
+  return (ingredients || []).filter(item=>isLegume(item.originalText || item.name)).map((item,index)=>({key:`safety-legume-${index}`,text:`Safety check (original instructions are not safety-verified): ${legumeInstructions({...item,name:item.originalText || item.name})}`}));
+}
+
 function parseInputIngredient(raw){
   let text = String(raw || '').trim();
+  const legumeState=isLegume(text) ? legumePreparation(text) : null;
   // A stated package size is evidence of weight; a bare package is not.
   const packageSize=text.match(/^(\d+(?:\.\d+)?)\s*\((\d+(?:\.\d+)?)\s*(oz|ounces?|g|grams?|kg|kilograms?)\)\s*(?:packages?|cans?)\s+(?:of\s+)?(.+)$/i);
   if(packageSize) text=`${Number(packageSize[1])*Number(packageSize[2])} ${packageSize[3]} ${packageSize[4]}`;
   else text=text.replace(/^(\d+)\s*\([^)]*\)\s*(packages?|cans?)\b/i,'$1 $2');
-  const preparation = /\b(?:pre[ -]?cooked|cooked|rotisserie|leftovers?)\b/i.test(text)
+  const preparation = isLegume(text) ? legumeState : /\b(?:pre[ -]?cooked|cooked|rotisserie|leftovers?)\b/i.test(text)
     ? 'cooked'
     : (/\bfrozen\b/i.test(text) ? 'frozen' : null);
   const match = text.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)\s*(kg|kilograms?|g|grams?|lb|lbs|pound|pounds|oz|ounce|ounces|cup|cups|tbsp|tablespoons?|tsp|teaspoons?|cloves?|pieces?|slices?|cans?|packages?|medium|large|small)\b/i);
@@ -695,7 +725,7 @@ function formatQty(value) {
 
   let result = whole > 0 ? whole.toString() : "";
   if (closest) result += (result ? " " : "") + fractions[closest];
-  else if (remainder > 0) result += (result ? " " : "") + remainder.toFixed(2);
+  else if (remainder > 0) return String(Number(value.toFixed(2)));
 
   return result;
 }
@@ -803,6 +833,7 @@ const BASE_QTY = {
 
 // Ingredient-specific default quantities (SERVES 2 baseline)
 const CANON_DEFAULT_BASE = {
+  'eggs':     { v: 4, u: 'eggs' }, // matches the existing four-egg swap baseline
   'olive oil': { v: 1, u: 'tbsp' },
   'butter':    { v: 1, u: 'tbsp' },
   'lemon':     { v: 1, u: 'tbsp' },
@@ -881,7 +912,7 @@ const SWAP_CATALOG = {
   ],
   bread: [
     { name:'tortillas',       unitOverride:'count', baseOverride:4,  instrPatchKey:'combine' },
-    { name:'bread',           unitOverride:'count', baseOverride:2,  instrPatchKey:'combine' },
+    { name:'bread',           unitOverride:'slices', baseOverride:2,  instrPatchKey:'combine' },
     { name:'pita',            unitOverride:'count', baseOverride:2,  instrPatchKey:'combine' },
     { name:'skip it',         unitOverride:'',      baseOverride:0,  instrPatchKey:'combine' }
   ]
@@ -1096,7 +1127,7 @@ const INSTR = {
   cook_meat:  'Cook raw meat to the safe internal temperature for that cut, using a food thermometer.',
   cook_fish:  'Cook salmon 3–4 minutes per side until it flakes easily.',
   cook_tofu:  'Pat tofu dry, cube it, then cook until lightly browned.',
-  warm_beans: 'Rinse beans, then warm gently for 2–3 minutes.',
+  warm_beans: 'Confirm beans are fully cooked before adding; prepare raw or dried beans separately according to safe package instructions.',
   cook_eggs:  'Whisk eggs with a pinch of salt, then cook until set.',
   cook_rice:  'Cook rice (or use microwave rice). Fluff when done.',
   cook_pasta: 'Boil water, cook pasta until tender, drain.',
@@ -1114,12 +1145,14 @@ const INSTR = {
 
 function buildInstructions(ingredients,preferences={}){
   const profile=sanitizeTasteProfile(preferences);
-  const active = ingredients.filter(i=>i.name!=='skip it' && i.base.v>0);
+  const allActive = ingredients.filter(i=>i.name!=='skip it' && i.base.v>0);
+  const legumes=allActive.filter(i=>isLegume(i.name));
+  const active=allActive.filter(i=>!isLegume(i.name));
   const namesFor = role => active.filter(i=>i.role===role).map(i=>pretty(i.name));
   const joinNames = names => names.length > 1
     ? `${names.slice(0,-1).join(', ')} and ${names.at(-1)}`
     : (names[0] || 'the ingredients');
-  const steps = [];
+  const steps = legumes.map((item,index)=>({key:`legume-${index}`,text:legumeInstructions(item)}));
   const prepNames = active.filter(i=>['protein','veg','aromatic'].includes(i.role) || /potato/.test(i.name)).map(i=>pretty(i.name));
   steps.push({ key:'prep', text: prepNames.length
     ? `Gather everything. Wash produce and prepare ${joinNames(prepNames)} as needed, keeping pieces even for predictable cooking.`
@@ -1144,7 +1177,6 @@ function buildInstructions(ingredients,preferences={}){
     else if(protein.preparation==='frozen') text = `Cook the frozen ${name} according to its package directions and ${proteinSafetyGuidance(protein.name)}.`;
     else if(protein.name.includes('salmon')) text = `Cook ${name} until it flakes easily and reaches 145°F (63°C), measured with a food thermometer.`;
     else if(protein.name.includes('tofu')) text = `Pat ${name} dry, cube it, and cook for 6–8 minutes until lightly browned.`;
-    else if(protein.name.includes('bean') || protein.name.includes('lentil')) text = `Rinse ${name}, then add and warm gently for 2–3 minutes.`;
     else if(protein.name.includes('egg')) text = `Whisk ${name} with a pinch of salt, then cook gently until set.`;
     else text = `Add ${name}. Cook, stirring or turning as needed, and ${proteinSafetyGuidance(protein.name)}.`;
     steps.push({ key:`protein-${index}`, text });
@@ -1258,13 +1290,14 @@ function titleFrom(ings){
 // State normalization
 // -------------------------------
 function normalize(names){
-  const seen = new Set();
+  const seen = new Map();
   return names.map(raw=>{
     const parsed = parseInputIngredient(raw);
     const name = parsed.name;
     const role = roleFor(name);
     const intent = intentForRole(role);
     const base = { ...(BASE_QTY[role] || BASE_QTY.other) };
+    if(name==='bread') base.u='slices'; // same four default portions; measured input still wins
 
     const override = CANON_DEFAULT_BASE[name];
     if(override){
@@ -1285,7 +1318,18 @@ function normalize(names){
       preparation: parsed.preparation,
       swapMeta: null
     };
-  }).filter(ingredient=>ingredient.name && !seen.has(ingredient.name) && seen.add(ingredient.name));
+  }).filter(ingredient=>{
+    if(!ingredient.name) return false;
+    if(seen.has(ingredient.name)){
+      const prior=seen.get(ingredient.name);
+      if(isLegume(ingredient.name)){
+        if(prior.preparation==='raw' || ingredient.preparation==='raw') prior.preparation='raw';
+        else if(!prior.preparation || !ingredient.preparation) prior.preparation=null;
+      }
+      return false;
+    }
+    seen.set(ingredient.name,ingredient);return true;
+  });
 }
 
 // -------------------------------
@@ -1310,8 +1354,8 @@ function qtyStr(ing){
     const nice = formatQty(val) || String(val.toFixed(2));
     return `${nice} tsp`;
   }
-  if(ing.base.u === 'count'){
-    return `count ${Math.max(0, Math.round(val))}`;
+  if(ing.base.u === 'count' || (ing.base.u === 'eggs' && canonName(ing.name)==='eggs')){
+    return formatQty(val) || String(Number(val.toFixed(2)));
   }
 
   const isInt = Math.abs(val - Math.round(val)) < 1e-9;
@@ -1638,7 +1682,7 @@ function render(){
   const ol = $('instructionsList');
   if(ol){
     ol.innerHTML = '';
-    (state.steps || []).forEach(s=>{
+    [...recipeSafetyNotices(state.ingredients),...(state.steps || [])].forEach(s=>{
       const li = document.createElement('li');
       li.textContent = s.text;
       ol.appendChild(li);
@@ -1708,7 +1752,7 @@ function sanitizeSavedIngredients(value){
       role,
       intent:intentForRole(role),
       base:{v:quantity,u:unit},
-      preparation:['cooked','frozen'].includes(item.preparation) ? item.preparation : null,
+      preparation:isLegume(item.name) ? legumePreparation(item.name,item.preparation) : (['cooked','frozen'].includes(item.preparation) ? item.preparation : null),
       swapMeta:null
     });
   }
@@ -1852,9 +1896,10 @@ function toggleWeeklyPlan(recipeId){
   return next;
 }
 
-function groceryQuantity(value, unit){
+function groceryQuantity(value, unit, name=''){
   const quantity = formatQty(value) || String(Number(value.toFixed(2)));
-  if(unit==='count' || !unit) return quantity;
+  if(unit==='count' || !unit || (unit==='eggs' && canonName(name)==='eggs')) return quantity;
+  if(unit==='slices' && value===1) return `${quantity} slice`;
   return `${quantity} ${unit}`;
 }
 
@@ -1877,7 +1922,7 @@ function recipeCommerceItems(recipe){
     const quantity=Number(item.base?.v)*(recipeServings/2);
     return {
       name:canonName(item.name),quantity,unit,
-      displayText:`${groceryQuantity(quantity,unit)} ${pretty(item.name)}`
+      displayText:`${groceryQuantity(quantity,unit,item.name)} ${pretty(item.name)}`
     };
   });
 }
@@ -1955,7 +2000,7 @@ async function shopPlannedGroceries(){
   const checks=lsGet(GROCERY_CHECKS_KEY,{});
   const items=uncheckedGroceryEntries(plannedGroceryItems(),checks).map(([,item])=>({
     name:item.name,quantity:item.quantity,unit:item.unit,
-    displayText:`${groceryQuantity(item.quantity,item.unit)} ${pretty(item.name)}`
+    displayText:`${groceryQuantity(item.quantity,item.unit,item.name)} ${pretty(item.name)}`
   }));
   if(!items.length){
     showToast(plannedGroceryItems().length ? 'Everything on this grocery list is already checked off.' : 'Plan at least one saved recipe first.');
@@ -2416,7 +2461,7 @@ function showSharedRecipe(recipe){
     $('sharedIngredients').appendChild(li);
   });
   $('sharedInstructions').replaceChildren();
-  recipe.steps.forEach(step=>{ const li=document.createElement('li'); li.textContent=step.text || String(step); $('sharedInstructions').appendChild(li); });
+  [...recipeSafetyNotices(recipe.ingredients),...recipe.steps].forEach(step=>{ const li=document.createElement('li'); li.textContent=step.text || String(step); $('sharedInstructions').appendChild(li); });
   $('saveSharedRecipe').onclick=()=>{ if(saveRecipe({ ...recipe, id:uid(), savedAt:new Date().toISOString() })) $('saveSharedRecipe').textContent='✓ Saved to Recipe Book'; };
 }
 
@@ -3386,7 +3431,7 @@ function combineGroceryRecipes(recipes){
 }
 
 function groceryItemText(item){
-  const known=item.quantity>0 ? `${groceryQuantity(item.quantity,item.unit)} ` : '';
+  const known=item.quantity>0 ? `${groceryQuantity(item.quantity,item.unit,item.name)} ` : '';
   return `${known}${item.name}${item.unknownCount ? ` — amount needs review (${item.unknownCount} recipe line${item.unknownCount===1?'':'s'})` : ''}`;
 }
 
@@ -3398,6 +3443,7 @@ function openExactRecipeEditor(recipe={}){
   if(source){const link=document.createElement('a');link.href=source.url;link.textContent=`Original source: ${source.name}`;link.target='_blank';link.rel='noopener noreferrer';dialog.appendChild(link);}
   const nutritionNote=document.createElement('p'); nutritionNote.textContent=recipeNutritionText({exact:true}); dialog.appendChild(nutritionNote);
   const note=document.createElement('p'); note.textContent='Original amounts and instructions are kept. Nothing is generated. Missing or unrecognized amounts stay visible for review. Saved on this device; optional account backup follows your existing settings.'; dialog.appendChild(note);
+  const safetyNotices=document.createElement('div');safetyNotices.setAttribute('role','note');dialog.appendChild(safetyNotices);
   const form=document.createElement('form'); dialog.appendChild(form);
   const fields={};
   for(const [key,label,value,multiline] of [
@@ -3415,6 +3461,8 @@ function openExactRecipeEditor(recipe={}){
   const status=document.createElement('p'); status.setAttribute('role','status'); form.appendChild(status);
   const review=()=>{
     const lines=fields.ingredients.value.split('\n').filter(line=>line.trim());
+    safetyNotices.replaceChildren();
+    recipeSafetyNotices(lines.map(name=>({name}))).forEach(notice=>{const warning=document.createElement('p');warning.textContent=notice.text;safetyNotices.appendChild(warning);});
     const unknown=lines.map(parseExactIngredient).filter(item=>item.base.v==null).length;
     status.textContent=`${lines.length} ingredients; ${unknown} amounts need review. ${fields.yieldText.value.trim()?'':'Yield is unknown.'}`;
   };
@@ -3478,6 +3526,7 @@ if(typeof module !== 'undefined' && module.exports){
     suggestIngredientList,
     canonName,
     parseInputIngredient,
+    recipeSafetyNotices,
     validateRecipeInput,
     MAX_RECIPE_INGREDIENTS,
     sanitizeTasteProfile,

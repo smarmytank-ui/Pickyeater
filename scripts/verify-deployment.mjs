@@ -105,6 +105,9 @@ for(const path of [
   await checkPath(path);
 }
 await checkApi('/food-my-way-verifier-missing-page',{statuses:[404],contains:'Food My Way'});
+await checkApi('/products/survival-kit/build_kit.py',{statuses:[404],headers:{'cache-control':/no-store/i}});
+await checkApi('/products/survival-kit/verify_bean_correction.py',{statuses:[404],headers:{'cache-control':/no-store/i}});
+await checkApi('/functions/_shared/build_survival_kit.py',{statuses:[404]});
 
 if(launchMode){
   try{

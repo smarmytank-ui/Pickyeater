@@ -3,7 +3,7 @@ const APP_SHELL = [
   './',
   './index.html',
   './styles.css?v=2.68.8',
-  './app.js?v=2.68.8',
+  './app.js?v=2.68.8-recipe-units-20261108',
   './speech-ingredients.js?v=2.68.8',
   './speech-ingredients.css?v=2.68.8',
   './assets/config/0b06103e65d76b98a352150e0d746c1e9e7bb5b70317f6debe5a4ed34730c773.js',
@@ -30,12 +30,12 @@ const APP_SHELL = [
   './survival-kit.html',
   './survival-kit.css?v=2.68.8',
   './survival-kit-access.css',
-  './survival-kit.js?v=2.68.8',
+  './survival-kit.js?v=2.68.8-guest-20261106',
   './survival-kit-access.mjs',
   './checkout-attribution.mjs',
   './digital-kit.html',
   './digital-kit.css?v=1',
-  './digital-kit.js?v=2.68.8'
+  './digital-kit.js?v=2.68.8-kit-correction-20261104'
 ];
 
 // Privacy-sensitive measurement code must NEVER use SW cache or app fallback.
