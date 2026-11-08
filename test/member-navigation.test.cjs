@@ -1,16 +1,16 @@
 const test=require('node:test');const assert=require('node:assert/strict');
 const fs=require('node:fs');const vm=require('node:vm');const path=require('node:path');
 function harness(store=new Map()){
- const nodes=new Map();let failWrite=false,failRead=false,failRemove=false,approved=true;
+ const nodes=new Map();const pendingFocus=[];let failWrite=false,failRead=false,failRemove=false,approved=true;
  function node(id){const classes=new Set();const handlers={};return {id,value:'',textContent:'',hidden:false,dataset:{},handlers,
  classList:{add:x=>classes.add(x),remove:x=>classes.delete(x),contains:x=>classes.has(x),toggle(x,force){if(force===undefined? !classes.has(x):force)classes.add(x);else classes.delete(x);}},
- setAttribute(){},focus(){this.focused=true;},scrollIntoView(){},addEventListener(type,fn){handlers[type]=fn;},dispatchEvent(event){handlers[event.type]?.(event);}};}
+ setAttribute(){},focus(){for(const item of nodes.values())item.focused=false;this.focused=true;},scrollIntoView(){},addEventListener(type,fn){handlers[type]=fn;},dispatchEvent(event){handlers[event.type]?.(event);}};}
  for(const id of ['ingredientsInput','inputCard','resultCard','recipeBookCard','diaryCard','sharedRecipeCard','plannerCard','saveRow','savedNextStep','draftStatus','resumeRecipeBtn','memberHomeBtn','newRecipeBtn','memberOpenRecipeBook','recipeTitle','nutritionDisclosure','generateBtn','saveBtn','appToast'])nodes.set(id,node(id));
  const entryLink=node('entryLink');const location={hash:''};
  const document={readyState:'loading',addEventListener(){},querySelectorAll:selector=>selector==='a[href="#inputCard"]'?[entryLink]:[],querySelector:()=>null,getElementById:id=>nodes.get(id)||null};
  const window={addEventListener(){},dispatchEvent(){},scrollTo(){},dataLayer:[]};
  const localStorage={getItem(k){if(failRead)throw Error('denied');return store.get(k)||null;},setItem(k,v){if(failWrite)throw Error('full');store.set(k,v);},removeItem(k){if(failRemove)throw Error('denied');store.delete(k);}};
- const context=vm.createContext({console,document,window,location,localStorage,URL,Event:class{constructor(type){this.type=type;}},CustomEvent:class{constructor(type){this.type=type;}},confirm:()=>approved,setTimeout,clearTimeout});
+ const context=vm.createContext({console,document,window,location,localStorage,URL,Event:class{constructor(type){this.type=type;}},CustomEvent:class{constructor(type){this.type=type;}},confirm:()=>approved,setTimeout:(fn,delay)=>delay===0?pendingFocus.push(fn):setTimeout(fn,delay),clearTimeout});
  vm.runInContext(fs.readFileSync(path.join(__dirname,'../app.js'),'utf8')+`
  globalThis.api={
  setup({input='chicken\\nrice',title,manual=false,loaded=null,dirty=true}={}){
@@ -25,7 +25,7 @@ function harness(store=new Map()){
  route(hash){location.hash=hash;routeRecipeWorkspace();},
  events:wireEvents,replace:approveDraftReplacement,wire:wireMemberNavigation,open:openSavedRecipe,key:RECIPE_DRAFT_KEY,
  };`,context);
- return {api:context.api,nodes,store,entryLink,location,fail(kind,value=true){if(kind==='write')failWrite=value;if(kind==='read')failRead=value;if(kind==='remove')failRemove=value;},approve(value){approved=value;}};
+ return {api:context.api,nodes,store,entryLink,location,flushFocus(){while(pendingFocus.length)pendingFocus.shift()();},fail(kind,value=true){if(kind==='write')failWrite=value;if(kind==='read')failRead=value;if(kind==='remove')failRemove=value;},approve(value){approved=value;}};
 }
 test('Home shows Step1 and Resume retains swapped recipe, servings and loaded ID without replacing newer entry',()=>{
  const h=harness();h.api.setup({loaded:'saved-7'});const before=h.api.inspect();
@@ -117,4 +117,12 @@ test('initial and history navigation use the same draft-safe route handler',()=>
  const source=fs.readFileSync(path.join(__dirname,'../app.js'),'utf8');
  assert.match(source,/restoreRecipeDraft\(\);[\s\S]*routeRecipeWorkspace\(\);[\s\S]*window.addEventListener\('hashchange', routeRecipeWorkspace\)/);
  assert.match(source,/function routeRecipeWorkspace\(\)[\s\S]*loadSharedRecipeFromUrl\(\);/);
+});
+
+
+test('queued fragment focus cannot steal focus after Resume or a newer route',()=>{
+ const h=harness();h.api.setup();h.api.route('#inputCard');h.api.resume();h.flushFocus();
+ assert.equal(h.nodes.get('recipeTitle').focused,true);assert.equal(h.nodes.get('ingredientsInput').focused,false);
+ h.api.route('#inputCard');h.location.hash='#how-it-works';h.nodes.get('recipeTitle').focus();h.flushFocus();
+ assert.equal(h.nodes.get('recipeTitle').focused,true);assert.equal(h.nodes.get('ingredientsInput').focused,false);
 });

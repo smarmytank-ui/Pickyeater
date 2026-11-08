@@ -85,3 +85,37 @@ test('complete generated safety survives Save/Resume and shared-recipe normaliza
  assert.equal(forged.steps[0].text.length,300);
  assert.match(a.recipeInstructionSteps(forged)[0].text,/at least 30 minutes/);
 });
+
+
+for(const food of ['eggs and chicken','ground turkey and eggs','duck and eggs','goose and eggs','eggs and salmon'])test('mixed egg and animal proteins keep each safe endpoint: '+food,()=>{
+ const r=recipe([food]);const text=output(r);
+ assert.match(text,/components.*separately/);assert.match(text,/egg dishes to 160°F/);
+ assert.match(text,/food thermometer/);assert.match(text,/chicken|turkey|duck|goose/i.test(food)?/165°F/:/145°F/);
+ assert.doesNotMatch(text,/Whisk/);
+ const restored=a.normalizeSavedRecipe({...r,servings:2});
+ assert.equal(restored.steps.find(s=>s.key==='protein-0').text,r.steps.find(s=>s.key==='protein-0').text);
+});
+
+for(const food of ['not cooked rice','partially cooked rice','uncooked pasta','raw quinoa','dry rice'])test('raw or incomplete starch cannot use the cooked-food branch: '+food,()=>{
+ const ingredients=a.normalize([food]);assert.equal(ingredients[0].preparation,'raw');
+ assert.doesNotMatch(output({ingredients,steps:a.buildInstructions(ingredients)}),/Reheat the cooked|do not cook it again/);
+ const restored=a.normalizeSavedRecipe({ingredients:[{name:food,preparation:'cooked',role:'starch',base:{v:2,u:'cups'}}]});
+ assert.equal(restored.ingredients[0].preparation,'raw');assert.doesNotMatch(output(restored),/Reheat the cooked|do not cook it again/);
+ const again=a.normalizeSavedRecipe(JSON.parse(JSON.stringify(restored)));assert.equal(again.ingredients[0].preparation,'raw');
+});
+
+test('negative cooked evidence also wins mixed raw protein while frozen package handling remains',()=>{
+ assert.match(output(recipe(['cooked eggs and raw chicken'])),/165°F/);
+ assert.equal(a.parseInputIngredient('frozen raw chicken').preparation,'frozen');
+ assert.equal(a.parseInputIngredient('leftover salmon').preparation,'cooked');
+});
+
+
+test('long recognized generated protein steps survive Save/Resume and null steps regenerate',()=>{
+ const r=recipe(['chicken breast in a mild family style homemade marinade for Sunday dinner']);
+ const saved=a.normalizeSavedRecipe({...r,servings:2});
+ assert.equal(saved.steps.find(s=>s.key==='protein-0').text,r.steps.find(s=>s.key==='protein-0').text);
+ const fromNull=a.normalizeSavedRecipe({ingredients:r.ingredients,steps:[null,undefined]});
+ assert.deepEqual(fromNull.steps,a.buildInstructions(fromNull.ingredients));
+ assert.doesNotMatch(output(fromNull),/undefined|null/);
+});

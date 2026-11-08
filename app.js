@@ -674,6 +674,16 @@ function recipeInstructionSteps(recipe){
   return [...recipeSafetyNotices(recipe?.ingredients,steps),...steps];
 }
 
+function ingredientPreparation(name, stated=null){
+  if(isLegume(name)) return legumePreparation(name,stated);
+  const text=String(name || '');
+  const rawEvidence=/\b(?:raw|uncooked|un[ -]?cooked|not (?:fully |pre[ -]?)?cooked|under[ -]?cooked|partially cooked)\b/i.test(text)
+    || (roleFor(canonName(text))==='starch' && /\b(?:dry|dried)\b/i.test(text));
+  if(rawEvidence || stated==='raw') return /\bfrozen\b/i.test(text) ? 'frozen' : 'raw';
+  if(/\b(?:pre[ -]?cooked|cooked|rotisserie|leftovers?)\b/i.test(text) || stated==='cooked') return 'cooked';
+  return /\bfrozen\b/i.test(text) || stated==='frozen' ? 'frozen' : null;
+}
+
 function parseInputIngredient(raw){
   let text = String(raw || '').trim();
   const legumeState=isLegume(text) ? legumePreparation(text) : null;
@@ -681,9 +691,7 @@ function parseInputIngredient(raw){
   const packageSize=text.match(/^(\d+(?:\.\d+)?)\s*\((\d+(?:\.\d+)?)\s*(oz|ounces?|g|grams?|kg|kilograms?)\)\s*(?:packages?|cans?)\s+(?:of\s+)?(.+)$/i);
   if(packageSize) text=`${Number(packageSize[1])*Number(packageSize[2])} ${packageSize[3]} ${packageSize[4]}`;
   else text=text.replace(/^(\d+)\s*\([^)]*\)\s*(packages?|cans?)\b/i,'$1 $2');
-  const preparation = isLegume(text) ? legumeState : /\b(?:pre[ -]?cooked|cooked|rotisserie|leftovers?)\b/i.test(text)
-    ? 'cooked'
-    : (/\bfrozen\b/i.test(text) ? 'frozen' : null);
+  const preparation = isLegume(text) ? legumeState : ingredientPreparation(text);
   const match = text.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)\s*(kg|kilograms?|g|grams?|lb|lbs|pound|pounds|oz|ounce|ounces|cup|cups|tbsp|tablespoons?|tsp|teaspoons?|cloves?|pieces?|slices?|cans?|packages?|medium|large|small)\b/i);
   if(!match){
     const counted=text.match(/^(\d+(?:\.\d+)?)\s+(.+)$/);
@@ -1121,8 +1129,9 @@ function isActiveIngredient(ingredient){
 function proteinSafetyGuidance(name, preparation){
   const normalized=canonName(name);
   if(preparation==='cooked') return 'heat to 165°F (74°C), measured with a food thermometer';
-  if(/\b(chicken|turkey)\b/.test(normalized)) return 'cook to 165°F (74°C), measured with a food thermometer';
+  if(/\b(chicken|turkey|duck|goose)\b/.test(normalized)) return 'cook to 165°F (74°C), measured with a food thermometer';
   if(/\bground (beef|pork|lamb|veal)\b/.test(normalized)) return 'cook to 160°F (71°C), measured with a food thermometer';
+  if(/\beggs?\b/.test(normalized)) return 'cook the egg dish to 160°F (71°C), measured with a food thermometer';
   if(/\b(salmon|fish|cod|tilapia|tuna|trout)\b/.test(normalized)) return 'cook to 145°F (63°C), measured with a food thermometer';
   if(/\b(steak|beef|pork|lamb|veal)\b/.test(normalized)) return 'cook to 145°F (63°C), measured with a food thermometer, then rest for 3 minutes';
   return 'cook to the safe internal temperature for that food, measured with a food thermometer';
@@ -1203,8 +1212,9 @@ function buildInstructions(ingredients,preferences={}){
     let text = `Add ${name} and cook until done.`;
     if(protein.preparation==='cooked') text = `Add the cooked ${name} to the pan and ${proteinSafetyGuidance(protein.name,'cooked')}.`;
     else if(protein.preparation==='frozen') text = `Cook the frozen ${name} according to its package directions and ${proteinSafetyGuidance(protein.name)}.`;
+    else if(/\beggs?\b/.test(protein.name) && /\b(?:chicken|turkey|duck|goose|beef|pork|lamb|veal|steak|salmon|fish|cod|tilapia|tuna|trout)\b/.test(protein.name)) text = `Prepare the components of ${name} separately. Cook egg dishes to 160°F (71°C), measured with a food thermometer; ${proteinSafetyGuidance(protein.name.replace(/\beggs?\b/g,''))}.`;
     else if(protein.name.includes('salmon')) text = `Cook ${name} in the pan until it flakes easily and reaches 145°F (63°C), measured with a food thermometer.`;
-    else if(protein.name.includes('tofu')) text = `Pat ${name} dry, cube it, and cook for 6–8 minutes until lightly browned.`;
+    else if(protein.name.includes('tofu')) text = `Pat ${name} dry, cube it, and cook in the pan for 6–8 minutes until lightly browned.`;
     else if(protein.name.includes('egg')) text = `Whisk ${name}, then cook gently in the pan until set and the egg dish reaches 160°F (71°C), measured with a food thermometer.`;
     else text = `Add ${name} to the pan. Cook, stirring or turning as needed, and ${proteinSafetyGuidance(protein.name)}.`;
     text += ` Once safely cooked, transfer ${name} to a clean plate before cooking the next component.`;
@@ -1768,7 +1778,7 @@ function sanitizeSavedIngredients(value){
       role,
       intent:intentForRole(role),
       base:{v:quantity,u:unit},
-      preparation:isLegume(item.name) ? legumePreparation(item.name,item.preparation) : (['cooked','frozen'].includes(item.preparation) ? item.preparation : null),
+      preparation:ingredientPreparation(item.name,item.preparation),
       swapMeta:null
     });
   }
@@ -1830,21 +1840,21 @@ function normalizeSavedRecipe(recipe,{untrusted=false}={}){
   if(!ingredients.length) return null;
   const rawServings=Number(recipe.servings);
   const recipeServings=Number.isFinite(rawServings) ? Math.min(8,Math.max(1,Math.round(rawServings))) : 2;
-  const completeLegumeGuidance=new Set(ingredients.filter(item=>isLegume(item.name)).map(legumeInstructions));
-  const importedSteps=Array.isArray(recipe.steps) ? recipe.steps.slice(0,30).map((step,index)=>{
-    const rawText=String(step?.text ?? step);
-    return {
-      key:cleanPortableText(step?.key,60) || `step-${index}`,
-      // Retain our complete, bounded safety blocks across Save/Resume. Arbitrary
-      // imported text keeps its existing limit; a safety-looking key is no proof.
-      text:cleanPortableText(rawText,completeLegumeGuidance.has(rawText) ? 1200 : 300)
-    };
-  }).filter(step=>step.text) : [];
   const sanitizedProfile=sanitizeTasteProfile({
     texture:recipe.preferences?.texture,
     servingStyle:recipe.preferences?.servingStyle
   });
   const preferences={texture:sanitizedProfile.texture,servingStyle:sanitizedProfile.servingStyle};
+  const completeGeneratedGuidance=new Set(buildInstructions(ingredients,preferences).map(step=>step.text));
+  const importedSteps=Array.isArray(recipe.steps) ? recipe.steps.slice(0,30).map((step,index)=>{
+    const rawText=String(step?.text ?? step ?? '');
+    return {
+      key:cleanPortableText(step?.key,60) || `step-${index}`,
+      // Retain our complete, bounded generated steps across Save/Resume. Arbitrary
+      // imported text keeps its existing limit; a safety-looking key is no proof.
+      text:cleanPortableText(rawText,completeGeneratedGuidance.has(rawText) ? 1200 : 300)
+    };
+  }).filter(step=>step.text) : [];
   const recipeState = {
     title: cleanPortableText(recipe.title,100) || titleFrom(ingredients),
     ingredients,
@@ -2309,6 +2319,11 @@ function routeRecipeWorkspace(){
   if(location.hash==='#inputCard'){
     showMemberHome();
     $('inputCard')?.scrollIntoView({block:'start'});
+    // Fragment navigation may move focus after DOMContentLoaded. Restore focus
+    // on the next task only if entry is still the requested visible view.
+    setTimeout(()=>{
+      if(location.hash==='#inputCard' && !$('inputCard')?.classList.contains('hidden')) $('ingredientsInput')?.focus({preventScroll:true});
+    },0);
     return;
   }
   loadSharedRecipeFromUrl();
@@ -3544,6 +3559,7 @@ function init(){
   handleCheckoutReturn();
   refreshPendingEntitlement();
   window.addEventListener('hashchange', routeRecipeWorkspace);
+  window.addEventListener('pageshow',event=>{if(event.persisted && location.hash==='#inputCard') routeRecipeWorkspace();});
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('./service-worker.js').catch(error=>{
       console.warn('Offline support could not start.', error);
