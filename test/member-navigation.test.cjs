@@ -6,10 +6,11 @@ function harness(store=new Map()){
  classList:{add:x=>classes.add(x),remove:x=>classes.delete(x),contains:x=>classes.has(x),toggle(x,force){if(force===undefined? !classes.has(x):force)classes.add(x);else classes.delete(x);}},
  setAttribute(){},focus(){this.focused=true;},scrollIntoView(){},addEventListener(type,fn){handlers[type]=fn;},dispatchEvent(event){handlers[event.type]?.(event);}};}
  for(const id of ['ingredientsInput','inputCard','resultCard','recipeBookCard','diaryCard','sharedRecipeCard','plannerCard','saveRow','savedNextStep','draftStatus','resumeRecipeBtn','memberHomeBtn','newRecipeBtn','memberOpenRecipeBook','recipeTitle','nutritionDisclosure','generateBtn','saveBtn','appToast'])nodes.set(id,node(id));
- const document={readyState:'loading',addEventListener(){},querySelectorAll:()=>[],querySelector:()=>null,getElementById:id=>nodes.get(id)||null};
+ const entryLink=node('entryLink');const location={hash:''};
+ const document={readyState:'loading',addEventListener(){},querySelectorAll:selector=>selector==='a[href="#inputCard"]'?[entryLink]:[],querySelector:()=>null,getElementById:id=>nodes.get(id)||null};
  const window={addEventListener(){},dispatchEvent(){},scrollTo(){},dataLayer:[]};
  const localStorage={getItem(k){if(failRead)throw Error('denied');return store.get(k)||null;},setItem(k,v){if(failWrite)throw Error('full');store.set(k,v);},removeItem(k){if(failRemove)throw Error('denied');store.delete(k);}};
- const context=vm.createContext({console,document,window,localStorage,URL,Event:class{constructor(type){this.type=type;}},CustomEvent:class{constructor(type){this.type=type;}},confirm:()=>approved,setTimeout,clearTimeout});
+ const context=vm.createContext({console,document,window,location,localStorage,URL,Event:class{constructor(type){this.type=type;}},CustomEvent:class{constructor(type){this.type=type;}},confirm:()=>approved,setTimeout,clearTimeout});
  vm.runInContext(fs.readFileSync(path.join(__dirname,'../app.js'),'utf8')+`
  globalThis.api={
  setup({input='chicken\\nrice',title,manual=false,loaded=null,dirty=true}={}){
@@ -21,9 +22,10 @@ function harness(store=new Map()){
  input(text){$('ingredientsInput').value=text;},
  inspect(){return JSON.parse(JSON.stringify({state,servings,loadedRecipeId,draftRecipeDirty,input:$('ingredientsInput').value,view:draftVisibleView}));},
  home:showMemberHome,resume:resumeRecipeDraft,persist:persistRecipeDraft,restore:restoreRecipeDraft,start:startNewRecipe,
+ route(hash){location.hash=hash;routeRecipeWorkspace();},
  events:wireEvents,replace:approveDraftReplacement,wire:wireMemberNavigation,open:openSavedRecipe,key:RECIPE_DRAFT_KEY,
  };`,context);
- return {api:context.api,nodes,store,fail(kind,value=true){if(kind==='write')failWrite=value;if(kind==='read')failRead=value;if(kind==='remove')failRemove=value;},approve(value){approved=value;}};
+ return {api:context.api,nodes,store,entryLink,location,fail(kind,value=true){if(kind==='write')failWrite=value;if(kind==='read')failRead=value;if(kind==='remove')failRemove=value;},approve(value){approved=value;}};
 }
 test('Home shows Step1 and Resume retains swapped recipe, servings and loaded ID without replacing newer entry',()=>{
  const h=harness();h.api.setup({loaded:'saved-7'});const before=h.api.inspect();
@@ -83,4 +85,36 @@ test('opening saved A then generating and saving B creates a new identity withou
  h.nodes.get('saveBtn').handlers.click();const saved=JSON.parse(store.get('pickyRecipesV2'));
  assert.equal(saved.length,2);const original=saved.find(r=>r.id==='saved-A');assert.equal(original.title,a.title);assert.equal(original.ingredients[0].name,'chicken breast');
  const added=saved.find(r=>r.id!=='saved-A');assert.ok(added);assert.match(added.title,/Tofu/);assert.equal(h.api.inspect().loadedRecipeId,added.id);
+});
+
+
+test('guide entry anchor opens input after recipe-draft restoration without losing Resume work',()=>{
+ const original=harness();original.api.setup({loaded:'saved-guide',title:'Keep this recipe',manual:true});original.api.input('new ingredients waiting');original.api.persist();
+ const h=harness(original.store);h.api.restore();const before=h.api.inspect();assert.equal(before.view,'recipe');
+ h.api.route('#inputCard');const entry=h.api.inspect();
+ assert.equal(entry.view,'input');assert.equal(entry.input,'new ingredients waiting');
+ assert.equal(h.nodes.get('inputCard').classList.contains('hidden'),false);
+ assert.equal(h.nodes.get('ingredientsInput').focused,true);
+ assert.deepEqual(entry.state,before.state);assert.equal(entry.loadedRecipeId,'saved-guide');assert.equal(entry.draftRecipeDirty,true);
+ h.api.resume();assert.equal(h.api.inspect().state.title,'Keep this recipe');assert.equal(h.api.inspect().input,'new ingredients waiting');
+});
+
+test('same-hash entry link works repeatedly and leaves modified link clicks to the browser',()=>{
+ const h=harness();h.api.setup();h.location.hash='#inputCard';h.api.wire();let prevented=0;
+ const click={button:0,preventDefault(){prevented++}};
+ h.entryLink.handlers.click(click);assert.equal(h.api.inspect().view,'input');
+ h.api.resume();h.entryLink.handlers.click({...click,ctrlKey:true});assert.equal(h.api.inspect().view,'recipe');assert.equal(prevented,1);
+ h.entryLink.handlers.click(click);assert.equal(h.api.inspect().view,'input');assert.equal(prevented,2);
+});
+
+test('entry routing remains usable on storage failure without destroying recipe or entry',()=>{
+ const h=harness();h.api.setup();h.api.input('keep this entry');const before=h.api.inspect();h.fail('write');h.api.route('#inputCard');
+ assert.equal(h.api.inspect().view,'input');assert.equal(h.api.inspect().input,'keep this entry');assert.deepEqual(h.api.inspect().state,before.state);
+ assert.match(h.nodes.get('draftStatus').textContent,/Keep this tab open/);
+});
+
+test('initial and history navigation use the same draft-safe route handler',()=>{
+ const source=fs.readFileSync(path.join(__dirname,'../app.js'),'utf8');
+ assert.match(source,/restoreRecipeDraft\(\);[\s\S]*routeRecipeWorkspace\(\);[\s\S]*window.addEventListener\('hashchange', routeRecipeWorkspace\)/);
+ assert.match(source,/function routeRecipeWorkspace\(\)[\s\S]*loadSharedRecipeFromUrl\(\);/);
 });

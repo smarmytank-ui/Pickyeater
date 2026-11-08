@@ -139,7 +139,7 @@ if(launchMode){
     excludes:['before their material data collection is enabled']
   });
   await checkLaunchCopy('/survival-kit',{
-    contains:['Picky Eater Survival Kit','$19','14-day refund policy','secure download']
+    contains:['Picky Eater Survival Kit','$19','14-day refund policy','Pay securely through Stripe','same email to request your sign-in link','download the PDF']
   });
 }
 
