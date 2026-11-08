@@ -540,6 +540,7 @@ function canonName(s){
     .replace(/[,;]\s*(?:divided|optional|for serving|to serve)\b.*$/g,' ')
     .replace(/\bdivided\b/g,' ')
     .replace(/^\s*(?:\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)\s*(?:kg|kilograms?|g|grams?|lb|lbs|pound|pounds|oz|ounce|ounces|cup|cups|tbsp|tablespoons?|tsp|teaspoons?|cloves?|pieces?|slices?|cans?|packages?|medium|large|small)?\s+/i,'')
+    .replace(/\b(?:not (?:fully |pre[ -]?)?cooked|partially cooked|under[ -]?cooked|un[ -]?cooked)\b/g,' ')
     .replace(/\b(boneless|skinless|fresh|frozen|cooked|uncooked|raw|chopped|diced|minced|sliced|shredded|grated|lean|extra lean)\b/g,' ')
     .replace(/^(?:packages?|packets?|cans?)\s+(?:of\s+)?/,'')
     .replace(/\bfillet\b/g,'')
