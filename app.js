@@ -1347,15 +1347,16 @@ function normalize(names){
     };
   }).filter(ingredient=>{
     if(!ingredient.name) return false;
-    if(seen.has(ingredient.name)){
-      const prior=seen.get(ingredient.name);
+    const key=isLegume(ingredient.name) ? ingredient.name : `${ingredient.name}\u0000${ingredient.preparation || 'raw'}`;
+    if(seen.has(key)){
+      const prior=seen.get(key);
       if(isLegume(ingredient.name)){
         if(prior.preparation==='raw' || ingredient.preparation==='raw') prior.preparation='raw';
         else if(!prior.preparation || !ingredient.preparation) prior.preparation=null;
       }
       return false;
     }
-    seen.set(ingredient.name,ingredient);return true;
+    seen.set(key,ingredient);return true;
   });
 }
 

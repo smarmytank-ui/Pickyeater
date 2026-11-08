@@ -27,3 +27,37 @@ test('preparation cleanup preserves quantities and unrelated food-name words',()
  assert.equal(a.parseInputIngredient('cooked rice').preparation,'cooked');
  assert.equal(a.parseInputIngredient('frozen not cooked rice').preparation,'frozen');
 });
+for(const pair of [
+ ['1 cup cooked rice','2 cups not cooked rice'],
+ ['1 cup cooked pasta','2 cups partially cooked pasta'],
+ ['1 lb cooked chicken','2 lb not cooked chicken'],
+ ['1 cup frozen rice','2 cups not cooked rice'],
+ ['1 cup cooked rice','2 cups rice'],
+ ['1 cup cooked rice','2 cups frozen rice']
+]){
+ for(const inputs of [pair,[...pair].reverse()])test('different preparation states stay separate: '+inputs.join(' + '),()=>{
+  const ingredients=a.normalize(inputs);
+  assert.equal(ingredients.length,2);
+  assert.deepEqual(ingredients.map(i=>[i.preparation,i.base.v]),inputs.map(line=>{const p=a.parseInputIngredient(line);return [p.preparation,p.quantity]}));
+  const restored=a.normalizeSavedRecipe({ingredients});
+  const shared=a.normalizeSavedRecipe(JSON.parse(JSON.stringify(restored)),{untrusted:true});
+  for(const result of [{ingredients,steps:a.buildInstructions(ingredients)},restored,shared]){
+   assert.equal(result.ingredients.length,2);
+   assert.deepEqual(result.ingredients.map(i=>i.preparation),ingredients.map(i=>i.preparation));
+   const text=result.steps.map(s=>s.text).join('\n');
+   if(pair[0].includes('chicken')){assert.match(text,/165\u00b0F/);assert.match(text,/Add the cooked Chicken Breast to the pan and heat to/);assert.match(text,/Add Chicken Breast to the pan\. Cook/);}
+   else{
+    if(ingredients.some(i=>i.preparation==='raw' || !i.preparation)) assert.match(text,pair[0].includes('pasta')?/Boil Pasta/:/Cook Rice/);
+    if(ingredients.some(i=>i.preparation==='frozen')) assert.match(text,/frozen Rice separately/);
+    if(ingredients.some(i=>i.preparation==='cooked')) assert.match(text,/Reheat the cooked/);
+   }
+  }
+ });
+}
+
+test('same preparation still deduplicates and legume caution is unchanged',()=>{
+ assert.equal(a.normalize(['rice','not cooked rice']).length,1);
+ assert.equal(a.normalize(['cooked rice','cooked rice']).length,1);
+ const beans=a.normalize(['cooked kidney beans','not cooked kidney beans']);
+ assert.equal(beans.length,1);assert.equal(beans[0].preparation,'raw');
+});
