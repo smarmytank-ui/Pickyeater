@@ -33,7 +33,7 @@ diff --git a/index.html b/index.html
  
 -<script src="./assets/config/0b06103e65d76b98a352150e0d746c1e9e7bb5b70317f6debe5a4ed34730c773.js"></script>
 +<script src="./assets/config/a20f8eb21723fe2a146d7c441493d9382f4f9a5ba570c3ed9e31256b30fe33d8.js"></script>
- <script src="./app.js?v=2.68.8-legume-safety-20261104"></script>
+ <script src="./app.js?v=2.68.8-recipe-units-20261108"></script>
  <script src="./speech-ingredients.js?v=2.68.8"></script>
 diff --git a/survival-kit.html b/survival-kit.html
 --- a/survival-kit.html
@@ -71,7 +71,7 @@ diff --git a/service-worker.js b/service-worker.js
    './',
    './index.html',
    './styles.css?v=2.68.8',
-   './app.js?v=2.68.8-legume-safety-20261104',
+   './app.js?v=2.68.8-recipe-units-20261108',
    './speech-ingredients.js?v=2.68.8',
    './speech-ingredients.css?v=2.68.8',
 -  './assets/config/0b06103e65d76b98a352150e0d746c1e9e7bb5b70317f6debe5a4ed34730c773.js',

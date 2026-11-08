@@ -3,7 +3,7 @@ const APP_SHELL = [
   './',
   './index.html',
   './styles.css?v=2.68.8',
-  './app.js?v=2.68.8-legume-safety-20261104',
+  './app.js?v=2.68.8-recipe-units-20261108',
   './speech-ingredients.js?v=2.68.8',
   './speech-ingredients.css?v=2.68.8',
   './assets/config/0b06103e65d76b98a352150e0d746c1e9e7bb5b70317f6debe5a4ed34730c773.js',

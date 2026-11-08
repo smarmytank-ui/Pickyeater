@@ -37,7 +37,7 @@ test('actual swap reparses raw state and rebuilds safety instructions',()=>{
  assert.equal(c.fixture.get().ingredients[0].preparation,'raw');assert.match(c.fixture.get().steps.map(s=>s.text).join(' '),/brief warming is not sufficient/);
 });
 test('cache identity and existing meat safety unchanged',()=>{
- for(const f of ['index.html','service-worker.js'])assert.match(fs.readFileSync(new URL('../'+f,'file:///'+__filename.replaceAll('\\','/')),'utf8'),/app.js\?v=2.68.8-legume-safety-20261104/);
+ for(const f of ['index.html','service-worker.js'])assert.match(fs.readFileSync(new URL('../'+f,'file:///'+__filename.replaceAll('\\','/')),'utf8'),/app.js\?v=2.68.8-recipe-units-20261108/);
  assert.match(text(a.normalize(['ground turkey'])),/165°F/);assert.match(text(a.normalize(['ground beef'])),/160°F/);
 });
 

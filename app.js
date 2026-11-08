@@ -833,6 +833,7 @@ const BASE_QTY = {
 
 // Ingredient-specific default quantities (SERVES 2 baseline)
 const CANON_DEFAULT_BASE = {
+  'eggs':     { v: 4, u: 'eggs' }, // matches the existing four-egg swap baseline
   'olive oil': { v: 1, u: 'tbsp' },
   'butter':    { v: 1, u: 'tbsp' },
   'lemon':     { v: 1, u: 'tbsp' },
@@ -911,7 +912,7 @@ const SWAP_CATALOG = {
   ],
   bread: [
     { name:'tortillas',       unitOverride:'count', baseOverride:4,  instrPatchKey:'combine' },
-    { name:'bread',           unitOverride:'count', baseOverride:2,  instrPatchKey:'combine' },
+    { name:'bread',           unitOverride:'slices', baseOverride:2,  instrPatchKey:'combine' },
     { name:'pita',            unitOverride:'count', baseOverride:2,  instrPatchKey:'combine' },
     { name:'skip it',         unitOverride:'',      baseOverride:0,  instrPatchKey:'combine' }
   ]
@@ -1296,6 +1297,7 @@ function normalize(names){
     const role = roleFor(name);
     const intent = intentForRole(role);
     const base = { ...(BASE_QTY[role] || BASE_QTY.other) };
+    if(name==='bread') base.u='slices'; // same four default portions; measured input still wins
 
     const override = CANON_DEFAULT_BASE[name];
     if(override){
@@ -1352,8 +1354,8 @@ function qtyStr(ing){
     const nice = formatQty(val) || String(val.toFixed(2));
     return `${nice} tsp`;
   }
-  if(ing.base.u === 'count'){
-    return `count ${Math.max(0, Math.round(val))}`;
+  if(ing.base.u === 'count' || (ing.base.u === 'eggs' && canonName(ing.name)==='eggs')){
+    return formatQty(val) || String(Number(val.toFixed(2)));
   }
 
   const isInt = Math.abs(val - Math.round(val)) < 1e-9;
@@ -1894,9 +1896,10 @@ function toggleWeeklyPlan(recipeId){
   return next;
 }
 
-function groceryQuantity(value, unit){
+function groceryQuantity(value, unit, name=''){
   const quantity = formatQty(value) || String(Number(value.toFixed(2)));
-  if(unit==='count' || !unit) return quantity;
+  if(unit==='count' || !unit || (unit==='eggs' && canonName(name)==='eggs')) return quantity;
+  if(unit==='slices' && value===1) return `${quantity} slice`;
   return `${quantity} ${unit}`;
 }
 
@@ -1919,7 +1922,7 @@ function recipeCommerceItems(recipe){
     const quantity=Number(item.base?.v)*(recipeServings/2);
     return {
       name:canonName(item.name),quantity,unit,
-      displayText:`${groceryQuantity(quantity,unit)} ${pretty(item.name)}`
+      displayText:`${groceryQuantity(quantity,unit,item.name)} ${pretty(item.name)}`
     };
   });
 }
@@ -1997,7 +2000,7 @@ async function shopPlannedGroceries(){
   const checks=lsGet(GROCERY_CHECKS_KEY,{});
   const items=uncheckedGroceryEntries(plannedGroceryItems(),checks).map(([,item])=>({
     name:item.name,quantity:item.quantity,unit:item.unit,
-    displayText:`${groceryQuantity(item.quantity,item.unit)} ${pretty(item.name)}`
+    displayText:`${groceryQuantity(item.quantity,item.unit,item.name)} ${pretty(item.name)}`
   }));
   if(!items.length){
     showToast(plannedGroceryItems().length ? 'Everything on this grocery list is already checked off.' : 'Plan at least one saved recipe first.');
@@ -3428,7 +3431,7 @@ function combineGroceryRecipes(recipes){
 }
 
 function groceryItemText(item){
-  const known=item.quantity>0 ? `${groceryQuantity(item.quantity,item.unit)} ` : '';
+  const known=item.quantity>0 ? `${groceryQuantity(item.quantity,item.unit,item.name)} ` : '';
   return `${known}${item.name}${item.unknownCount ? ` — amount needs review (${item.unknownCount} recipe line${item.unknownCount===1?'':'s'})` : ''}`;
 }
 
