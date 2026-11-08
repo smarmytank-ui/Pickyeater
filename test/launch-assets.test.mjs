@@ -599,3 +599,12 @@ test('customer-facing product chrome consistently uses Food My Way',async()=>{
   assert.match(script,/aria-label',`Decrease \$\{pretty\(ing\.name\)\} amount`/);
   assert.match(script,/aria-label',`Swap \$\{pretty\(ing\.name\)\}`/);
 });
+
+
+test('launch verifier checks the published sign-in and PDF-delivery explanation',async()=>{
+ const [html,verifier]=await Promise.all([read('survival-kit.html'),read('scripts/verify-deployment.mjs')]);
+ for(const phrase of ['Pay securely through Stripe','same email to request your sign-in link','download the PDF']){
+  assert.ok(html.includes(phrase));assert.ok(verifier.includes(phrase));
+ }
+ assert.doesNotMatch(verifier,/'secure download'/);
+});

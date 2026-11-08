@@ -35,7 +35,7 @@ test('Kit cache references match the versioned modules without requiring Git his
  const worker=readFileSync(new URL('service-worker.js',here),'utf8');
  const references=[
   ['digital-kit.html','digital-kit.js?v=2.68.8-kit-correction-20261104'],
-  ['index.html','app.js?v=2.68.8-recipe-units-20261108'],
+  ['index.html','app.js?v=2.68.8-recipe-guidance-20261108'],
   ['survival-kit.html','survival-kit.js?v=2.68.8-guest-20261106']
  ];
  for(const [file,reference] of references){

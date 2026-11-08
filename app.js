@@ -660,8 +660,28 @@ function legumeInstructions(item){
   return `Before adding ${name}, confirm its preparation. If it is not clearly canned or fully cooked, cook it separately from raw/dry using its package instructions until fully cooked; brief warming is not sufficient. ${kidney ? 'For dried kidney beans: soak at least 5 hours, discard the soaking water, then boil in fresh water for at least 30 minutes and continue cooking until fully cooked. Do not use a slow cooker to cook raw kidney beans.' : 'Preparation and cooking time depend on the legume; do not substitute a short warming step for cooking.'} Only then add it to this recipe.${animalSafety}`;
 }
 
-function recipeSafetyNotices(ingredients){
-  return (ingredients || []).filter(item=>isLegume(item.originalText || item.name)).map((item,index)=>({key:`safety-legume-${index}`,text:`Safety check (original instructions are not safety-verified): ${legumeInstructions({...item,name:item.originalText || item.name})}`}));
+function recipeSafetyNotices(ingredients, existingSteps=[]){
+  // Suppress only a complete, identical safety instruction, never a claimed key
+  // or a partial match. Original/exact editors pass no steps and keep notices.
+  const existingText=new Set((Array.isArray(existingSteps) ? existingSteps : []).map(step=>step?.text));
+  return (ingredients || []).filter(item=>isLegume(item.originalText || item.name)).flatMap((item,index)=>{
+    const guidance=legumeInstructions({...item,name:item.originalText || item.name});
+    return existingText.has(guidance) ? [] : [{key:`safety-legume-${index}`,text:`Safety check (original instructions are not safety-verified): ${guidance}`}];
+  });
+}
+function recipeInstructionSteps(recipe){
+  const steps=Array.isArray(recipe?.steps) ? recipe.steps : [];
+  return [...recipeSafetyNotices(recipe?.ingredients,steps),...steps];
+}
+
+function ingredientPreparation(name, stated=null){
+  if(isLegume(name)) return legumePreparation(name,stated);
+  const text=String(name || '');
+  const rawEvidence=/\b(?:raw|uncooked|un[ -]?cooked|not (?:fully |pre[ -]?)?cooked|under[ -]?cooked|partially cooked)\b/i.test(text)
+    || (roleFor(canonName(text))==='starch' && /\b(?:dry|dried)\b/i.test(text));
+  if(rawEvidence || stated==='raw') return /\bfrozen\b/i.test(text) ? 'frozen' : 'raw';
+  if(/\b(?:pre[ -]?cooked|cooked|rotisserie|leftovers?)\b/i.test(text) || stated==='cooked') return 'cooked';
+  return /\bfrozen\b/i.test(text) || stated==='frozen' ? 'frozen' : null;
 }
 
 function parseInputIngredient(raw){
@@ -671,9 +691,7 @@ function parseInputIngredient(raw){
   const packageSize=text.match(/^(\d+(?:\.\d+)?)\s*\((\d+(?:\.\d+)?)\s*(oz|ounces?|g|grams?|kg|kilograms?)\)\s*(?:packages?|cans?)\s+(?:of\s+)?(.+)$/i);
   if(packageSize) text=`${Number(packageSize[1])*Number(packageSize[2])} ${packageSize[3]} ${packageSize[4]}`;
   else text=text.replace(/^(\d+)\s*\([^)]*\)\s*(packages?|cans?)\b/i,'$1 $2');
-  const preparation = isLegume(text) ? legumeState : /\b(?:pre[ -]?cooked|cooked|rotisserie|leftovers?)\b/i.test(text)
-    ? 'cooked'
-    : (/\bfrozen\b/i.test(text) ? 'frozen' : null);
+  const preparation = isLegume(text) ? legumeState : ingredientPreparation(text);
   const match = text.match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)\s*(kg|kilograms?|g|grams?|lb|lbs|pound|pounds|oz|ounce|ounces|cup|cups|tbsp|tablespoons?|tsp|teaspoons?|cloves?|pieces?|slices?|cans?|packages?|medium|large|small)\b/i);
   if(!match){
     const counted=text.match(/^(\d+(?:\.\d+)?)\s+(.+)$/);
@@ -1111,8 +1129,9 @@ function isActiveIngredient(ingredient){
 function proteinSafetyGuidance(name, preparation){
   const normalized=canonName(name);
   if(preparation==='cooked') return 'heat to 165°F (74°C), measured with a food thermometer';
-  if(/\b(chicken|turkey)\b/.test(normalized)) return 'cook to 165°F (74°C), measured with a food thermometer';
+  if(/\b(chicken|turkey|duck|goose)\b/.test(normalized)) return 'cook to 165°F (74°C), measured with a food thermometer';
   if(/\bground (beef|pork|lamb|veal)\b/.test(normalized)) return 'cook to 160°F (71°C), measured with a food thermometer';
+  if(/\beggs?\b/.test(normalized)) return 'cook the egg dish to 160°F (71°C), measured with a food thermometer';
   if(/\b(salmon|fish|cod|tilapia|tuna|trout)\b/.test(normalized)) return 'cook to 145°F (63°C), measured with a food thermometer';
   if(/\b(steak|beef|pork|lamb|veal)\b/.test(normalized)) return 'cook to 145°F (63°C), measured with a food thermometer, then rest for 3 minutes';
   return 'cook to the safe internal temperature for that food, measured with a food thermometer';
@@ -1158,41 +1177,48 @@ function buildInstructions(ingredients,preferences={}){
     ? `Gather everything. Wash produce and prepare ${joinNames(prepNames)} as needed, keeping pieces even for predictable cooking.`
     : 'Gather and measure all ingredients before you start cooking.' });
 
+  const starches = active.filter(i=>i.role==='starch');
+  starches.forEach((starch,index)=>{
+    const name = pretty(starch.name);
+    let text;
+    if(starch.preparation==='cooked') text = `Reheat the cooked ${name} separately according to its package reheating directions. For leftovers, heat to 165°F (74°C), measured with a food thermometer; do not cook it again as a dry grain.`;
+    else if(starch.preparation==='frozen') text = `Cook the frozen ${name} separately according to its package directions, including any standing time.`;
+    else if(starch.name.includes('rice')) text = `Cook ${name} in a separate saucepan according to the package directions, then fluff.`;
+    else if(/\b(?:pasta|orzo)\b/.test(starch.name)) text = `Boil ${name} according to the package directions in a separate pot, then drain.`;
+    else if(starch.name.includes('quinoa')) text = `Rinse ${name}, then simmer in a separate saucepan using the package liquid amount and cooking time. Rest 5 minutes and fluff.`;
+    else if(profile.texture==='crisp') text = `Cook ${name} until crisp outside and tender inside; roasting or air-frying works well.`;
+    else if(profile.texture==='soft') text = `Cook ${name} until very soft and easy to bite; boiling or microwaving works well.`;
+    else text = `Cook ${name} until fork-tender; roast, boil, or microwave based on your preferred texture.`;
+    steps.push({ key:`starch-${index}`, text });
+  });
+
   const fats = namesFor('fat');
-  if(fats.length){
-    steps.push({ key:'oil', text: `Heat a large pan over medium heat and add ${joinNames(fats)}.` });
+  const needsPan=active.some(i=>['protein','veg','aromatic','dairy'].includes(i.role) && !(i.role==='protein' && i.preparation==='frozen'));
+  if(fats.length || needsPan){
+    steps.push({ key:'oil', text: fats.length
+      ? `Heat a large pan over medium heat and add ${joinNames(fats)}.`
+      : 'Heat a large nonstick pan over medium heat. No extra oil or butter is included in this ingredient list.' });
   }
 
   const aromatics = namesFor('aromatic');
   if(aromatics.length){
     const hasGarlic = aromatics.some(name=>name.toLowerCase()==='garlic');
-    steps.push({ key:'aromatic', text: `Add ${joinNames(aromatics)} and cook ${hasGarlic && aromatics.length===1 ? '30–45 seconds' : '2–3 minutes'}, stirring often.` });
+    steps.push({ key:'aromatic', text: `Add ${joinNames(aromatics)} to the pan and cook ${hasGarlic && aromatics.length===1 ? '30–45 seconds' : '2–3 minutes'}, stirring often.` });
   }
 
   const proteins = active.filter(i=>i.role==='protein');
   proteins.forEach((protein,index)=>{
     const name = pretty(protein.name);
     let text = `Add ${name} and cook until done.`;
-    if(protein.preparation==='cooked') text = `Add the cooked ${name} and ${proteinSafetyGuidance(protein.name,'cooked')}.`;
+    if(protein.preparation==='cooked') text = `Add the cooked ${name} to the pan and ${proteinSafetyGuidance(protein.name,'cooked')}.`;
     else if(protein.preparation==='frozen') text = `Cook the frozen ${name} according to its package directions and ${proteinSafetyGuidance(protein.name)}.`;
-    else if(protein.name.includes('salmon')) text = `Cook ${name} until it flakes easily and reaches 145°F (63°C), measured with a food thermometer.`;
-    else if(protein.name.includes('tofu')) text = `Pat ${name} dry, cube it, and cook for 6–8 minutes until lightly browned.`;
-    else if(protein.name.includes('egg')) text = `Whisk ${name} with a pinch of salt, then cook gently until set.`;
-    else text = `Add ${name}. Cook, stirring or turning as needed, and ${proteinSafetyGuidance(protein.name)}.`;
+    else if(/\beggs?\b/.test(protein.name) && /\b(?:chicken|turkey|duck|goose|beef|pork|lamb|veal|steak|salmon|fish|cod|tilapia|tuna|trout)\b/.test(protein.name)) text = `Prepare the components of ${name} separately. Cook egg dishes to 160°F (71°C), measured with a food thermometer; ${proteinSafetyGuidance(protein.name.replace(/\beggs?\b/g,''))}.`;
+    else if(protein.name.includes('salmon')) text = `Cook ${name} in the pan until it flakes easily and reaches 145°F (63°C), measured with a food thermometer.`;
+    else if(protein.name.includes('tofu')) text = `Pat ${name} dry, cube it, and cook in the pan for 6–8 minutes until lightly browned.`;
+    else if(protein.name.includes('egg')) text = `Whisk ${name}, then cook gently in the pan until set and the egg dish reaches 160°F (71°C), measured with a food thermometer.`;
+    else text = `Add ${name} to the pan. Cook, stirring or turning as needed, and ${proteinSafetyGuidance(protein.name)}.`;
+    text += ` Once safely cooked, transfer ${name} to a clean plate before cooking the next component.`;
     steps.push({ key:`protein-${index}`, text });
-  });
-
-  const starches = active.filter(i=>i.role==='starch');
-  starches.forEach((starch,index)=>{
-    const name = pretty(starch.name);
-    let text;
-    if(starch.name.includes('rice')) text = `Cook ${name} according to the package directions, then fluff.`;
-    else if(/\b(?:pasta|orzo)\b/.test(starch.name)) text = `Boil ${name} according to the package directions, then drain.`;
-    else if(starch.name.includes('quinoa')) text = `Rinse ${name}, simmer until the liquid is absorbed, then rest 5 minutes and fluff.`;
-    else if(profile.texture==='crisp') text = `Cook ${name} until crisp outside and tender inside; roasting or air-frying works well.`;
-    else if(profile.texture==='soft') text = `Cook ${name} until very soft and easy to bite; boiling or microwaving works well.`;
-    else text = `Cook ${name} until fork-tender; roast, boil, or microwave based on your preferred texture.`;
-    steps.push({ key:`starch-${index}`, text });
   });
 
   const vegetables = namesFor('veg');
@@ -1203,7 +1229,7 @@ function buildInstructions(ingredients,preferences={}){
       : profile.texture==='soft'
         ? 'soft and easy to bite, about 7–10 minutes'
         : (quick ? 'just softened, 2–3 minutes' : 'tender-crisp, about 4–6 minutes');
-    steps.push({ key:'veg', text:`Add ${joinNames(vegetables)} and cook until ${finish}.` });
+    steps.push({ key:'veg', text:`Add ${joinNames(vegetables)} to the pan and cook until ${finish}.` });
   }
 
   const dairy = namesFor('dairy');
@@ -1225,7 +1251,7 @@ function buildInstructions(ingredients,preferences={}){
 
   const acids = namesFor('acid');
   if(acids.length){
-    steps.push({ key:'acid', text:`Take the pan off the heat and finish with ${joinNames(acids)}.` });
+    steps.push({ key:'acid', text:`Finish the cooked food with ${joinNames(acids)} off the heat.` });
   }
 
   const seasonings = namesFor('seasoning');
@@ -1682,7 +1708,7 @@ function render(){
   const ol = $('instructionsList');
   if(ol){
     ol.innerHTML = '';
-    [...recipeSafetyNotices(state.ingredients),...(state.steps || [])].forEach(s=>{
+    recipeInstructionSteps(state).forEach(s=>{
       const li = document.createElement('li');
       li.textContent = s.text;
       ol.appendChild(li);
@@ -1752,7 +1778,7 @@ function sanitizeSavedIngredients(value){
       role,
       intent:intentForRole(role),
       base:{v:quantity,u:unit},
-      preparation:isLegume(item.name) ? legumePreparation(item.name,item.preparation) : (['cooked','frozen'].includes(item.preparation) ? item.preparation : null),
+      preparation:ingredientPreparation(item.name,item.preparation),
       swapMeta:null
     });
   }
@@ -1814,15 +1840,21 @@ function normalizeSavedRecipe(recipe,{untrusted=false}={}){
   if(!ingredients.length) return null;
   const rawServings=Number(recipe.servings);
   const recipeServings=Number.isFinite(rawServings) ? Math.min(8,Math.max(1,Math.round(rawServings))) : 2;
-  const importedSteps=Array.isArray(recipe.steps) ? recipe.steps.slice(0,30).map((step,index)=>({
-    key:cleanPortableText(step?.key,60) || `step-${index}`,
-    text:cleanPortableText(step?.text ?? step,300)
-  })).filter(step=>step.text) : [];
   const sanitizedProfile=sanitizeTasteProfile({
     texture:recipe.preferences?.texture,
     servingStyle:recipe.preferences?.servingStyle
   });
   const preferences={texture:sanitizedProfile.texture,servingStyle:sanitizedProfile.servingStyle};
+  const completeGeneratedGuidance=new Set(buildInstructions(ingredients,preferences).map(step=>step.text));
+  const importedSteps=Array.isArray(recipe.steps) ? recipe.steps.slice(0,30).map((step,index)=>{
+    const rawText=String(step?.text ?? step ?? '');
+    return {
+      key:cleanPortableText(step?.key,60) || `step-${index}`,
+      // Retain our complete, bounded generated steps across Save/Resume. Arbitrary
+      // imported text keeps its existing limit; a safety-looking key is no proof.
+      text:cleanPortableText(rawText,completeGeneratedGuidance.has(rawText) ? 1200 : 300)
+    };
+  }).filter(step=>step.text) : [];
   const recipeState = {
     title: cleanPortableText(recipe.title,100) || titleFrom(ingredients),
     ingredients,
@@ -2272,7 +2304,29 @@ function wireMemberNavigation(){
     $('ingredientsInput').value=reviewed;$('ingredientsInput').dispatchEvent(new Event('input',{bubbles:true}));$('ingredientSplitReview')?.classList.add('hidden');$('ingredientsInput').focus();$('ingredientsInput').setSelectionRange?.(0,0);$('ingredientsInput').scrollTop=0;
   });}
   if(cancel && !cancel.dataset.wired){cancel.dataset.wired='1';cancel.addEventListener('click',()=>$('ingredientSplitReview')?.classList.add('hidden'));}
+  for(const link of document.querySelectorAll('a[href="#inputCard"]')){
+    if(link.dataset.draftRouteWired) continue;
+    link.dataset.draftRouteWired='1';
+    link.addEventListener('click',event=>{
+      if(event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || (event.button && event.button!==0)) return;
+      if(location.hash==='#inputCard'){event.preventDefault();routeRecipeWorkspace();}
+    });
+  }
   window.addEventListener('pagehide',persistRecipeDraft);
+}
+
+function routeRecipeWorkspace(){
+  if(location.hash==='#inputCard'){
+    showMemberHome();
+    $('inputCard')?.scrollIntoView({block:'start'});
+    // Fragment navigation may move focus after DOMContentLoaded. Restore focus
+    // on the next task only if entry is still the requested visible view.
+    setTimeout(()=>{
+      if(location.hash==='#inputCard' && !$('inputCard')?.classList.contains('hidden')) $('ingredientsInput')?.focus({preventScroll:true});
+    },0);
+    return;
+  }
+  loadSharedRecipeFromUrl();
 }
 
 function showCreateView(){
@@ -2461,7 +2515,7 @@ function showSharedRecipe(recipe){
     $('sharedIngredients').appendChild(li);
   });
   $('sharedInstructions').replaceChildren();
-  [...recipeSafetyNotices(recipe.ingredients),...recipe.steps].forEach(step=>{ const li=document.createElement('li'); li.textContent=step.text || String(step); $('sharedInstructions').appendChild(li); });
+  recipeInstructionSteps(recipe).forEach(step=>{ const li=document.createElement('li'); li.textContent=step.text || String(step); $('sharedInstructions').appendChild(li); });
   $('saveSharedRecipe').onclick=()=>{ if(saveRecipe({ ...recipe, id:uid(), savedAt:new Date().toISOString() })) $('saveSharedRecipe').textContent='✓ Saved to Recipe Book'; };
 }
 
@@ -3501,10 +3555,11 @@ function init(){
   ensureNutritionDisclosure();
   ensureDiaryButton();
   getRecipeBook();
-  loadSharedRecipeFromUrl();
+  routeRecipeWorkspace();
   handleCheckoutReturn();
   refreshPendingEntitlement();
-  window.addEventListener('hashchange', loadSharedRecipeFromUrl);
+  window.addEventListener('hashchange', routeRecipeWorkspace);
+  window.addEventListener('pageshow',event=>{if(event.persisted && location.hash==='#inputCard') routeRecipeWorkspace();});
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('./service-worker.js').catch(error=>{
       console.warn('Offline support could not start.', error);
@@ -3527,6 +3582,7 @@ if(typeof module !== 'undefined' && module.exports){
     canonName,
     parseInputIngredient,
     recipeSafetyNotices,
+    recipeInstructionSteps,
     validateRecipeInput,
     MAX_RECIPE_INGREDIENTS,
     sanitizeTasteProfile,

@@ -133,7 +133,7 @@ test('already-cooked and frozen proteins receive preparation-safe guidance', () 
   assert.equal(parseInputIngredient('frozen salmon').preparation,'frozen');
   const cooked=normalize(['cooked chicken','rice']);
   const cookedText=buildInstructions(cooked).map(step=>step.text).join(' ');
-  assert.match(cookedText,/cooked Chicken Breast and heat to 165°F \(74°C\)/);
+  assert.match(cookedText,/cooked Chicken Breast to the pan and heat to 165°F \(74°C\)/);
   assert.doesNotMatch(cookedText,/safely cooked through/);
   const frozen=normalize(['frozen salmon']);
   const frozenText=buildInstructions(frozen).map(step=>step.text).join(' ');
