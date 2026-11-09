@@ -535,7 +535,8 @@ function canonName(s){
   const t = String(s||'').trim().toLowerCase();
   if(!t || /^(?:divided|for serving|to serve|optional)$/.test(t)) return '';
   const x = t
-    .replace(/\([^)]*\)/g,' ')
+    .replace(/\(([^)]*)\)/g,' $1 ')
+    .replace(/\bminced\b/g,word=>hasAnimalProtein(t) ? 'ground' : word)
     .replace(/\b(?:broth\s+or\s+stock|stock\s+or\s+broth)\b/g,match=>match.split(/\s+or\s+/)[0])
     .replace(/[,;]\s*(?:divided|optional|for serving|to serve)\b.*$/g,' ')
     .replace(/\bdivided\b/g,' ')
@@ -653,8 +654,8 @@ function legumeInstructions(item){
   const name=pretty(item.name), prep=legumePreparation(item.name,item.preparation);
   // A canned/cooked pulse must never imply that another component is cooked.
   // Preserve animal-protein safety even when a mixed line is classified as a legume.
-  const animalProtein=/\b(?:chicken|turkey|duck|goose|beef|pork|lamb|veal|steak|salmon|fish|cod|tilapia|tuna|trout|eggs?)\b/i.test(item.name);
-  const animalSafety=animalProtein ? ` This line also includes animal protein. Prepare each component separately before combining: ${/\b(?:duck|goose)\b/i.test(item.name) ? 'cook poultry to 165°F (74°C), measured with a food thermometer' : /\beggs?\b/i.test(item.name) && !/\b(?:chicken|turkey)\b/i.test(item.name) ? 'cook egg dishes to 160°F (71°C), measured with a food thermometer' : proteinSafetyGuidance(item.name)}. If reheating cooked leftovers, heat them to 165°F (74°C). A canned or cooked legume does not establish that the animal protein is cooked.` : '';
+  const animalProtein=hasAnimalProtein(item.name) && !isPantryLiquid(item.name);
+  const animalSafety=animalProtein ? ` This line also includes animal protein. Prepare each component separately before combining: ${proteinSafetyGuidance(item.name)}. If reheating cooked leftovers, heat them to 165°F (74°C). A canned or cooked legume does not establish that the animal protein is cooked.` : '';
   if(prep==='canned') return `Use commercially canned, ready-to-eat ${name}; drain or rinse if desired and heat according to the package directions. This is not a method for cooking dried legumes.${animalSafety}`;
   if(prep==='cooked') return `Use only fully cooked ${name}; reheat leftovers to 165°F (74°C), measured with a food thermometer. This does not make raw or dried legumes safe.${animalSafety}`;
   const kidney=/\b(?:kidney|cannellini)\b/i.test(item.name);
@@ -671,7 +672,9 @@ function recipeSafetyNotices(ingredients, existingSteps=[]){
   });
 }
 function recipeInstructionSteps(recipe){
-  const steps=Array.isArray(recipe?.steps) ? recipe.steps : [];
+  const steps=!recipe?.exact && needsVerifiedCooking(recipe?.ingredients)
+    ? buildInstructions(recipe.ingredients,recipe.preferences)
+    : (Array.isArray(recipe?.steps) ? recipe.steps : []);
   return [...recipeSafetyNotices(recipe?.ingredients,steps),...steps];
 }
 
@@ -679,14 +682,16 @@ function ingredientPreparation(name, stated=null){
   if(isLegume(name)) return legumePreparation(name,stated);
   const text=String(name || '');
   const rawEvidence=/\b(?:raw|uncooked|un[ -]?cooked|not (?:fully |pre[ -]?)?cooked|under[ -]?cooked|partially cooked)\b/i.test(text)
-    || (roleFor(canonName(text))==='starch' && /\b(?:dry|dried)\b/i.test(text));
+    || /\b(?:dry|dried)\b/i.test(text);
   if(rawEvidence || stated==='raw') return /\bfrozen\b/i.test(text) ? 'frozen' : 'raw';
-  if(/\b(?:pre[ -]?cooked|cooked|rotisserie|leftovers?)\b/i.test(text) || stated==='cooked') return 'cooked';
+  const frozen=/\bfrozen\b/i.test(text) || stated==='frozen' || stated==='frozen-cooked';
+  if(/\b(?:pre[ -]?cooked|cooked|rotisserie|leftovers?)\b/i.test(text) || stated==='cooked' || stated==='frozen-cooked') return frozen ? 'frozen-cooked' : 'cooked';
   return /\bfrozen\b/i.test(text) || stated==='frozen' ? 'frozen' : null;
 }
 
 function parseInputIngredient(raw){
-  let text = String(raw || '').trim();
+  let text = String(raw || '').trim().replace(/^(\.\d)/,'0$1')
+    .replace(/(\d?)([\u00bc\u00bd\u00be])/g,(match,whole,fraction)=>`${whole ? whole+' ' : ''}${({'\u00bc':'1/4','\u00bd':'1/2','\u00be':'3/4'})[fraction]}`);
   const legumeState=isLegume(text) ? legumePreparation(text) : null;
   // A stated package size is evidence of weight; a bare package is not.
   const packageSize=text.match(/^(\d+(?:\.\d+)?)\s*\((\d+(?:\.\d+)?)\s*(oz|ounces?|g|grams?|kg|kilograms?)\)\s*(?:packages?|cans?)\s+(?:of\s+)?(.+)$/i);
@@ -780,10 +785,27 @@ const ROLE_RULES = [
   [/\b(onion|onions|green onion|scallion|scallions|shallot|garlic)\b/i,'aromatic']
 ];
 
-function isPantryLiquid(name){ return /\b(broth|stock|bouillon)\b/i.test(name); }
+// Safety evidence belongs to the food, never to the previous swap slot.
+// Temperatures: foodsafety.gov/food-safety-charts/safe-minimum-internal-temperatures
+function hasAnimalProtein(name){
+  return /\b(?:chicken|turkey|duck|goose|geese|poultry|beef|pork|lamb|veal|goat|steak|rabbit|venison|salmon|fish|cod|tilapia|tuna|trout|haddock|halibut|pollock|sardines?|anchov(?:y|ies)|shrimp|prawns?|scallops?|crabs?|lobsters?|mussels?|clams?|oysters?|eggs?|sausages?|meatballs?)\b/i.test(String(name||''));
+}
+function isPantryLiquid(name){
+  // A pure stock is not raw meat; mixed lines must not use this exception.
+  return /^(?:(?:low[ -]sodium|unsalted|reduced[ -]sodium|vegetable|veggie|chicken|beef|fish|bone)\s+)*(?:broth|stock|bouillon)(?:\s+(?:powder|cubes?))?$/i.test(String(name||'').trim());
+}
+function isPreparedProteinProduct(name){ return /\b(?:nuggets?|fish sticks?|hot dogs?|meatballs?|sausages?|burgers?|hamburgers?|patt(?:y|ies)|meat[ -]?loaf|liver|kidneys?|heart|tripe|pizza|sandwich(?:es)?|sauce)\b/i.test(name); }
+function needsVerifiedCooking(ingredients){
+  return (ingredients||[]).filter(isActiveIngredient).some(item=>(hasAnimalProtein(item.name) || roleFor(item.name)==='other') && !isPantryLiquid(item.name));
+}
+function cookingTimeLabel(recipe){ return recipe.cookMinutes==null ? 'Cook time: follow verified directions' : `${recipe.cookMinutes} min cook (estimate)`; }
+
 
 function roleFor(n){
-  for(const [r,role] of ROLE_RULES) if(r.test(n)) return role;
+  if(/^(?:(?:dry|dried|canned|tinned) )*(?:(?:red|white|black|kidney|pinto|navy|cannellini|lima|garbanzo) )*beans?$|^(?:(?:dry|dried|canned|tinned) )*(?:red |green |brown )?(?:lentils?|chickpeas?|garbanzos?)$/.test(n)) return 'protein';
+  if(hasAnimalProtein(n) && !isPantryLiquid(n) && !isPreparedProteinProduct(n)) return 'protein';
+  if(hasAnimalProtein(n) && isPreparedProteinProduct(n)) return 'other';
+  for(const [r,role] of ROLE_RULES) if(new RegExp('^(?:'+r.source+')$',r.flags).test(n)) return role;
   return 'other';
 }
 
@@ -1130,11 +1152,17 @@ function isActiveIngredient(ingredient){
 function proteinSafetyGuidance(name, preparation){
   const normalized=canonName(name);
   if(preparation==='cooked') return 'heat to 165°F (74°C), measured with a food thermometer';
-  if(/\b(chicken|turkey|duck|goose)\b/.test(normalized)) return 'cook to 165°F (74°C), measured with a food thermometer';
-  if(/\bground (beef|pork|lamb|veal)\b/.test(normalized)) return 'cook to 160°F (71°C), measured with a food thermometer';
+  if(/\b(?:salmon|fish|cod|tilapia|tuna|trout|haddock|halibut|pollock|sardines?|anchov(?:y|ies)|shrimp|prawns?|scallops?|crabs?|lobsters?|mussels?|clams?|oysters?)\b/.test(normalized) && /\b(?:beef|pork|lamb|veal|goat|steak|rabbit|venison|sausages?|meatballs?)\b/.test(normalized)) return 'prepare each animal-protein component separately using its own verified food-safety directions and food thermometer; this mixture does not have one shared cooking temperature';
+  if(/\b(chicken|turkey|duck|goose|geese|poultry)\b/.test(normalized)) return 'cook to 165°F (74°C), measured with a food thermometer';
+  if(/\b(?:liver|kidneys?|heart|tripe)\b/.test(normalized)) return 'use verified cooking instructions for this specific organ or cut; do not assume whole-cut meat guidance applies';
+  if(/\b(?:ground|mince|minced|sausages?|meatballs?|burgers?|hamburgers?|patt(?:y|ies)|meat[ -]?loaf|rabbit|venison)\b/.test(normalized)) return 'cook to 160°F (71°C), measured with a food thermometer';
   if(/\beggs?\b/.test(normalized)) return 'cook the egg dish to 160°F (71°C), measured with a food thermometer';
-  if(/\b(salmon|fish|cod|tilapia|tuna|trout)\b/.test(normalized)) return 'cook to 145°F (63°C), measured with a food thermometer';
-  if(/\b(steak|beef|pork|lamb|veal)\b/.test(normalized)) return 'cook to 145°F (63°C), measured with a food thermometer, then rest for 3 minutes';
+  if(/\b(salmon|fish|cod|tilapia|tuna|trout|haddock|halibut|pollock|sardines?|anchov(?:y|ies)|shrimp|prawns?|scallops?|crabs?|lobsters?)\b/.test(normalized)) return 'cook to 145°F (63°C), measured with a food thermometer';
+  if(/\b(?:mussels?|clams?|oysters?)\b/.test(normalized)) return 'follow verified shellfish cooking instructions; cook live shells until they open and discard any that stay closed';
+  if(/\b(steak|beef|pork|lamb|veal|goat)\b/.test(normalized)){
+    if(!/^(?:(?:beef|pork|lamb|veal|goat)(?: (?:steaks?|chops?|roasts?|tenderloin|loin|ribs?|leg|shoulder|brisket|cutlets?))?|steaks?)$/.test(normalized)) return 'verify the exact cut and preparation using package directions or a verified food-safety recipe; whole-cut, ground and organ meats have different requirements';
+    return 'for whole cuts, cook to 145°F (63°C), measured with a food thermometer, then rest for 3 minutes; if the meat is ground or formed, cook to 160°F (71°C) instead';
+  }
   return 'cook to the safe internal temperature for that food, measured with a food thermometer';
 }
 
@@ -1165,7 +1193,7 @@ const INSTR = {
 
 function buildInstructions(ingredients,preferences={}){
   const profile=sanitizeTasteProfile(preferences);
-  const allActive = ingredients.filter(i=>i.name!=='skip it' && i.base.v>0);
+  const allActive = ingredients.filter(i=>i.name!=='skip it' && i.base.v>0).map(item=>({...item,role:roleFor(item.name)}));
   const legumes=allActive.filter(i=>isLegume(i.name));
   const active=allActive.filter(i=>!isLegume(i.name));
   const namesFor = role => active.filter(i=>i.role===role).map(i=>pretty(i.name));
@@ -1182,7 +1210,8 @@ function buildInstructions(ingredients,preferences={}){
   starches.forEach((starch,index)=>{
     const name = pretty(starch.name);
     let text;
-    if(starch.preparation==='cooked') text = `Reheat the cooked ${name} separately according to its package reheating directions. For leftovers, heat to 165°F (74°C), measured with a food thermometer; do not cook it again as a dry grain.`;
+    if(starch.preparation==='frozen-cooked') text = `Reheat the frozen cooked ${name} separately according to the package directions, including any thawing and standing time; heat leftovers to 165°F (74°C), measured with a food thermometer.`;
+    else if(starch.preparation==='cooked') text = `Reheat the cooked ${name} separately according to its package reheating directions. For leftovers, heat to 165°F (74°C), measured with a food thermometer; do not cook it again as a dry grain.`;
     else if(starch.preparation==='frozen') text = `Cook the frozen ${name} separately according to its package directions, including any standing time.`;
     else if(starch.name.includes('rice')) text = `Cook ${name} in a separate saucepan according to the package directions, then fluff.`;
     else if(/\b(?:pasta|orzo)\b/.test(starch.name)) text = `Boil ${name} according to the package directions in a separate pot, then drain.`;
@@ -1194,7 +1223,7 @@ function buildInstructions(ingredients,preferences={}){
   });
 
   const fats = namesFor('fat');
-  const needsPan=active.some(i=>['protein','veg','aromatic','dairy'].includes(i.role) && !(i.role==='protein' && i.preparation==='frozen'));
+  const needsPan=active.some(i=>['protein','veg','aromatic','dairy'].includes(i.role) && !(i.role==='protein' && ['frozen','frozen-cooked'].includes(i.preparation)));
   if(fats.length || needsPan){
     steps.push({ key:'oil', text: fats.length
       ? `Heat a large pan over medium heat and add ${joinNames(fats)}.`
@@ -1211,13 +1240,15 @@ function buildInstructions(ingredients,preferences={}){
   proteins.forEach((protein,index)=>{
     const name = pretty(protein.name);
     let text = `Add ${name} and cook until done.`;
-    if(protein.preparation==='cooked') text = `Add the cooked ${name} to the pan and ${proteinSafetyGuidance(protein.name,'cooked')}.`;
+    if(protein.preparation==='frozen-cooked') text = `Reheat the frozen cooked ${name} according to its package directions, including any thawing and standing time, and ${proteinSafetyGuidance(protein.name,'cooked')}.`;
+    else if(protein.preparation==='cooked') text = `Add the cooked ${name} to the pan and ${proteinSafetyGuidance(protein.name,'cooked')}.`;
     else if(protein.preparation==='frozen') text = `Cook the frozen ${name} according to its package directions and ${proteinSafetyGuidance(protein.name)}.`;
-    else if(/\beggs?\b/.test(protein.name) && /\b(?:chicken|turkey|duck|goose|beef|pork|lamb|veal|steak|salmon|fish|cod|tilapia|tuna|trout)\b/.test(protein.name)) text = `Prepare the components of ${name} separately. Cook egg dishes to 160°F (71°C), measured with a food thermometer; ${proteinSafetyGuidance(protein.name.replace(/\beggs?\b/g,''))}.`;
-    else if(protein.name.includes('salmon')) text = `Cook ${name} in the pan until it flakes easily and reaches 145°F (63°C), measured with a food thermometer.`;
-    else if(protein.name.includes('tofu')) text = `Pat ${name} dry, cube it, and cook in the pan for 6–8 minutes until lightly browned.`;
-    else if(protein.name.includes('egg')) text = `Whisk ${name}, then cook gently in the pan until set and the egg dish reaches 160°F (71°C), measured with a food thermometer.`;
+    else if(/\beggs?\b/.test(protein.name) && hasAnimalProtein(protein.name.replace(/\beggs?\b/g,''))) text = `Prepare the components of ${name} separately. Cook egg dishes to 160°F (71°C), measured with a food thermometer; ${proteinSafetyGuidance(protein.name.replace(/\beggs?\b/g,''))}.`;
+    else if(hasAnimalProtein(protein.name) && /\b(?:and|with|plus|in)\b|[,&+;/]/i.test(protein.name)) text = `Prepare the components of ${name} separately using package directions or a verified food-safety recipe. For the animal protein, ${proteinSafetyGuidance(protein.name)}. Do not taste or combine until every component is safely cooked.`;
+    else if(protein.name.includes('tofu') && !hasAnimalProtein(protein.name)) text = `Pat ${name} dry, cube it, and cook in the pan for 6–8 minutes until lightly browned.`;
+    else if(/^(?:chicken |duck |quail )?eggs?$/.test(protein.name)) text = `Whisk ${name}, then cook gently in the pan until set and the egg dish reaches 160°F (71°C), measured with a food thermometer.`;
     else text = `Add ${name} to the pan. Cook, stirring or turning as needed, and ${proteinSafetyGuidance(protein.name)}.`;
+    if(hasAnimalProtein(protein.name) && !/^(?:(?:ground|lean|whole|skinless|boneless) )*(?:chicken|turkey|duck|goose|geese|poultry|beef|pork|lamb|veal|goat|steak|rabbit|venison|salmon|fish|cod|tilapia|tuna|trout|haddock|halibut|pollock|shrimp|prawns?|scallops?|crabs?|lobsters?|mussels?|clams?|oysters?|eggs?)(?: (?:breasts?|thighs?|legs?|wings?|drumsticks?|steaks?|chops?|fillets?))?$/.test(protein.name)) text = `Stop and check this combination: ${name}. This app cannot verify every component. Use package directions or a verified food-safety recipe to prepare each component separately; do not taste, combine, or serve until all those directions are complete. ` + text;
     text += ` Once safely cooked, transfer ${name} to a clean plate before cooking the next component.`;
     steps.push({ key:`protein-${index}`, text });
   });
@@ -1245,9 +1276,9 @@ function buildInstructions(ingredients,preferences={}){
 
   active.filter(i=>i.role==='other').forEach((item,index)=>{
     const name=pretty(item.name);
-    steps.push({key:`other-${index}`,text:/\b(broth|stock|bouillon)\b/i.test(item.name)
+    steps.push({key:`other-${index}`,text:isPantryLiquid(item.name)
       ? `Use ${name} as a cooking liquid only where the ingredient's package directions allow it; check the required liquid amount before cooking.`
-      : `Prepare ${name} according to its package directions or the method and texture you prefer.`});
+      : `Stop and check ${name}: this app cannot verify its cooking method or time. Prepare it separately using its package directions or a verified food-safety recipe. Do not taste, combine, or serve it until those directions are complete.${hasAnimalProtein(item.name) ? ` If it contains raw animal protein, ${proteinSafetyGuidance(item.name)}; for cooked leftovers, heat to 165°F (74°C), measured with a food thermometer. Frozen or breaded does not mean cooked.` : ''}`});
   });
 
   const acids = namesFor('acid');
@@ -1260,9 +1291,9 @@ function buildInstructions(ingredients,preferences={}){
     steps.push({ key:'seasoning', text:`Taste and season with ${joinNames(seasonings)}. Add a little at a time.` });
   }
 
-  steps.push({ key:'combine', text:profile.servingStyle==='separate'
+  steps.push({ key:'combine', text:(active.some(item=>item.role==='other' && !isPantryLiquid(item.name)) ? 'Only after every ingredient has been safely prepared using verified directions: ' : '') + (profile.servingStyle==='separate'
     ? 'Arrange each food in its own section of the plate. Keep sauces and toppings on the side, and serve warm.'
-    : 'Combine everything, divide between plates, and serve warm.' });
+    : 'Combine everything, divide between plates, and serve warm.') });
   return steps;
 }
 
@@ -1281,6 +1312,7 @@ function recipeDetails(ingredients){
   const description = focus.length
     ? `A straightforward ${focus.join(', ')} recipe with familiar flavors and flexible swaps.`
     : 'A simple, flexible recipe made from foods you chose.';
+  if(needsVerifiedCooking(active)) cookMinutes=null;
   return { description, prepMinutes, cookMinutes };
 }
 
@@ -1432,7 +1464,7 @@ function ensureNutritionDisclosure(){
 function computeMacrosPerServing(){
   if(!state) return { cal:0, p:0, c:0, f:0 };
   if(hasUnmeasuredRecipeIngredient(state.ingredients)){
-    if($('calories')) $('calories').textContent='Nutrition unavailable: ingredient amount needs checking';
+    if($('calories')) $('calories').textContent='Nutrition unavailable: ingredient or amount needs checking';
     for(const id of ['protein','carbs','fat']) if($(id)) $(id).textContent='';
     ensureNutritionDisclosure();
     return null;
@@ -1493,26 +1525,32 @@ function applySwap(ingId, opt, optsArg){
   const keepRole = !!opts.keepRole;
   const keepQty  = !!opts.keepQty;
 
+  const prevName = ing.name;
   const prevRole = ing.role;
   const prevIntent = ing.intent;
   const prevBase = { ...ing.base };
 
   const parsedSwap = parseInputIngredient(opt.name);
+  if(!parsedSwap.name || (/^\s*[-+\u2212]/.test(String(opt.name)) || /^\s*(?:[\d.\u00bc\u00bd\u00be]|Infinity|NaN)/i.test(String(opt.name)) && parsedSwap.quantity==null) || (parsedSwap.quantity!=null && (!Number.isFinite(parsedSwap.quantity) || parsedSwap.quantity<0 || parsedSwap.quantity>(parsedSwap.unit==='g' ? 50000 : 50)))){
+    showToast('Enter a valid ingredient and a finite, practical amount before applying this swap.');
+    return false;
+  }
   ing.name = parsedSwap.name;
   ing.preparation = parsedSwap.preparation;
 
   // Role handling:
   // - Catalog swaps: role follows ingredient
-  // - Jackpot swaps: role stays on slot (persist behavior)
+  // - Custom swaps: unknown foods never inherit the previous cooking method
   const detectedRole=roleFor(ing.name);
-  ing.role = keepRole && detectedRole==='other' && !isPantryLiquid(ing.name) ? prevRole : detectedRole;
+  ing.role = detectedRole;
   const roleChanged = ing.role !== prevRole;
   ing.intent = keepRole && !roleChanged ? (prevIntent || intentForRole(ing.role)) : intentForRole(ing.role);
 
   // Quantity handling:
   // - Catalog swaps: reset baseline per role, then apply overrides
   // - Custom swaps: keep slot qty/unit only when the ingredient role is unchanged.
-  if(keepQty && !roleChanged){
+  const incompatibleCount=prevRole==='protein' && ['eggs','count','pieces','slices','medium','cloves'].includes(prevBase.u) && ing.name!==prevName;
+  if(keepQty && !roleChanged && detectedRole!=='other' && !incompatibleCount){
     ing.base = prevBase;
   } else {
     ing.base = { ...(BASE_QTY[ing.role] || BASE_QTY.veg) };
@@ -1527,6 +1565,10 @@ function applySwap(ingId, opt, optsArg){
     }
   }
 
+  // Explicit swap amounts describe the displayed servings, not an inherited slot.
+  if(Number.isFinite(parsedSwap.quantity) && parsedSwap.quantity>=0 && parsedSwap.unit){
+    ing.base={v:parsedSwap.quantity/(servings/2),u:parsedSwap.unit};
+  }
   ing.swapMeta = { patchKey: opt.instrPatchKey || null };
 
   // Update steps + title
@@ -1565,7 +1607,7 @@ function render(){
     sourceLink.href=source?.url || '#';
   }
   if($('prepTime')) $('prepTime').textContent = `${details.prepMinutes} min prep`;
-  if($('cookTime')) $('cookTime').textContent = `${details.cookMinutes} min cook`;
+  if($('cookTime')) $('cookTime').textContent = cookingTimeLabel(details);
   const profile=sanitizeTasteProfile(state.preferences || getTasteProfile());
   const appliedPreferences=[];
   if(profile.texture==='crisp') appliedPreferences.push('Crisp texture');
@@ -1680,8 +1722,8 @@ function render(){
             const raw = input.value.trim();
             if(!raw) return;
 
-            // Jackpot: keep role + qty on the SLOT (so user can "choose their own")
-            applySwap(ing.id, { name: raw, instrPatchKey: null }, { keepRole:true, keepQty:true });
+            // Keep only compatible quantities; safety and role follow the new food.
+            if(applySwap(ing.id, { name: raw, instrPatchKey: null }, { keepRole:true, keepQty:true })===false) return;
 
             wrap.remove();
             bump(li);
@@ -1760,7 +1802,7 @@ function sanitizeSavedIngredients(value){
     const inferredRole=roleFor(name);
     const role=name==='skip it'
       ? (SAVED_ROLES.has(item.role) ? item.role : 'other')
-      : (inferredRole==='other' && !isPantryLiquid(name) && SAVED_ROLES.has(item.role) ? item.role : inferredRole);
+      : inferredRole;
     if(name==='skip it'){
       if(!['fat','acid','seasoning','aromatic','dairy','bread'].includes(role) || optionalSkips.has(role)) continue;
       optionalSkips.add(role);
@@ -1788,7 +1830,7 @@ function sanitizeSavedIngredients(value){
 }
 
 function hasUnmeasuredRecipeIngredient(ingredients){
-  return ingredients.filter(isActiveIngredient).some(ing=>gramsFor(ing.name,ing.base.u,ing.base.v)<=0);
+  return ingredients.filter(isActiveIngredient).some(ing=>(!NUTRITION_PER_100G[canonName(ing.name)] && (hasAnimalProtein(ing.name) || roleFor(ing.name)==='other')) || gramsFor(ing.name,ing.base.u,ing.base.v)<=0);
 }
 
 function recipeMacros(recipeState = state, recipeServings = servings){
@@ -1860,7 +1902,7 @@ function normalizeSavedRecipe(recipe,{untrusted=false}={}){
   const recipeState = {
     title: cleanPortableText(recipe.title,100) || titleFrom(ingredients),
     ingredients,
-    steps: !untrusted && importedSteps.length ? importedSteps : buildInstructions(ingredients,preferences),
+    steps: !untrusted && !needsVerifiedCooking(ingredients) && importedSteps.length ? importedSteps : buildInstructions(ingredients,preferences),
     source:sanitizeRecipeSource(recipe.source)
   };
   const details = recipeDetails(recipeState.ingredients);
@@ -2506,7 +2548,7 @@ function showSharedRecipe(recipe){
   $('sharedRecipeCard')?.classList.remove('hidden');
   $('sharedRecipeTitle').textContent = recipe.title;
   $('sharedRecipeMeta').replaceChildren();
-  [`Serves ${recipe.servings}`, `${recipe.prepMinutes} min prep`, `${recipe.cookMinutes} min cook`, recipeNutritionText(recipe)].forEach(text=>{
+  [`Serves ${recipe.servings}`, `${recipe.prepMinutes} min prep`, cookingTimeLabel(recipe), recipeNutritionText(recipe)].forEach(text=>{
     const span=document.createElement('span'); span.textContent=text; $('sharedRecipeMeta').appendChild(span);
   });
   $('sharedIngredients').replaceChildren();

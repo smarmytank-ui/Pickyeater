@@ -43,9 +43,9 @@ test('custom onion/garlic powder swaps reset role, intent and unit to existing s
     assert.equal(ing.base.v,api.defaults.seasoning.v);
   }
 });
-test('same-role and unknown custom swaps preserve adjusted slot quantity and intent',()=>{
+test('known same-role custom swaps preserve adjusted slot quantity and intent',()=>{
   const api=harness();
-  for(const name of ['green onion','mystery ingredient']){
+  for(const name of ['green onion']){
     const recipe=api.swap('onion',{name},undefined,{v:3,u:'medium'});
     const ing=recipe.ingredients[0];
     assert.equal(ing.role,'aromatic');
