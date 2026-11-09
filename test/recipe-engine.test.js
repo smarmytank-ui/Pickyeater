@@ -181,7 +181,7 @@ test('unknown and prepared safe foods get neutral guidance instead of vegetable 
   const ingredients=normalize(['cereal','favorite crunchy bites']);
   assert.deepEqual(ingredients.map(item=>item.base),[{v:1,u:'serving'},{v:1,u:'serving'}]);
   const instructions=buildInstructions(ingredients).map(step=>step.text).join(' ');
-  assert.match(instructions,/package directions or the method and texture you prefer/);
+  assert.match(instructions,/package directions or a verified food-safety recipe/);
   assert.doesNotMatch(instructions,/tender-crisp/);
   assert.equal(titleFrom(ingredients),'Simple Cereal Plate');
 });
@@ -206,7 +206,7 @@ test('recipe details and title respond to the ingredient mix', () => {
   assert.deepEqual(recipeDetails(ingredients), {
     description: 'A straightforward Salmon, Potatoes, Green Beans recipe with familiar flavors and flexible swaps.',
     prepMinutes: 10,
-    cookMinutes: 25
+    cookMinutes: null
   });
 });
 
@@ -251,11 +251,12 @@ test('shared recipes are bounded and recomputed before display or saving', () =>
   assert.equal(imported.servings,8);
   assert.equal(imported.ingredients.filter(isActiveIngredient).length,MAX_RECIPE_INGREDIENTS);
   assert.ok(imported.ingredients.every(item=>item.base.v<=50 && item.base.u==='serving'));
-  assert.equal(imported.steps.length,30);
+  assert.ok(imported.steps.length<=30);
+  assert.match(imported.steps.map(step=>step.text).join(' '),/Do not taste, combine, or serve/);
   assert.ok(imported.steps.every(step=>step.text.length<=300));
   assert.notEqual(imported.prepMinutes,999);
   assert.notEqual(imported.cookMinutes,999);
-  assert.notEqual(imported.nutrition.calories,999999);
+  assert.equal(imported.nutrition,null);
   const unsafe={
     title:'Unsafe import',servings:2,
     ingredients:[{name:'chicken',role:'veg',base:{v:1,u:'lb'}}],
